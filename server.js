@@ -116,6 +116,7 @@ app.get('/getEffect/:moduleId',(req,res)=>{
 	})
 })
 
+	console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
 
 app.post('/register',(req,res)=>{
 
