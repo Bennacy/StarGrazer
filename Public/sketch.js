@@ -78,6 +78,7 @@ function preload(){
 }
 
 function setup() {
+  print('Merge Test')
   cv = createCanvas(windowWidth, windowHeight);
   cv.position((windowWidth * 0.5) - width / 2, (windowHeight * 0.5) - height / 2);
   timer()
