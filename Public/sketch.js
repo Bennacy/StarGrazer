@@ -174,7 +174,7 @@ function map_scene(){
     drawR()
     gameState=1
   }
-  
+  // ngiwoabgioawbo
 }
 
 function visitPlayer(index){
