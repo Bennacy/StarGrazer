@@ -49,7 +49,7 @@ app.post('/login',(req,res)=>{
 		if(result.length>0)
 			hash= result[0].pass
 		else
-			hash= 'wrongusernamedumbass'
+			hash= 'WrongUsernameDumbass'
 		
 		console.log(hash)
 
@@ -116,7 +116,20 @@ app.get('/getEffect/:moduleId',(req,res)=>{
 	})
 })
 
-	console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+
+app.get('/getGalaxyMap/:playerId',(req,res)=>{
+	let playerId=req.params.playerId
+
+	let gLevel
+	let sql="select gLevel from player where playerId='"+playerId+"'"
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		gLevel=result[0].gLevel
+		console.log(gLevel)
+		res.send()
+	})
+})
+
 
 app.post('/register',(req,res)=>{
 
@@ -133,7 +146,7 @@ app.post('/register',(req,res)=>{
 		
 		if(result.length<1){ //no player with that name
 			bcrypt.hash(password, saltRounds, function(err, hash) {
-				let sql = "INSERT INTO Player (`name`,`pass`) VALUES ('"+username+"','"+hash+"')";
+				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`) VALUES ('"+username+"','"+hash+"',1)";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;

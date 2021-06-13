@@ -256,6 +256,12 @@ function keyPressed(){
 			case 53: // 5 => Sets Ships to 0 (testing build ship button)
 				resource[3].change_value(-1,3)
 				break
+      
+      case 81: // q => Testing player galaxy level
+      print(playerId)
+        loadJSON('/getGalaxyMap/'+playerId,(dataReceived)=>{
+          print('aaa')
+        })
     }
   }
   switch(gameState){
