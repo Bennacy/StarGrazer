@@ -21,6 +21,7 @@ let placedModule=[]
 let maxPlace=[]
 let moduleBuildButton=[]
 let arrtiles = [];
+let visitBtn = [];
 
 let playerId;
 let cv;
@@ -47,6 +48,8 @@ let buildShipB
 let collectMB
 let profileButton
 let logoffButton
+let mapBtn
+//let visitBtn
 
 
 // Input initialization
@@ -78,8 +81,6 @@ function preload(){
 }
 
 function setup() {
-  print('Merge Test')
-  print('Idk what')
   cv = createCanvas(windowWidth, windowHeight);
   cv.position((windowWidth * 0.5) - width / 2, (windowHeight * 0.5) - height / 2);
   timer()
@@ -131,6 +132,8 @@ function main_scene_setup(){
   missionScreenB= new Button(width-200-15, height-90, 200, 75, 200,200,200, mission_Scene, "Missions")
   buildScreenB= new Button(15, height-90, 200, 75, 200,200,200, building_Scene, "Modules")
 	collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money')
+  mapBtn = new Button(width/1.5 + 250, height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, map_scene, "Map");
+  //visitBtn = new Button(width/2 + 150, height/2, 200, 75, 200,200,200, visitPlayer, "Visit");
 
   mainLoop= true
   gameState= 1
@@ -150,6 +153,40 @@ function main_Scene() {
 }
 
 
+function map_scene(){
+  if(gameState < 5){
+    gameState = 5;
+    clearScreen();
+    createCanvas(windowWidth, windowHeight);
+    background('#dbdbdb');
+
+    for(let i=0; i<10; i++){
+
+      if(i<5){
+        visitBtn[i]= new Button (50, height/2-((25+25)*(-i+2)), 100, 25, 200,200,200, visitPlayer, "Visit")
+      }
+    }
+    
+  } else if(gameState == 5){
+    clearScreen();
+    background('#dbdbdb');
+    create_Grid()
+    drawR()
+    gameState=1
+  }
+  
+}
+
+function visitPlayer(index){
+
+  clearScreen();
+  background('#dbdbdb');
+  visitBase(index);
+
+}
+
+
+
 function playerProfile(){
   if(gameState<4){
     clearScreen()
@@ -164,6 +201,13 @@ function playerProfile(){
     gameState=1
   }
 }
+
+
+/*function showPlayers(){
+  loadJSON('/getPlayers', (dataReceived)=>{
+
+  })
+}*/
 
 
 function logOff(){
@@ -308,6 +352,15 @@ function mousePressed(){
     if(missionScreenB.mouse_over()){
       missionScreenB.mouse_pressed('')
     }
+
+    if(mapBtn.mouse_over()){
+      mapBtn.mouse_pressed('')
+    }
+
+    for(let i = 0; i < visitBtn.length; i++)
+      if(visitBtn[i].mouse_over()){
+        visitBtn[i].mouse_pressed(i+1)
+      }
     
     if(buildScreenB.mouse_over()){
       buildScreenB.mouse_pressed('')
@@ -694,9 +747,22 @@ function timer(){
     if(gameState>0){
       missionScreenB.mouse_over()
       missionScreenB.draw_button()
+
       buildScreenB.mouse_over()
       buildScreenB.draw_button()
+
+      mapBtn.mouse_over()
+      mapBtn.draw_button()
+      
     }
+
+    if(gameState == 5){
+    for(let i =0; i< visitBtn.length; i++){
+
+      visitBtn[i].mouse_over()
+      visitBtn[i].draw_button()
+    }
+  }
   },15)
 
   setInterval(function(){
@@ -994,6 +1060,7 @@ function do_Login() {
   httpPost('/login','json', player, (dataReceived) => {
 
     if (dataReceived.length==0 || dataReceived==false){ // No match in the database
+    if (dataReceived.length==0){ // No match in the database
       push()
         fill("crimson")
         textAlign(CENTER, CENTER)
@@ -1224,6 +1291,50 @@ function changeAvailableShips(op, value){
 
 // v Building/Grid start v // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
 // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+
+
+function visitBase(index){
+
+  let x=0;
+  let y=0;
+  let COL=19;
+  let ROW =11;
+
+  for (let i = 0; i < COL; i++) {
+    arrtiles[i] = [];
+
+    if(i==0){
+      //starting point in width
+      x= (width/2) - (COL*side/2);
+    }else{
+      x=x+side;
+    }
+
+    for (let j = 0; j < ROW; j++) {
+
+      //starting point in height
+      if(j==0){
+        y=(height/2) - (ROW*side/2) + side;
+      }else{
+        y=y+side;
+      }
+
+      arrtiles[i][j] = new Module(i,j,x,y, side, 0, 0);
+    }
+  }
+
+  loadJSON('/getModule/'+index,(dataReceived)=>{
+
+    module = dataReceived;
+    
+    for(let i=0;i<module.length;i++){
+      arrtiles[module[i].posX][module[i].posY].moduleType = module[i].moduleType;
+
+      arrtiles[module[i].posX][module[i].posY].deleted = module[i].deleted;
+    }
+    draw_Grid();
+  })
+}
 
 
 function create_Grid(){
