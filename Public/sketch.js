@@ -991,7 +991,7 @@ function do_Login() {
 
   httpPost('/login','json', player, (dataReceived) => {
 
-    if (dataReceived.length==0){ // No match in the database
+    if (dataReceived.length==0 || dataReceived==false){ // No match in the database
       push()
         fill("crimson")
         textAlign(CENTER, CENTER)

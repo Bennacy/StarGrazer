@@ -1,5 +1,8 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const bcrypt = require('bcrypt');
+
+const saltRounds = 10;
 const mysql = require('mysql');
 const app = express()
 const port = 3000
@@ -37,13 +40,36 @@ app.post('/login',(req,res)=>{
 	let username = req.body.username;
 	let password = req.body.password;
 
-
-	let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+password+"' ";
-
+	let sql= "SELECT pass FROM Player WHERE name='"+username+"'"
 	db.query(sql,(err,result)=>{
-		if(err) throw err;
-		res.send(result)
-	});
+		if(err) throw err
+
+		let hash=''
+
+		if(result.length>0)
+			hash= result[0].pass
+		else
+			hash= 'wrongusernamedumbass'
+		
+		console.log(hash)
+
+		bcrypt.compare(password, hash, function(err, result) {
+			if(err) throw err
+
+			console.log(result)
+			// result == true
+			if(result){
+				let sql = "SELECT playerId FROM Player WHERE name='"+username+"'";
+
+				db.query(sql,(err,result)=>{
+					if(err) throw err;
+					res.send(result)
+				});
+			}else{
+				res.send(result)
+			}
+		});
+	})
 });
 
 
@@ -105,62 +131,64 @@ app.post('/register',(req,res)=>{
 		let forCount=0
 		
 		if(result.length<1){ //no player with that name
-			let sql = "INSERT INTO Player (`name`,`pass`) VALUES ('"+username+"','"+password+"')";
-			db.query(sql,(err,result)=>{
-
-			if(err) throw err;
-				
-				let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+password+"'";
+			bcrypt.hash(password, saltRounds, function(err, hash) {
+				let sql = "INSERT INTO Player (`name`,`pass`) VALUES ('"+username+"','"+hash+"')";
 				db.query(sql,(err,result)=>{
-					if(err) throw err;
 
-					for (i = 1; i <= 4; i++){
-
-					let pId=result[0].playerId
-					let resourceType = i;
-					let currentAmount;
-					let maxAmount;
-					let inUse = 0;
-
-					if (i == 3){
-						maxAmount = 1500;
-						currentAmount = 350;
-						
-					}else if(i == 2){
-
-						maxAmount = 750;
-						currentAmount = 175;
-
-					}else if(i == 4){
-
-						maxAmount = 3;
-						currentAmount = 1;
-
-					}else if(i == 1){
-
-						maxAmount = 99999999;
-						currentAmount = 200;
-
-					}
-
-						let sql = "INSERT INTO player_resource (`playerId`,`resourceType`,`currentAmount`,`maxAmount`,`inUse`) VALUES ('"+pId+"','"+resourceType+"','"+currentAmount+"','"+maxAmount+"','"+inUse+"')";
-
-						db.query(sql,(err,result)=>{
+				if(err) throw err;
+					
+					let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+hash+"'";
+					db.query(sql,(err,result)=>{
 						if(err) throw err;
 
-							if(forCount==0){
-								forCount++
-								let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
-								db.query(sql,(err,result)=>{
-									if(err) throw err
-								})
-							}
-						});
-					}
+						for (i = 1; i <= 4; i++){
 
-						res.send(result);
-					});
-			});
+						let pId=result[0].playerId
+						let resourceType = i;
+						let currentAmount;
+						let maxAmount;
+						let inUse = 0;
+
+						if (i == 3){
+							maxAmount = 1500;
+							currentAmount = 350;
+							
+						}else if(i == 2){
+
+							maxAmount = 750;
+							currentAmount = 175;
+
+						}else if(i == 4){
+
+							maxAmount = 3;
+							currentAmount = 1;
+
+						}else if(i == 1){
+
+							maxAmount = 99999999;
+							currentAmount = 200;
+
+						}
+
+							let sql = "INSERT INTO player_resource (`playerId`,`resourceType`,`currentAmount`,`maxAmount`,`inUse`) VALUES ('"+pId+"','"+resourceType+"','"+currentAmount+"','"+maxAmount+"','"+inUse+"')";
+
+							db.query(sql,(err,result)=>{
+							if(err) throw err;
+
+								if(forCount==0){
+									forCount++
+									let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
+									db.query(sql,(err,result)=>{
+										if(err) throw err
+									})
+								}
+							});
+						}
+
+							res.send(result);
+						});
+				});
+			})
 
 		}else{
 			result[0]="Existing"
