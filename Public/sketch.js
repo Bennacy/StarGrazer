@@ -79,7 +79,7 @@ function preload(){
 
 function setup() {
   print('Merge Test')
-  print('Idk what im doing')
+  print('Idk what')
   cv = createCanvas(windowWidth, windowHeight);
   cv.position((windowWidth * 0.5) - width / 2, (windowHeight * 0.5) - height / 2);
   timer()
@@ -89,6 +89,7 @@ function setup() {
 function draw() {
   switch(gameState){
     case 0: // Initial log-in screen
+      loginScene()
       noLoop()
       break
 
@@ -97,6 +98,7 @@ function draw() {
         loopCounter++
         mainLoop= false
         console.log("looped " + loopCounter)
+        main_Scene()
       }
       break
   }
