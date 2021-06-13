@@ -7,7 +7,7 @@ let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: 
 
 
 app.use(express.static('public'));
-console.log('aaaaa')
+
 // parse application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: false }))
  
