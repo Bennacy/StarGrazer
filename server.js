@@ -1,11 +1,13 @@
 const express = require('express')
 const bodyParser = require('body-parser')
-const mysql = require('mysql');
 const bcrypt = require('bcrypt');
+
+const saltRounds = 10;
+const mysql = require('mysql');
 const app = express()
 const port = 3000
 let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
-const saltRounds = 10;
+
 
 app.use(express.static('public'));
 
@@ -18,7 +20,7 @@ app.use(bodyParser.json())
 //creates instance to make connection to the sql database
 const db = mysql.createConnection({
   host: "localhost",
-  port: 8889,
+  port: 3306,
   user: "root",
   password: "root",
   database: "stargrazer",
@@ -38,27 +40,38 @@ app.post('/login',(req,res)=>{
 	let username = req.body.username;
 	let password = req.body.password;
 
-
-	let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+password+"' ";
-
+	let sql= "SELECT pass FROM Player WHERE name='"+username+"'"
 	db.query(sql,(err,result)=>{
-		if(err) throw err;
-		res.send(result)
-	});
+		if(err) throw err
+
+		let hash=''
+
+		if(result.length>0)
+			hash= result[0].pass
+		else
+			hash= 'wrongusernamedumbass'
+		
+		console.log(hash)
+
+		bcrypt.compare(password, hash, function(err, result) {
+			if(err) throw err
+
+			console.log(result)
+			// result == true
+			if(result){
+				let sql = "SELECT playerId FROM Player WHERE name='"+username+"'";
+
+				db.query(sql,(err,result)=>{
+					if(err) throw err;
+					res.send(result)
+				});
+			}else{
+				res.send(result)
+			}
+		});
+	})
 });
 
-
-/*
-app.get('/getPlayers', (req, res) =>{
-	let playerId = req.params.playerId;
-	let sql = "SELECT * FROM player WHERE playerId = '"+playerId+"'";
-
-	db.query(sql,(err,result) =>{
-		if(err) throw err;
-		res.send(result);
-	});
-});
-*/
 
 app.get('/getResources/:playerId', (req, res) =>{
 	let playerId = req.params.playerId;
@@ -83,7 +96,7 @@ app.get('/getResourceNames/:rType', (req,res)=>{
 
 app.get('/getPlaced/:playerId',(req,res)=>{
 	let playerId= req.params.playerId	
-	let sql= "select module.moduleId as mType, count(moduleType) AS 'COUNT' from module LEFT outer join player_module on module.moduleId=player_module.moduleType and playerId='${playerId}' and deleted=false group by module.moduleId;"
+	let sql= `select module.moduleId as mType, count(moduleType) AS 'COUNT' from module LEFT outer join player_module on module.moduleId=player_module.moduleType and playerId='${playerId}' and deleted=false group by module.moduleId;`
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
@@ -118,66 +131,65 @@ app.post('/register',(req,res)=>{
 		let forCount=0
 		
 		if(result.length<1){ //no player with that name
-
-				let sql = "INSERT INTO Player (`name`,`pass`) VALUES ('"+username+"','"+password+"')";
+			bcrypt.hash(password, saltRounds, function(err, hash) {
+				let sql = "INSERT INTO Player (`name`,`pass`) VALUES ('"+username+"','"+hash+"')";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;
-				
-					let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+password+"'";
+					
+					let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+hash+"'";
 					db.query(sql,(err,result)=>{
-					if(err) throw err;
-
-					for (i = 1; i <= 4; i++){
-
-					let pId=result[0].playerId
-					let resourceType = i;
-					let currentAmount;
-					let maxAmount;
-					let inUse = 0;
-
-					if (i == 3){
-						maxAmount = 1500;
-						currentAmount = 350;
-						
-					}else if(i == 2){
-
-						maxAmount = 750;
-						currentAmount = 175;
-
-					}else if(i == 4){
-
-						maxAmount = 3;
-						currentAmount = 1;
-
-					}else if(i == 1){
-
-						maxAmount = 99999999;
-						currentAmount = 200;
-
-					}
-
-						let sql = "INSERT INTO player_resource (`playerId`,`resourceType`,`currentAmount`,`maxAmount`,`inUse`) VALUES ('"+pId+"','"+resourceType+"','"+currentAmount+"','"+maxAmount+"','"+inUse+"')";
-
-						db.query(sql,(err,result)=>{
 						if(err) throw err;
 
-							if(forCount==0){
-								forCount++
-								let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
-								db.query(sql,(err,result)=>{
-									if(err) throw err
-								})
-							}
+						for (i = 1; i <= 4; i++){
+
+						let pId=result[0].playerId
+						let resourceType = i;
+						let currentAmount;
+						let maxAmount;
+						let inUse = 0;
+
+						if (i == 3){
+							maxAmount = 1500;
+							currentAmount = 350;
+							
+						}else if(i == 2){
+
+							maxAmount = 750;
+							currentAmount = 175;
+
+						}else if(i == 4){
+
+							maxAmount = 3;
+							currentAmount = 1;
+
+						}else if(i == 1){
+
+							maxAmount = 99999999;
+							currentAmount = 200;
+
+						}
+
+							let sql = "INSERT INTO player_resource (`playerId`,`resourceType`,`currentAmount`,`maxAmount`,`inUse`) VALUES ('"+pId+"','"+resourceType+"','"+currentAmount+"','"+maxAmount+"','"+inUse+"')";
+
+							db.query(sql,(err,result)=>{
+							if(err) throw err;
+
+								if(forCount==0){
+									forCount++
+									let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
+									db.query(sql,(err,result)=>{
+										if(err) throw err
+									})
+								}
+							});
+						}
+
+							res.send(result);
 						});
-					}
+				});
+			})
 
-						res.send(result);
-					});
-			});
-
-			
-			
 		}else{
 			result[0]="Existing"
 			res.send(result);
@@ -429,12 +441,15 @@ app.post('/updateMProd',(req,res)=>{
 app.get('/getModule/:playerId',(req,res)=>{
 
 	let playerId = req.params.playerId;
+
 	let sql = "SELECT * FROM player_module WHERE playerId='"+playerId+"'";
 
 	db.query(sql,(err,result)=>{
 
 		if(err) throw err;
+
 		res.send(result);
+
 	});
 
 });
