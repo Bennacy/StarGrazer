@@ -532,7 +532,6 @@ app.post('/insertModule',(req,res)=>{
 	let posX = req.body.x;
 	let posY = req.body.y;
 	let playerId = req.body.playerId;
-	let deleted = req.body.deleted;
 	
 	
 	let sql = "INSERT INTO player_module (`playerId`,`posX`,`posY`,`moduleType`,`deleted`) VALUES ('"+playerId+"','"+posX+"','"+posY+"','"+moduleType+"',0)";
