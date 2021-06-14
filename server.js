@@ -214,10 +214,18 @@ app.post('/register',(req,res)=>{
 											if(err) throw err
 
 											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`) values (1,1)"
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`) values (1,1,1)"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
+													console.log('created')
+												})
+											}else{
+												let sql="update galaxy set totalPlayers=totalPlayers+1 where gLevel=1"
+
+												db.query(sql,(err,result)=>{
+													if(err) throw err
+
 												})
 											}
 										})
