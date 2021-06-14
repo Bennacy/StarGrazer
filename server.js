@@ -36,13 +36,38 @@ db.connect(function(err) {
 
 
 app.post('/getGalaxy',(req,res)=>{
-	let sql="select * from galaxy where gLevel=1"
+
+	let pId= req.body.playerId
+	let sql="select gLevel from player where playerId='"+pId+"'"
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 
-		if(result.length==0)
-			console.log('null')
+		let gLevel=result[0].gLevel
+		let sql="select * from galaxy where gLevel='"+gLevel+"'"
+	
+		db.query(sql,(err,result)=>{
+			if(err) throw err
+
+			let send={
+				'gLevel': gLevel,
+				'totalPlayers': result[0].totalPlayers,
+				'mapSize':result[0].mapSize
+			}
+
+			res.send(send)
+		})
+	})
+})
+
+
+app.get('/getCoords/:gLevel',(req,res)=>{
+	let gLevel= req.params.gLevel
+	let sql="select mapX,mapY,playerId from player where gLevel='"+gLevel+"'"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		
 		res.send(result)
 	})
 })

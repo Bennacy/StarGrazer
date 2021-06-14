@@ -7,6 +7,7 @@ let moduleType=0;
 let clearedErase=false
 let buildingShip=false
 let moneyToCollect
+let mapGridSize
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
 // Arrays initialization
@@ -22,6 +23,7 @@ let maxPlace=[]
 let moduleBuildButton=[]
 let arrtiles = [];
 let visitBtn = [];
+let playerMapArr=[];
 
 let playerId;
 let cv;
@@ -1030,6 +1032,7 @@ function do_Register(){
           }
 
           loadResource()
+          getPlayerMap()
           main_scene_setup()
         }
       });
@@ -1522,4 +1525,31 @@ function moduleColor(moduleType){ // Modules and their buttons have the same col
   colorArray[1]=g
   colorArray[2]=b
   return colorArray
+}
+
+
+// v Map start v // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+// [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+
+function getPlayerMap(){
+
+  let dataToSend={
+    'playerId':playerId
+  }
+  httpPost('/getGalaxy','json',dataToSend,(dataReceived)=>{
+
+    let totalPlayers=dataReceived.totalPlayers
+    let mapSize=dataReceived.mapSize
+    let gLevel=dataReceived.gLevel
+    mapGridSize= int(mapSize/height)
+    print(totalPlayers, mapSize, mapGridSize)
+
+    loadJSON('/getCoords/'+gLevel,(dataReceived)=>{
+      // print(dataReceived)
+
+      for(let i=0; i<dataReceived.length; i++){
+        playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId)
+      }
+    })
+  })
 }

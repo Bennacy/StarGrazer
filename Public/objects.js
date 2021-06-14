@@ -440,5 +440,62 @@ class Module {
 
 
 class PlayerCard{
-  
+  constructor(x,y,pId){
+    this.x=x
+    this.y=y
+    this.w=200
+    this.h=300
+    this.pId=pId
+    
+    if(this.x+this.w>width){
+      this.x=this.x-this.w
+    }
+    if(this.y+this.h>height){
+      this.y=this.y-this.h
+    }
+
+    this.visitBtn= new Button(this.x+15,this.y+this.h-65, this.w-30,50, 190,190,190, visitPlayer, 'Visit')
+  }
+
+  draw_card(){    
+    rect(this.x,this.y,this.w,this.h)
+    push()
+      fill(0)
+      textAlign(CENTER, CENTER)
+      textSize(30)
+      strokeWeight(3)
+      text('Player '+(this.pId+1),this.x+this.w/2,this.y+this.h/2)
+    pop()
+  }
+
+  draw_x(){
+    push()
+      fill(255,0,0)
+      rect(this.x+(this.w-25),this.y, 25,25)
+      strokeWeight(3)
+      stroke(170,0,0)
+      fill(170,0,0)
+      textSize(20)
+      textAlign(CENTER, CENTER)
+      text('X',(this.x+(this.w-25))+25/2,this.y+28/2)
+    pop()
+  }
+
+  over_x(){
+    if(mouseX>this.x+(this.w-25)&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+25){
+      setup()
+      for(let i=0; i<playerArr.length; i++){
+        playerArr[i].draw_player()
+      }
+    }
+  }
+}
+
+
+class Player{
+  constructor(x,y,id){
+    this.i=x
+    this.j=y
+    this.id=id
+  }
 }
