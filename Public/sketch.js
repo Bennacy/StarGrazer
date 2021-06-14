@@ -94,7 +94,6 @@ function mousePressed(){
 }
 
 function addStuff(){
-  value++
   totalPlayer++
 
   // let pX= (value % (width/gridSize))
