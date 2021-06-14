@@ -32,7 +32,20 @@ const db = mysql.createConnection({
 db.connect(function(err) {
   if (err) throw err;
   console.log("Connected to DB!");
-});	
+});
+
+
+app.post('/getGalaxy',(req,res)=>{
+	let sql="select * from galaxy where gLevel=1"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+
+		if(result.length==0)
+			console.log('null')
+		res.send(result)
+	})
+})
 
 
 app.post('/login',(req,res)=>{
@@ -194,6 +207,20 @@ app.post('/register',(req,res)=>{
 									let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
 									db.query(sql,(err,result)=>{
 										if(err) throw err
+
+										let sql="select * from galaxy where gLevel=1"
+
+										db.query(sql,(err,result)=>{
+											if(err) throw err
+
+											if(result.length==0){
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`) values (1,1)"
+
+												db.query(sql,(err,result)=>{
+													if(err) throw err
+												})
+											}
+										})
 									})
 								}
 							});

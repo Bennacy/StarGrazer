@@ -261,6 +261,14 @@ function keyPressed(){
         loadJSON('/getGalaxyMap/'+playerId,(dataReceived)=>{
           print('aaa')
         })
+        break
+        
+      case 83: // s => Testing galaxy
+      print(playerId)
+        httpPost('/getGalaxy','JSON',(dataToSend,dataReceived)=>{
+          print('dataReceived')
+        })
+        break
     }
   }
   switch(gameState){
