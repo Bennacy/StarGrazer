@@ -228,6 +228,16 @@ app.post('/register',(req,res)=>{
 
 												})
 											}
+
+											let sql="select squareCycle, totalPlayers from galaxy where gLevel=1"
+
+											db.query(sql,(err,result)=>{
+												if(err) throw err
+
+												let totalPlayers=result[0].totalPlayers
+												let squareCycle=result[0].squareCycle
+												console.log(totalPlayers,squareCycle)
+											})
 										})
 									})
 								}
