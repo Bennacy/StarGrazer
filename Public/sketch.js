@@ -1541,7 +1541,7 @@ function getPlayerMap(){
     let totalPlayers=dataReceived.totalPlayers
     let mapSize=dataReceived.mapSize
     let gLevel=dataReceived.gLevel
-    mapGridSize= int(mapSize/height)
+    mapGridSize= int(height/mapSize)
     print(totalPlayers, mapSize, mapGridSize)
 
     loadJSON('/getCoords/'+gLevel,(dataReceived)=>{
