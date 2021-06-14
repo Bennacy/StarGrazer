@@ -229,14 +229,34 @@ app.post('/register',(req,res)=>{
 												})
 											}
 
-											let sql="select squareCycle, totalPlayers from galaxy where gLevel=1"
+											let sql="select squareCycle, totalPlayers, mapSize from galaxy where gLevel=1"
 
 											db.query(sql,(err,result)=>{
 												if(err) throw err
 
 												let totalPlayers=result[0].totalPlayers
 												let squareCycle=result[0].squareCycle
-												console.log(totalPlayers,squareCycle)
+												let mapSize=result[0].mapSize
+												let sideVar=totalPlayers%4
+												let placeVar
+
+												switch (sideVar) {
+													case 1: // Top
+														
+														break;
+														
+													case 2: // Right
+														
+														break;
+
+													case 3: // Bottom
+														
+														break;
+														
+													case 0: // Left
+														
+														break;
+												}
 											})
 										})
 									})
