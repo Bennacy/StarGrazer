@@ -509,4 +509,21 @@ class Player{
       rect(this.x, this.y, this.size, this.size)
     pop()
   }
+
+  mouse_over(){
+    if(mouseX>this.x&&mouseX<this.x+this.size && mouseY>this.y&&mouseY<this.y+this.size){
+      return true
+    }else{
+      return false
+    }
+  }
+
+  mouse_pressed(){
+    print('0')
+
+    playerCard=new PlayerCard(this.x,this.y,this.id)
+
+    playerCard.draw_card()
+    playerCard.draw_x()
+  }
 }

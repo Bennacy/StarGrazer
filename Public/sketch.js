@@ -32,6 +32,7 @@ let arrtiles = [];
 let playerMapArr=[];
 
 let playerId;
+let playerCard=''
 let cv;
 let mainSceneEnable = false;
 let resourceType;
@@ -301,6 +302,12 @@ function mousePressed(){
       }
     }
   }
+	if(gameState==5){
+		for(let i=0; i<playerMapArr.length; i++){
+			if(playerMapArr[i].mouse_over())
+				playerMapArr[i].mouse_pressed()
+		}
+	}
 
   if(gameState>0){  
 		
