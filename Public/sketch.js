@@ -8,6 +8,12 @@ let clearedErase=false
 let buildingShip=false
 let moneyToCollect
 let mapGridSize
+let resourceBottom
+let mapSize
+let gLevel
+
+let displayArea={}
+
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
 // Arrays initialization
@@ -85,6 +91,16 @@ function preload(){
 function setup(){
   cv = createCanvas(windowWidth, windowHeight);
   cv.position((windowWidth * 0.5) - width / 2, (windowHeight * 0.5) - height / 2);
+  
+  displayArea={
+    'topY': height/15*2,
+    'bottomY': height-100,
+    'height':(height-100)-(height/15*2),
+
+    'leftX':width/100,
+    'rightX':99*width/100,
+    'width': 98*width/100
+  }
   timer()
 }
 
@@ -259,17 +275,7 @@ function keyPressed(){
 				break
       
       case 81: // q => Testing player galaxy level
-      print(playerId)
-        loadJSON('/getGalaxyMap/'+playerId,(dataReceived)=>{
-          print('aaa')
-        })
-        break
-        
-      case 83: // s => Testing galaxy
-      print(playerId)
-        httpPost('/getGalaxy','JSON',(dataToSend,dataReceived)=>{
-          print('dataReceived')
-        })
+				drawMap()
         break
     }
   }
@@ -933,6 +939,8 @@ function drawR(){
     let length= (endX-initX)/4
     let boxY=height/17
 
+    resourceBottom=(height/17+height/15)
+
     for(let i = initX; squareCounter <= 4; i += length){ //boxes where the resources are displayed
       squareCounter++;
       rect(i, boxY, length, height/15);
@@ -940,10 +948,9 @@ function drawR(){
     
     textAlign(CENTER, CENTER)
 
-    for(let i = 0, initIndex=0, x=initX+length/2; i< resource.length; i++){
+    for(let i = 0, x=initX+length/2; i< resource.length; i++){
 
       resource[i].draw_resource(x,boxY+height/30);
-      initIndex++
       x+=length
     }
 }
@@ -1087,6 +1094,7 @@ function do_Login() {
       playerId = dataReceived[0].playerId;
       getMission()
       loadResource()
+      getPlayerMap()
 
       main_scene_setup()
     }
@@ -1539,17 +1547,36 @@ function getPlayerMap(){
   httpPost('/getGalaxy','json',dataToSend,(dataReceived)=>{
 
     let totalPlayers=dataReceived.totalPlayers
-    let mapSize=dataReceived.mapSize
-    let gLevel=dataReceived.gLevel
-    mapGridSize= int(height/mapSize)
+    mapSize=dataReceived.mapSize
+    gLevel=dataReceived.gLevel
+    mapGridSize= Math.round(displayArea.height/mapSize)
     print(totalPlayers, mapSize, mapGridSize)
 
     loadJSON('/getCoords/'+gLevel,(dataReceived)=>{
-      // print(dataReceived)
+      print(dataReceived.length)
 
       for(let i=0; i<dataReceived.length; i++){
-        playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId)
+        playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId, mapGridSize)
       }
     })
   })
+}
+
+function drawMap(){
+  for(let i=0; i<mapSize; i++){
+		for(let j=0; j<mapSize; j++){
+			fill('white')
+			rect(width/2-(mapSize/2*mapGridSize) + i*mapGridSize, displayArea.topY + j*mapGridSize, mapGridSize, mapGridSize)
+		}
+	}
+
+	for(let i=0; i<playerMapArr.length; i++){
+		playerMapArr[i].draw_player(displayArea)
+	}
+
+	push()
+		fill('red')
+		translate(width/2-(mapSize/2*mapGridSize), displayArea.topY)
+		rect((mapSize/2-1)*mapGridSize, (mapSize/2-1)*mapGridSize, 2*mapGridSize, 2*mapGridSize)
+	pop()
 }

@@ -493,9 +493,20 @@ class PlayerCard{
 
 
 class Player{
-  constructor(x,y,id){
+  constructor(x,y,id,size){
     this.i=x
     this.j=y
     this.id=id
+    this.size=size
+    this.x=this.i*size
+    this.y=this.j*size
+  }
+
+  draw_player(displayArea){
+    push()
+      fill('black')
+      translate(width/2-(mapSize/2*mapGridSize), displayArea.topY)
+      rect(this.x, this.y, this.size, this.size)
+    pop()
   }
 }
