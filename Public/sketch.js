@@ -125,22 +125,22 @@ function placeNew(){
 
   switch (sideVar) {
     case 1:
-      placeVar=(width/2 - Math.ceil(totalPlayer/4)*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
+      placeVar=(width/2 - squareCycle*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
       playerArr.push(new Player(placeVar, height/2 - Math.ceil(totalPlayer/4)*gridSize, sideVar))
       break;
     
     case 2:
-      placeVar=(height/2 - Math.ceil(totalPlayer/4)*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
+      placeVar=(height/2 - squareCycle*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
       playerArr.push(new Player(width/2 + Math.ceil(totalPlayer/4)*gridSize -gridSize, placeVar, sideVar))
       break;
     
     case 3:
-      placeVar=(width/2 - Math.ceil(totalPlayer/4)*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
+      placeVar=(width/2 - squareCycle*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
       playerArr.push(new Player(placeVar, height/2 + Math.ceil(totalPlayer/4)*gridSize -gridSize, sideVar))
       break;
 
     case 0:
-      placeVar=(height/2 - Math.ceil(totalPlayer/4)*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
+      placeVar=(height/2 - squareCycle*gridSize)+(gridSize*int(random(squareCycle*2-1, 1)))
       playerArr.push(new Player(width/2 - Math.ceil(totalPlayer/4)*gridSize, placeVar, sideVar))
       break;
   }
