@@ -437,3 +437,8 @@ class Module {
   }
   
 }
+
+
+class PlayerCard{
+  
+}

@@ -214,7 +214,7 @@ app.post('/register',(req,res)=>{
 											if(err) throw err
 
 											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`) values (1,1,1)"
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`) values (1,1,1,48)"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
@@ -234,29 +234,54 @@ app.post('/register',(req,res)=>{
 											db.query(sql,(err,result)=>{
 												if(err) throw err
 
+												console.log('pId: ',pId)
+
 												let totalPlayers=result[0].totalPlayers
 												let squareCycle=result[0].squareCycle
 												let mapSize=result[0].mapSize
 												let sideVar=totalPlayers%4
 												let placeVar
+												let sql
+												let playerX
+												let playerY
+
+												placeVar= (mapSize/2 - squareCycle) + randomInt(squareCycle*2 - 1, 1)
 
 												switch (sideVar) {
 													case 1: // Top
-														
+
+														playerY=mapSize/2-squareCycle
+														sql="Update player set mapX='"+placeVar+"', mapY='"+playerY+"' where playerId='"+pId+"'"
 														break;
 														
 													case 2: // Right
 														
+														playerX=mapSize/2+squareCycle
+														sql="Update player set mapX='"+playerX+"', mapY='"+placeVar+"' where playerId='"+pId+"'"
 														break;
 
 													case 3: // Bottom
 														
+														playerY=mapSize/2+squareCycle
+														sql="Update player set mapX='"+placeVar+"', mapY='"+playerY+"' where playerId='"+pId+"'"
 														break;
 														
 													case 0: // Left
 														
+														playerX=mapSize/2-squareCycle
+														let sql1="update galaxy set squareCycle=squareCycle+1 where gLevel=1"
+														db.query(sql1,(err,result)=>{
+															if(err) throw err
+															console.log('updated squareCycle')
+														})
+														sql="Update player set mapX='"+playerX+"', mapY='"+placeVar+"' where playerId='"+pId+"'"
+
 														break;
 												}
+
+												db.query(sql,(err,result)=>{
+													if(err) throw err
+												})
 											})
 										})
 									})
@@ -686,4 +711,4 @@ app.listen(port, () => {
 
 function randomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
-  }
+}
