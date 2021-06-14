@@ -275,7 +275,7 @@ app.post('/register',(req,res)=>{
 												switch (sideVar) {
 													case 1: // Top
 
-														playerY=mapSize/2-squareCycle
+														playerY=mapSize/2-1-squareCycle
 														sql="Update player set mapX='"+placeVar+"', mapY='"+playerY+"' where playerId='"+pId+"'"
 														break;
 														
@@ -293,7 +293,7 @@ app.post('/register',(req,res)=>{
 														
 													case 0: // Left
 														
-														playerX=mapSize/2-squareCycle
+														playerX=mapSize/2-squareCycle-1
 														let sql1="update galaxy set squareCycle=squareCycle+1 where gLevel=1"
 														db.query(sql1,(err,result)=>{
 															if(err) throw err
