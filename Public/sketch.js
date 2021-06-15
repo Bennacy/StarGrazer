@@ -99,7 +99,9 @@ function setup(){
 
     'leftX':width/100,
     'rightX':99*width/100,
-    'width': 98*width/100
+    'width': 98*width/100,
+		'offsetX':'',
+		'offsetY':''
   }
   timer()
 }
@@ -277,6 +279,7 @@ function keyPressed(){
 
 
 function mousePressed(){
+
   if(gameState==3){
     for(let i=0; i<missionButton.length; i++){
       if(missionButton[i].mouse_over()){
@@ -304,8 +307,16 @@ function mousePressed(){
   }
 	if(gameState==5){
 		for(let i=0; i<playerMapArr.length; i++){
-			if(playerMapArr[i].mouse_over())
+			if(playerMapArr[i].mouse_over() && playerCard==''){
 				playerMapArr[i].mouse_pressed()
+			}
+			if(playerCard!=''){
+				if(playerCard.visitBtn.mouse_over()){
+					playerCard.visitBtn.mouse_pressed(playerCard.pId, playerId) //visit player with that id
+				}
+				
+				playerCard.over_x()
+			}
 		}
 	}
 
@@ -616,13 +627,6 @@ function timer(){
   })
 
   setInterval(function(){
-    if(gameState>0){
-      profileButton.mouse_over()
-      profileButton.draw_button()
-    }
-  },15)
-
-  setInterval(function(){
     if(gameState==2){
 
       if(erasing==true){
@@ -715,6 +719,15 @@ function timer(){
     if(gameState>0){
       mapBtn.mouse_over()
       mapBtn.draw_button()
+
+      profileButton.mouse_over()
+      profileButton.draw_button()
+
+			if(playerCard!=''){
+				playerCard.visitBtn.mouse_over()
+				playerCard.visitBtn.draw_button()
+			}
+
 			if(gameState!=5 && gameState!=4){
 				missionScreenB.mouse_over()
 				missionScreenB.draw_button()
@@ -881,6 +894,7 @@ function changeScene(){
 	drawR()
 	gridEnable=false
 	erasing=false
+	playerCard=''
 }
 
 
@@ -1462,8 +1476,7 @@ function moduleColor(moduleType){ // Modules and their buttons have the same col
 
 function visitPlayer(index){
 
-  clearScreen();
-  background('#dbdbdb');
+	changeScene()
   visitBase(index);
 
 }
@@ -1523,13 +1536,14 @@ function getPlayerMap(){
     mapSize=dataReceived.mapSize
     gLevel=dataReceived.gLevel
     mapGridSize= Math.round(displayArea.height/mapSize)
-    print(totalPlayers, mapSize, mapGridSize)
 
     loadJSON('/getCoords/'+gLevel,(dataReceived)=>{
-      print(dataReceived.length)
+
+			displayArea.offsetX=width/2-(mapSize/2*mapGridSize)
+			displayArea.offsetY=displayArea.topY
 
       for(let i=0; i<dataReceived.length; i++){
-        playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId, mapGridSize)
+        playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId, mapGridSize, displayArea.offsetX,displayArea.offsetY)
       }
     })
   })

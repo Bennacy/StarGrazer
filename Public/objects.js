@@ -454,58 +454,61 @@ class PlayerCard{
       this.y=this.y-this.h
     }
 
-    this.visitBtn= new Button(this.x+15,this.y+this.h-65, this.w-30,50, 190,190,190, visitPlayer, 'Visit')
+    if(playerId!=this.pId)
+      this.visitBtn= new Button(this.x+15,this.y+this.h-65, this.w-30,50, 190,190,190, visitPlayer, 'Visit')
   }
 
-  draw_card(){    
+  draw_card(){
+    
+    push()
+    fill('white')
     rect(this.x,this.y,this.w,this.h)
-    push()
-      fill(0)
-      textAlign(CENTER, CENTER)
-      textSize(30)
-      strokeWeight(3)
-      text('Player '+(this.pId+1),this.x+this.w/2,this.y+this.h/2)
+    fill(0)
+    textAlign(CENTER, CENTER)
+    textSize(30)
+    strokeWeight(3)
+    text('Player '+(this.pId),this.x+this.w/2,this.y+this.h/2)
     pop()
-  }
 
-  draw_x(){
     push()
-      fill(255,0,0)
-      rect(this.x+(this.w-25),this.y, 25,25)
-      strokeWeight(3)
-      stroke(170,0,0)
-      fill(170,0,0)
-      textSize(20)
-      textAlign(CENTER, CENTER)
-      text('X',(this.x+(this.w-25))+25/2,this.y+28/2)
+    fill(255,0,0)
+    rect(this.x+(this.w-25),this.y, 25,25)
+    strokeWeight(3)
+    stroke(170,0,0)
+    fill(170,0,0)
+    textSize(20)
+    textAlign(CENTER, CENTER)
+    text('X',(this.x+(this.w-25))+25/2,this.y+28/2)
     pop()
   }
 
   over_x(){
     if(mouseX>this.x+(this.w-25)&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+25){
-      setup()
-      for(let i=0; i<playerArr.length; i++){
-        playerArr[i].draw_player()
-      }
+      changeScene()
+      drawMap()
     }
   }
 }
 
 
 class Player{
-  constructor(x,y,id,size){
+  constructor(x,y,id,size,offsetX,offsetY){
     this.i=x
     this.j=y
     this.id=id
     this.size=size
     this.x=this.i*size
     this.y=this.j*size
+    this.offsetX=offsetX
+    this.offsetY=offsetY
+
+    this.x+=this.offsetX
+    this.y+=this.offsetY
   }
 
   draw_player(displayArea){
     push()
       fill('black')
-      translate(width/2-(mapSize/2*mapGridSize), displayArea.topY)
       rect(this.x, this.y, this.size, this.size)
     pop()
   }
@@ -519,11 +522,9 @@ class Player{
   }
 
   mouse_pressed(){
-    print('0')
 
     playerCard=new PlayerCard(this.x,this.y,this.id)
 
     playerCard.draw_card()
-    playerCard.draw_x()
   }
 }
