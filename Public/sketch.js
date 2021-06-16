@@ -1353,7 +1353,8 @@ function draw_Grid(){
       }else{
         push()
           noStroke()
-          arrtiles[i][j].draw_Module()
+          if(arrtiles[i][j].moduleType!=0)
+            arrtiles[i][j].draw_Module()
         pop()
       }
     }
