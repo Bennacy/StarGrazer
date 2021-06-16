@@ -276,8 +276,6 @@ app.post('/register',(req,res)=>{
 											db.query(sql,(err,result)=>{
 												if(err) throw err
 
-												console.log('pId: ',pId)
-
 												let totalPlayers=result[0].totalPlayers
 												let squareCycle=result[0].squareCycle
 												let mapSize=result[0].mapSize
@@ -287,7 +285,9 @@ app.post('/register',(req,res)=>{
 												let playerX
 												let playerY
 
-												placeVar= (mapSize/2 - squareCycle) + randomInt(squareCycle*2 - 1, 1)
+												// console.log('min:'+(mapSize/2-squareCycle)+',','max:'+(mapSize/2+squareCycle-1))
+
+												placeVar= randomInt(mapSize/2-squareCycle, mapSize/2+squareCycle-1)
 
 												switch (sideVar) {
 													case 1: // Top

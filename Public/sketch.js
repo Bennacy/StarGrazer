@@ -163,7 +163,7 @@ function main_scene_setup(){
 function main_Scene() {
     clearScreen()
     createCanvas(windowWidth, windowHeight);
-    background('#dbdbdb')
+    background('#000')
     moduleType=0
     gridEnable=false
     side= 48
@@ -1353,7 +1353,7 @@ function draw_Grid(){
       }else{
         push()
           noStroke()
-          if(arrtiles[i][j].moduleType!=0)
+          if(arrtiles[i][j].moduleType!=0 && arrtiles[i][j].deleted==0)
             arrtiles[i][j].draw_Module()
         pop()
       }
