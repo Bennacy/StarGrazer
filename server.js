@@ -73,6 +73,23 @@ app.get('/getCoords/:gLevel',(req,res)=>{
 })
 
 
+app.get('/getUserInfo/:pId',(req,res)=>{
+	let pId=req.params.pId
+	let sql="select name from player where playerId='"+pId+"'"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+
+		res.send(result[0])
+	})
+})
+
+
+
+
+
+
+
 app.post('/login',(req,res)=>{
 
 	let username = req.body.username;

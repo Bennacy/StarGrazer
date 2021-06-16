@@ -311,10 +311,12 @@ function mousePressed(){
 				playerMapArr[i].mouse_pressed()
 			}
 			if(playerCard!=''){
-				if(playerCard.visitBtn.mouse_over()){
-					playerCard.visitBtn.mouse_pressed(playerCard.pId, playerId) //visit player with that id
+        if(playerCard.visitBtn){
+          if(playerCard.visitBtn.mouse_over()){
+            playerCard.visitBtn.mouse_pressed(playerCard.pId, playerId) //visit player with that id
+				  }
 				}
-				
+
 				playerCard.over_x()
 			}
 		}
@@ -724,8 +726,10 @@ function timer(){
       profileButton.draw_button()
 
 			if(playerCard!=''){
-				playerCard.visitBtn.mouse_over()
-				playerCard.visitBtn.draw_button()
+        if(playerCard.visitBtn){
+          playerCard.visitBtn.mouse_over()
+          playerCard.visitBtn.draw_button()
+        }
 			}
 
 			if(gameState!=5 && gameState!=4){
@@ -882,6 +886,7 @@ function map_scene(){
     
   } else if(gameState == 5){
     clearScreen();
+    mapBtn.text='Map'
     gameState=1
 		main_Scene()
   }
@@ -1476,13 +1481,9 @@ function moduleColor(moduleType){ // Modules and their buttons have the same col
 
 function visitPlayer(index){
 
+  mapBtn.text='Back to base'
 	changeScene()
-  visitBase(index);
-
-}
-
-function visitBase(index){
-
+  
   let x=0;
   let y=0;
   let COL=19;
