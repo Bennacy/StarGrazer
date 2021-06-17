@@ -81,12 +81,12 @@ class Button{
   }
 
   mouse_over(){
-    if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){
-      this.r=this.origR-20
-      this.g=this.origG-20
-      this.b=this.origB-20
+    if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h && this.pressed==false){
+      this.r=this.origR-5
+      this.g=this.origG-5
+      this.b=this.origB-5
       return true
-    }else{
+    }else if(this.pressed==false){
       this.r=this.origR
       this.g=this.origG
       this.b=this.origB
@@ -94,16 +94,19 @@ class Button{
     }
   }
 
-  mouse_pressed(index){
+  mouse_pressed(){
+    this.r=this.origR-20
+    this.g=this.origG-20
+    this.b=this.origB-20
     this.y+=5
     this.pressed=true
     this.strkWeight=0
-    this.func(index)
   }
 
-  mouse_released(){
+  mouse_released(index){
     this.pressed=false
     this.strkWeight=5
     this.y-=5
+    this.func(index)
   }
 }
