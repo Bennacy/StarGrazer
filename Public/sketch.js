@@ -10,7 +10,7 @@ function preload(){
 function setup() {
   cv=createCanvas(720, 720);
   cv.position(windowWidth/2-width/2, windowHeight/2-height/2)
-  button= new Button(width/2-100,height/2-37.5, 300,100, 0,151,225, btn, 'Increase')
+  button= new Button(width/2-100,height/2-37.5, 300,100, 0,151,225, btn, 'Button')
 }
 
 
@@ -63,7 +63,6 @@ class Button{
     this.pressed=false
     this.text=text
     this.strkWeight=5
-
   }
 
   draw_button(){
@@ -74,7 +73,7 @@ class Button{
       stroke(this.r+40,this.g+40,this.b+40)
       textAlign(CENTER, CENTER)
       textSize(this.w/this.text.length)
-      rect(this.x,this.y,this.w,this.h,20,5,20,5)
+      rect(this.x,this.y,this.w,this.h,30,5,30,5)
       fill("black")
       noStroke()
       text(this.text, this.x+this.w/2, this.y+this.h/2)
