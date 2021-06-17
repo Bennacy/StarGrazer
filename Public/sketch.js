@@ -993,7 +993,7 @@ function mission_Scene(){
 }
 
 function map_scene(){
-  if(gameState!=5){
+  if(gameState!=5 && placedModule[5]==1){
 		changeScene()
     gameState = 5;
 
@@ -1004,6 +1004,19 @@ function map_scene(){
     mapBtn.text='Map'
     gameState=1
 		main_Scene()
+  } else if (gameState!=5 && placedModule[5]==0){
+    mapBtn.r -30
+    mapBtn.g -30
+    mapBtn.b -30
+    push()
+    fill("red")
+    textSize(15)
+    textAlign(CENTER, TOP)
+    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
+    pop()
+    setTimeout(function(){
+      main_Scene()
+    },1500)
   }
 }
 

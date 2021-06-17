@@ -201,7 +201,7 @@ app.post('/register',(req,res)=>{
 		
 		if(result.length<1){ //no player with that name
 			bcrypt.hash(password, saltRounds, function(err, hash) {
-				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,`communications`,`research`,`probe`) VALUES ('"+username+"','"+hash+"',1, 0, 0, 0)";
+				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,`research`,`probe`) VALUES ('"+username+"','"+hash+"', 1, 0, 0)";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;
