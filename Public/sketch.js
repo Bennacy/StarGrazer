@@ -1004,10 +1004,7 @@ function map_scene(){
     mapBtn.text='Map'
     gameState=1
 		main_Scene()
-  } else if (gameState!=5 && placedModule[5]==0){
-    mapBtn.r -30
-    mapBtn.g -30
-    mapBtn.b -30
+  } else if (gameState==1 && placedModule[5]==0){
     push()
     fill("red")
     textSize(15)
@@ -1015,7 +1012,40 @@ function map_scene(){
     text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
     pop()
     setTimeout(function(){
+      clearScreen()
       main_Scene()
+    },1500)
+  } else if (gameState==2 && placedModule[5]==0){
+    push()
+    fill("red")
+    textSize(15)
+    textAlign(CENTER, TOP)
+    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
+    pop()
+    setTimeout(function(){
+      clearScreen()
+      building_Scene()
+    },1500)
+  } else if (gameState==3 && placedModule[5]==0){
+    push()
+    fill("red")
+    textSize(15)
+    textAlign(CENTER, TOP)
+    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
+    pop()
+    setTimeout(function(){
+      refreshM()
+    },1500)
+  } else if (gameState==4 && placedModule[5]==0){
+    push()
+    fill("red")
+    textSize(15)
+    textAlign(CENTER, TOP)
+    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
+    pop()
+    setTimeout(function(){
+      clearScreen()
+      playerProfile()
     },1500)
   }
 }
