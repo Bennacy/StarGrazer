@@ -3,7 +3,7 @@ let button
 function setup() {
   cv=createCanvas(720, 720);
   cv.position(windowWidth/2-width/2, windowHeight/2-height/2)
-  button= new Button(width/2-100,height/2-37.5, 200,75, 0,171,235, btn, 'Increase')
+  button= new Button(width/2-100,height/2-37.5, 200,75, 0,151,225, btn, 'Increase')
 }
 
 
@@ -63,7 +63,7 @@ class Button{
     push()
       fill(this.r,this.g,this.b)
       strokeWeight(this.strkWeight)
-      stroke(this.r+20,this.g+20,this.b+20)
+      stroke(this.r+40,this.g+40,this.b+40)
       textAlign(CENTER, CENTER)
       rect(this.x,this.y,this.w,this.h,20,5,20,5)
       fill("black")
