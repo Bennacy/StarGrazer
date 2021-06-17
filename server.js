@@ -201,7 +201,7 @@ app.post('/register',(req,res)=>{
 		
 		if(result.length<1){ //no player with that name
 			bcrypt.hash(password, saltRounds, function(err, hash) {
-				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`) VALUES ('"+username+"','"+hash+"',1)";
+				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,`communications`,`research`,`probe`) VALUES ('"+username+"','"+hash+"',1, 0, 0, 0)";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;
@@ -501,6 +501,31 @@ app.post('/updateResourceValues', (req, res)=>{
 		if(err) throw err;
 
 		res.send(result)
+	})
+})
+
+app.post('/getProbe',(req,res)=>{
+
+	let playerId=req.body.playerId
+
+	let sql = "SELECT player WHERE playerId='"+playerId+"' AND probe = 1";
+	db.query(sql,(err,result)=>{
+
+		if(err) throw err
+		res.send(result)
+	})
+
+})
+
+
+app.post('/updateProbe',(req,res)=>{
+
+	let playerId=req.body.playerId
+
+	let sql="UPDATE player SET probe = 1 WHERE playerId='"+playerId+"'"
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		res.send()
 	})
 })
 

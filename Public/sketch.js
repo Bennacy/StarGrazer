@@ -909,12 +909,14 @@ function buildShip(){
 	}
 }
 
+
 function buildProbe(){ 
 
   if(buildingProbe==false && resource[0].currAmount>=5000 && probeBuilt == false){
 
     resource[0].change_value(-1,5000)
     buildingProbe=true
+    probe = 1
     let bar=0
     let drawBar=setInterval(function(){
       bar+=buildProbeB.w/((1000*5*timeScale)/100)
@@ -925,7 +927,7 @@ function buildProbe(){
     setTimeout(function(){
       buildingProbe=false
       probeBuilt=true
-      probe = 1
+      updateProbe()
       clearInterval(drawBar)
       refreshM()
     },(1000*5*timeScale)) 
@@ -955,7 +957,7 @@ function buildProbe(){
       fill("red")
       textSize(15)
       textAlign(CENTER, TOP)
-      text("There is no travel ready to do",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+      text("There is no place to go",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
     pop()
     setTimeout(function(){
     refreshM()
@@ -963,12 +965,20 @@ function buildProbe(){
   }
 }
 
-/*function getProbe(){
-  loadJSON('/getProbe',probe,(dataReceived)=>{
+function getProbe(){
+  loadJSON('/getProbe/'+playerId,(dataReceived)=>{
+    probeBuilt = true
     buildProbe()
-  })
-}*/
+  });
+}
 
+function updateProbe(){
+  let dataToSend={
+    "playerId": playerId
+  }
+  httpPost('/updateProbe','json',dataToSend,(dataReceived)=>{
+  })
+}
 function mission_Scene(){
   if(gameState!=3){
 		changeScene()
@@ -1173,7 +1183,7 @@ function do_Login() {
       getMission()
       loadResource()
       getPlayerMap()
-
+      getProbe()
       main_scene_setup()
     }
   });
