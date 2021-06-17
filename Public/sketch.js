@@ -1,4 +1,4 @@
-let button
+let button=[]
 let font
 
 
@@ -10,15 +10,19 @@ function preload(){
 function setup() {
   cv=createCanvas(720, 720);
   cv.position(windowWidth/2-width/2, windowHeight/2-height/2)
-  button= new Button(width/2-100,height/2-37.5, 300,100, 0,151,225, btn, 'Button')
+  button[0]= new Button(width/2-100,100, 300,100, 0,171,255, btn, 'Button', 1)
+  button[1]= new Button(width/2-100,250, 300,100, 0,171,255, btn, 'Button', 2)
+  button[2]= new Button(width/2-100,400, 300,100, 0,171,255, btn, 'Button', 3)
 }
 
 
 function draw() {
   background(230)
 
-  button.mouse_over()
-  button.draw_button()
+  for(let i=0; i<button.length; i++){
+    button[i].mouse_over()
+    button[i].draw_button()
+  }
 }
 
 function keyPressed(){
@@ -26,14 +30,20 @@ function keyPressed(){
 }
 
 function mousePressed(){
-  if(button.mouse_over()){
-    button.mouse_pressed()
+
+  for(let i=0; i<button.length; i++){
+    if(button[i].mouse_over()){
+      button[i].mouse_pressed()
+    }
   }
 }
 
 function mouseReleased(){
-  if(button.pressed==true){
-    button.mouse_released()
+  
+  for(let i=0; i<button.length; i++){
+    if(button[i].pressed==true){
+      button[i].mouse_released()
+    }
   }
 }
 
@@ -46,12 +56,13 @@ function btn(){
 
 
 class Button{
-  constructor(x, y, w, h, r, g, b, func, text){
+  constructor(x, y, w, h, r, g, b, func, text, bType){
     this.x=x
     this.y=y
     this.w=w
     this.h=h
     this.func=func
+    this.bType=bType
     
     this.origR=r
     this.origG=g
@@ -62,29 +73,92 @@ class Button{
 
     this.pressed=false
     this.text=text
-    this.strkWeight=5
+
+    switch(this.bType){
+      case 1:
+        this.clickDepth=2
+        this.strkWeight=2
+        this.clickStroke=0
+        this.stkDiff=-255
+
+        this.upL=10
+        this.upR=10
+        this.dnL=10
+        this.dnR=10
+
+        this.highlight1=-10
+        this.highlight2=25
+
+        break
+
+      case 2:
+        this.clickDepth=5
+        this.strkWeight=5
+        this.clickStroke=0
+        this.stkDiff=20
+
+        this.upL=35
+        this.upR=5
+        this.dnL=35
+        this.dnR=5
+
+        this.highlight1=5
+        this.highlight2=20
+        break
+
+      case 3:
+        this.clickDepth=10
+        this.strkWeight=5
+        this.clickStroke=1
+        this.stkDiff=20
+
+        this.upL=10
+        this.upR=10
+        this.dnL=10
+        this.dnR=10
+
+        this.highlight1
+        this.highlight2
+        break
+
+      case 4:
+        this.clickDepth=10
+        this.strkWeight=5
+        this.stkDiff=20
+
+        this.upL=10
+        this.upR=10
+        this.dnL=10
+        this.dnR=10
+
+        this.highlight1
+        this.highlight2
+        break
+    }
+    this.strkSave=this.strkWeight
   }
 
   draw_button(){
     push()
-      textFont(font)
-      fill(this.r,this.g,this.b)
       strokeWeight(this.strkWeight)
-      stroke(this.r+40,this.g+40,this.b+40)
-      textAlign(CENTER, CENTER)
-      textSize(this.w/this.text.length)
-      rect(this.x,this.y,this.w,this.h,30,5,30,5)
-      fill("black")
+      stroke(this.r+this.stkDiff, this.g+this.stkDiff, this.b+this.stkDiff)
+      fill(this.r,this.g,this.b)
+      rect(this.x,this.y,this.w,this.h, this.upL,this.upR,this.dnL,this.dnR)
+      
       noStroke()
+      textFont(font)
+      fill("black")
+      textSize(this.w/this.text.length)
+      textAlign(CENTER, CENTER)
       text(this.text, this.x+this.w/2, this.y+this.h/2)
     pop()
   }
 
   mouse_over(){
     if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h && this.pressed==false){
-      this.r=this.origR-5
-      this.g=this.origG-5
-      this.b=this.origB-5
+      this.r=this.origR-this.highlight1
+      this.g=this.origG-this.highlight1
+      this.b=this.origB-this.highlight1
       return true
     }else if(this.pressed==false){
       this.r=this.origR
@@ -95,18 +169,18 @@ class Button{
   }
 
   mouse_pressed(){
-    this.r=this.origR-20
-    this.g=this.origG-20
-    this.b=this.origB-20
-    this.y+=5
+    this.r=this.origR-this.highlight2
+    this.g=this.origG-this.highlight2
+    this.b=this.origB-this.highlight2
+    this.y+=this.clickDepth
     this.pressed=true
-    this.strkWeight=0
+    this.strkWeight=this.clickStroke
   }
 
   mouse_released(index){
     this.pressed=false
-    this.strkWeight=5
-    this.y-=5
+    this.strkWeight=this.strkSave
+    this.y-=this.clickDepth
     this.func(index)
   }
 }
