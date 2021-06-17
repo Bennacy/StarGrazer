@@ -12,6 +12,7 @@ let resourceBottom
 let mapSize
 let gLevel
 let totalPlayers
+let testImg
 
 let displayArea={}
 
@@ -86,6 +87,7 @@ function preload(){
 			crewCost[i]=dataReceived[0].crewCost
     })
   }
+  testImg= loadImage('Images/galaxy1.jpg')
 }
 
 function setup(){
@@ -104,24 +106,25 @@ function setup(){
 		'offsetY':''
   }
   timer()
+  testImg.resize(width,height)
 }
 
 
 function draw() {
   switch(gameState){
     case 0: // Initial log-in screen
-      loginScene()
-      noLoop()
-      break
-
+    loginScene()
+    noLoop()
+    break
+    
     case 1: // Main menu
-      if (mainLoop== true){
-        loopCounter++
-        mainLoop= false
-        console.log("looped " + loopCounter)
-        main_Scene()
-      }
-      break
+    if (mainLoop== true){
+      loopCounter++
+      mainLoop= false
+      console.log("looped " + loopCounter)
+      main_Scene()
+    }
+    break
   }
 }
 
@@ -1552,24 +1555,11 @@ function getPlayerMap(){
 }
 
 function drawMap(){
-	for(let i=0; i<mapSize; i++){
-		for(let j=0; j<mapSize; j++){
-			fill('white')
-			rect(width/2-(mapSize/2*mapGridSize) + i*mapGridSize, displayArea.topY + j*mapGridSize, mapGridSize, mapGridSize)
-		}
-	}
-	
+  image(testImg,0,0)
 	for(let i=0; i<playerMapArr.length; i++){
 		playerMapArr[i].draw_player(displayArea)
 	}
-	
-	push()
-	stroke('red')
-	strokeWeight(3)
-	noFill()
-	translate(width/2-(mapSize/2*mapGridSize), displayArea.topY)
-	rect((mapSize/2-1)*mapGridSize, (mapSize/2-1)*mapGridSize, 2*mapGridSize, 2*mapGridSize)
-	pop()
+  drawR()
 }
 
 // let tempId=0
