@@ -34,39 +34,64 @@ class Button{
       text(this.text, this.x+this.w/2, this.y+this.h/2)
     pop()
   }
-  
+
   onClickSearch()
   {
 	let searchPlayer = createInput('enter a username')
 	let allPlayers
+	let pName
+	let friend 
 	
-	searchPlayer.position(this.x-width/10,this.y + height / 10) 
-	//searchPlayer.input(addPlayer);
+	searchPlayer.position(this.x-width/10,this.y + height / 10)
 	
-	loadJSON('/getPlayerList/:playerId',(dataReceived)=>
+	function addPlayer()
 	{
-		allPlayers = dataReceived
-		//if searchPlayer.input == data
-		//searchPlayer.input(addPlayer);
-		/* if (mouseX > this.x + width/9)
+		loadJSON('/getPlayerName/'+playerId,(idReceived)=>
 		{
-			for (let f = 0; f < allPlayers.length; f++)
+			pName = idReceived
+			console.log(pName)
+			loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
 			{
-				text(allPlayers[f].name,this.textX,this.textY + 25 * f)
-			}
-		}	 */
-	}) 
+				allPlayers = pNamesReceived
+				console.log(allPlayers)
+				if (searchPlayer.value == "a")
+				{
+					console.log("totsugeki")
+					/* friend = {
+						"requestFrom": pName
+						"requestTo": searchPlayer.value
+						"accepted": false
+					} */
+					/* httpPost('/sendFriendReq/',json,friend,(dataReceived)=>
+					{
+
+						if (dataReceived[0] == "Exists")
+						{
+							console.log(allPlayers[p].name)
+							searchPlayer.input(addPlayer);
+						}
+
+							if (mouseX > this.x + width/9)
+							{
+								for (let f = 0; f < allPlayers.length; f++)
+								{
+									text(allPlayers[f].name,this.textX,this.textY + 25 * f)
+								}
+							}
+					}) */
+				}  
+			})
+		})
+	}
+	searchPlayer.input(addPlayer);
   }
-  addPlayer()
-  {
-	  
-  }
-  mouseWheeling(event){
-	  //if(this.textY>this.y-height/6)
-	  //{
+  mouseWheeling(event)
+	{
+	 /*  if(this.textY>this.y-height/6)
+	  {
 		console.log(event.delta)
 		this.textY += event.delta;
-	  //}
+	  } */
 	}
   mouse_over(){
     if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){

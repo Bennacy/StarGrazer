@@ -6,15 +6,8 @@ let deleted = 0;
 let moduleType=0;
 let clearedErase=false
 let buildingShip=false
+let sb = false
 let moneyToCollect
-let mapGridSize
-let resourceBottom
-let mapSize
-let gLevel
-let totalPlayers
-
-let displayArea={}
-
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
 // Arrays initialization
@@ -29,10 +22,12 @@ let placedModule=[]
 let maxPlace=[]
 let moduleBuildButton=[]
 let arrtiles = [];
-let playerMapArr=[];
 
+
+let img
+let friends
+let playerName
 let playerId;
-let playerCard=''
 let cv;
 let mainSceneEnable = false;
 let resourceType;
@@ -45,7 +40,6 @@ let registering
 let firstLoad= true
 let mainLoop= true
 let visitedB=false
-
 // Button initialization
 let loginBtn
 let registerBtn
@@ -57,7 +51,12 @@ let buildShipB
 let collectMB
 let profileButton
 let logoffButton
-let mapBtn
+let friendsButton
+let searchB
+let friendReqB
+let onB 
+let pendingB
+let addFriendB
 
 
 // Input initialization
@@ -76,33 +75,23 @@ let gameState=0
 
 
 
-function preload(){
+function preload()
+{
+	img = loadImage('profile.jpg')
   for(let i=1; i<=10; i++){
     let modType=i
     loadJSON('/getMCost/'+modType,(dataReceived)=>{ // Old name, returns everything on the module table from the database
       moduleCost[i]=dataReceived[0].matCost
       moduleName[i]=dataReceived[0].moduleName
       maxPlace[i]=dataReceived[0].maxPlace
-			crewCost[i]=dataReceived[0].crewCost
+	  crewCost[i]=dataReceived[0].crewCost
     })
   }
 }
 
-function setup(){
+function setup() {
   cv = createCanvas(windowWidth, windowHeight);
   cv.position((windowWidth * 0.5) - width / 2, (windowHeight * 0.5) - height / 2);
-  
-  displayArea={
-    'topY': height/15*2,
-    'bottomY': height-100,
-    'height':(height-100)-(height/15*2),
-
-    'leftX':width/100,
-    'rightX':99*width/100,
-    'width': 98*width/100,
-		'offsetX':'',
-		'offsetY':''
-  }
   timer()
 }
 
@@ -123,8 +112,8 @@ function draw() {
       }
       break
   }
-}
 
+}
 
 function main_scene_setup(){
   nameInput.remove();
@@ -147,15 +136,18 @@ function main_scene_setup(){
 			moneyTimer++
 	},1000*timeScale)
 
-  logoffButton= new Button(width/2-width/20,height/2-height/20, width/10,height/10, 210,210,210, logOff, 'Log Off')
+  logoffButton= new Button(width/2,height-height/10, width/10,height/10, 210,210,210, logOff, 'Log Off')
   profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, playerProfile, 'Profile')
+  onB = new Button(width/1.5+width/40,height/10, width/40,height/15, 210,210,210, ifOnline, 'Online')
+  pendingB = new Button(width/1.5+width/20,height/10, width/20,height/15, 210,210,210, pendingFriend, 'Pending')
+  addFriendB = new Button(width/1.5+width/10,height/10, width/15,height/15, 210,210,210, addFriend, 'Add Friend')
   missionScreenB= new Button(width-200-15, height-90, 200, 75, 200,200,200, mission_Scene, "Missions")
   buildScreenB= new Button(15, height-90, 200, 75, 200,200,200, building_Scene, "Modules")
-	collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money')
-  mapBtn = new Button(width/1.5 + 250, height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, map_scene, "Map");
+  collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money')
+  
 
-  mainLoop= true
-  gameState= 1
+  mainLoop = true
+  gameState = 1
   loop()
 }
 
@@ -166,12 +158,55 @@ function main_Scene() {
     background('#dbdbdb')
     moduleType=0
     gridEnable=false
-    side= 48
+    side = 48
     create_Grid()
     drawR()
 }
 
+function addFriend()
+{	
+	if(gameState < 4)
+	{
+		clearScreen()
+		console.log(gameState)
+		img.resize(width/5,height/5)
+		image(img,width/4.5,height/10);
+	}
+}
 
+function pendingFriend()
+{
+	
+}
+
+function ifOnline()
+{
+	
+}
+function playerProfile(){
+  if(gameState<4){
+	friends = new textBox(width/1.5,height/8,width/4,height/3)
+	playerName = new textBox(width/3,height/10,width/10,height/15)
+    clearScreen()
+    background(100);
+    gameState = 4;
+	img.resize(width/3,height/5)
+	image(img,width/4.5,height/10);
+	console.log(img)
+	
+  }
+  else if(gameState==4){
+    clearScreen()
+    background(219)
+    create_Grid()
+    drawR()
+    gameState=1
+  }
+}
+
+function friendsList(){
+
+}
 function logOff(){
   clearScreen()
   gameState=0
@@ -194,7 +229,18 @@ function collectMoney(){
 		setTimeout(function(){collectMB.text='Collect Money'},1000)
 	})
 }
-
+/* function mouseWheel()
+{
+	let pos = 250
+	if (gameState == 4)
+	{	
+		friendsButton.mouseWheeling(event)
+		console.log(event.delta)
+		text("hello", 500, pos)
+		pos += event.delta;
+	}
+} */
+	
 
 function keyPressed(){
   if(gameState>0){
@@ -218,11 +264,6 @@ function keyPressed(){
 			case 53: // 5 => Sets Ships to 0 (testing build ship button)
 				resource[3].change_value(-1,3)
 				break
-      
-      case 81: // q => Testing player galaxy level
-				// createCoords()
-				drawMap()
-        break
     }
   }
   switch(gameState){
@@ -279,7 +320,6 @@ function keyPressed(){
 
 
 function mousePressed(){
-
   if(gameState==3){
     for(let i=0; i<missionButton.length; i++){
       if(missionButton[i].mouse_over()){
@@ -292,11 +332,38 @@ function mousePressed(){
 		}
   }
 
+
   if(gameState==4){
+	if(onB.mouse_over())
+	{
+      onB.mouse_pressed()
+	}
+	if(pendingB.mouse_over())
+	{
+      pendingB.mouse_pressed()
+	}
+	if(addFriendB.mouse_over())
+	{
+	  addFriendB.onClickSearch()
+	  searchB = new Button(width/1.5 + width/5,height/5,width/40,height/40,0,255,255)
+	  sb = true
+      addFriendB.mouse_pressed()
+	}
     if(logoffButton.mouse_over())
       logoffButton.mouse_pressed()
   }
+  
 
+
+  if(gameState>0){
+    if(profileButton.mouse_over())
+      profileButton.mouse_pressed()
+  }
+
+	if(gameState>0 && gameState<4){
+		if(collectMB.mouse_over())
+			collectMB.mouse_pressed()
+	}
 
   if(gameState==2){
     for(let i=0; i<moduleBuildButton.length; i++){
@@ -305,310 +372,279 @@ function mousePressed(){
       }
     }
   }
-	if(gameState==5){
-		for(let i=0; i<playerMapArr.length; i++){
-			if(playerMapArr[i].mouse_over() && playerCard==''){
-				playerMapArr[i].mouse_pressed()
-			}
-			if(playerCard!=''){
-        if(playerCard.visitBtn){
-          if(playerCard.visitBtn.mouse_over()){
-            playerCard.visitBtn.mouse_pressed(playerCard.pId, playerId) //visit player with that id
-				  }
-				}
-
-				playerCard.over_x()
-			}
-		}
-	}
 
   if(gameState>0){  
-		
-		if(mapBtn.mouse_over()){
-			mapBtn.mouse_pressed('')
-		}
 
-		if(profileButton.mouse_over()){
-			profileButton.mouse_pressed()
-		}
+    if(missionScreenB.mouse_over()){
+      missionScreenB.mouse_pressed('')
+    }
+    
+    if(buildScreenB.mouse_over()){
+      buildScreenB.mouse_pressed('')
+    }
+    
+    if(gridEnable==true && erasing == false){
+      
+      for (let i = 0; i < arrtiles.length; i++) {
+        for (let j = 0; j < arrtiles[i].length; j++) {
 
-		if(gameState!=5 && gameState!=4){
+          if(arrtiles[i][j].is_over(mouseX,mouseY) && (arrtiles[i][j].moduleType==0 || arrtiles[i][j].deleted==1)){ // Test if mouse is over grid
+            
+            // console.log('id: ',moduleType,'\nplaced: ',placedModule[moduleType-1],'\nmax: ',maxPlace[moduleType])
 
-			if(collectMB.mouse_over()){
-				collectMB.mouse_pressed()
-			}
-
-			if(missionScreenB.mouse_over()){
-				missionScreenB.mouse_pressed('')
-			}
-			
-			if(buildScreenB.mouse_over()){
-				buildScreenB.mouse_pressed('')
-			}
-			
-			if(gridEnable==true && erasing == false){
-				
-				for (let i = 0; i < arrtiles.length; i++) {
-					for (let j = 0; j < arrtiles[i].length; j++) {
-
-						if(arrtiles[i][j].is_over(mouseX,mouseY) && (arrtiles[i][j].moduleType==0 || arrtiles[i][j].deleted==1)){ // Test if mouse is over grid
-							
-							// console.log('id: ',moduleType,'\nplaced: ',placedModule[moduleType-1],'\nmax: ',maxPlace[moduleType])
-
-							if(placedModule[moduleType-1]<maxPlace[moduleType]){ // Check if not at limit of placed modules
-							
-								if(currMCost<=resource[2].currAmount && currCCost<=resource[1].currAmount-resource[1].inUse){ // If has enough materials and available crew
-									if(i<18 && j<10){ // Bug that would't allow players to place modules on edges, bad fix
-										if((arrtiles[i+1][j].moduleType!=0 && arrtiles[i+1][j].deleted==0) || (arrtiles[i-1][j].moduleType!=0 && arrtiles[i-1][j].deleted==0) ||
-										(arrtiles[i][j+1].moduleType!=0 && arrtiles[i][j+1].deleted==0) || (arrtiles[i][j-1].moduleType!=0 && arrtiles[i][j-1].deleted==0)){ // If connected to other modules
-
-											arrtiles[i][j].moduleType=moduleType;
-											arrtiles[i][j].deleted=0;
-											resource[2].change_value(-1,currMCost)
-											resource[1].change_inUse(1,currCCost)
-											
-											let dataToSend={
-												"moduleType":moduleType,
-												"x":i,
-												"y":j,
-												"playerId":playerId,
-												"deleted":deleted
-											}
-
-											httpPost('/insertModule',"json",dataToSend,(dataReceived)=>{
-												placedModule[moduleType-1]++
-
-												if(moduleType==2 ||moduleType==3 || moduleType==4){ // If one of the three capacity upgrades
-													let dataToSend={
-														"playerId":playerId,
-														"building":moduleType,
-														"oldMax":resource[moduleType-1].maxAmount,
-														"resource":moduleType,
-														"op":1
-													}
-													httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
-														loadJSON('/getEffect/'+moduleType,(dataReceived)=>{
-
-															resource[moduleType-1].maxAmount+=dataReceived[0].effect
-															drawR()
-														})
-													})
-												}
-											});
-											draw_Grid()
-											
-										}else{
-											push()
-												fill("crimson")
-												textSize(30)
-												textAlign(CENTER, TOP)
-												text("Modules must be connected",width/2,height/2-5.5*side)
-												setTimeout(function(){
-													if(gameState==2){
-														clearScreen()
-														background(220)
-														drawR()
-														draw_Grid();
-													}
-												},2000)
-											pop()
-											break
-										}
-									}else{ // Modules from the edges or the screen, still bad fix, not testing if connected
-										arrtiles[i][j].moduleType=moduleType;
-										arrtiles[i][j].deleted=0;
-										resource[1].change_inUse(1,currCCost)
-										
-										let dataToSend={
-											"moduleType":moduleType,
-											"x":i,
-											"y":j,
-											"playerId":playerId,
-											"deleted":deleted
-										}
-
-										httpPost('/insertModule',"json",dataToSend,(dataReceived)=>{
-											placedModule[moduleType-1]++
-											if(moduleType==2 ||moduleType==3 || moduleType==4){
-												let dataToSend={
-													"playerId":playerId,
-													"building":moduleType,
-													"oldMax":resource[moduleType-1].maxAmount,
-													"resource":moduleType,
-													"op":1
-												}
-												httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
-													loadJSON('/getEffect/'+moduleType,(dataReceived)=>{
-
-														resource[moduleType-1].maxAmount+=dataReceived[0].effect
-														drawR()
-													})
-												})
-											}
-										});
-										draw_Grid()
-										console.log(arrtiles[i][j])
-									}
-								}else
-								if(currMCost>resource[2].currAmount){
-									push()
-										fill("crimson")
-										textSize(30)
-										textAlign(CENTER, TOP)
-										text("Not enough materials!",width/2,height/2-5.5*side)
-										setTimeout(function(){
-											if(gameState==2){
-												clearScreen()
-												background(220)
-												drawR()
-												draw_Grid();
-											}
-										},2000)
-									pop()
-									break
-								}else
-								if(currCCost>resource[1].currAmount-resource[1].inUse){
-									push()
-										fill("crimson")
-										textSize(30)
-										textAlign(CENTER, TOP)
-										text("Not enough available crew!",width/2,height/2-5.5*side)
-										setTimeout(function(){
-											if(gameState==2){
-												clearScreen()
-												background(220)
-												drawR()
-												draw_Grid();
-											}
-										},2000)
-									pop()
-									break
-								}
-
-								draw_Grid();
-								break;
-
-							}else{
-								push()
-								fill("crimson")
-								textSize(30)
-								textAlign(CENTER, TOP)
-								text("Max module limit reached",width/2,height/2-5.5*side)
-								setTimeout(function(){
-									if(gameState==2){
-										clearScreen()
-										background(220)
-										drawR()
-										draw_Grid();
-									}
-								},2000)
-							pop()
-							break;
-							}
-						}else if(arrtiles[i][j].is_over(mouseX,mouseY)==true && arrtiles[i][j].deleted==0){
-							push()
-								fill("crimson")
-								textSize(30)
-								textAlign(CENTER, TOP)
-								text("There is already a building in that spot",width/2,height/2-5.5*side)
-								setTimeout(function(){
-									if(gameState==2){
-										clearScreen()
-										background(220)
-										drawR()
-										draw_Grid();
-									}
-								},2000)
-							pop()
-							break;
-						}
-						}
-					}
-				}
-			}
-			if (erasing== true){
-				for (let i = 0; i < arrtiles.length; i++) {
-					for (let j = 0; j < arrtiles[i].length; j++) {
+            if(placedModule[moduleType-1]<maxPlace[moduleType]){ // Check if not at limit of placed modules
 						
-						if(arrtiles[i][j].is_over(mouseX,mouseY) && arrtiles[i][j].moduleType> 0 && arrtiles[i][j].deleted == 0){
+              if(currMCost<=resource[2].currAmount && currCCost<=resource[1].currAmount-resource[1].inUse){ // If has enough materials and available crew
+                if(i<18 && j<10){ // Bug that would't allow players to place modules on edges, bad fix
+                  if((arrtiles[i+1][j].moduleType!=0 && arrtiles[i+1][j].deleted==0) || (arrtiles[i-1][j].moduleType!=0 && arrtiles[i-1][j].deleted==0) ||
+                  (arrtiles[i][j+1].moduleType!=0 && arrtiles[i][j+1].deleted==0) || (arrtiles[i][j-1].moduleType!=0 && arrtiles[i][j-1].deleted==0)){ // If connected to other modules
 
-							if(arrtiles[i][j].moduleType== 11){ // Trying to delete the middle module
-								push()
-									fill("crimson")
-									textSize(30)
-									textAlign(CENTER, TOP)
-									text("The starting module cannot be destroyed",width/2,height/2-5.5*side)
-									setTimeout(function(){
+                    arrtiles[i][j].moduleType=moduleType;
+                    arrtiles[i][j].deleted=0;
+                    resource[2].change_value(-1,currMCost)
+										resource[1].change_inUse(1,currCCost)
+                    
+                    let dataToSend={
+                      "moduleType":moduleType,
+                      "x":i,
+                      "y":j,
+                      "playerId":playerId,
+                      "deleted":deleted
+                    }
+
+                    httpPost('/insertModule',"json",dataToSend,(dataReceived)=>{
+                      placedModule[moduleType-1]++
+
+                      if(moduleType==2 ||moduleType==3 || moduleType==4){ // If one of the three capacity upgrades
+                        let dataToSend={
+                          "playerId":playerId,
+                          "building":moduleType,
+                          "oldMax":resource[moduleType-1].maxAmount,
+                          "resource":moduleType,
+                          "op":1
+                        }
+                        httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
+                          loadJSON('/getEffect/'+moduleType,(dataReceived)=>{
+
+                            resource[moduleType-1].maxAmount+=dataReceived[0].effect
+                            drawR()
+                          })
+                        })
+                      }
+                    });
+                    draw_Grid()
+                    
+                  }else{
+                    push()
+                      fill("crimson")
+                      textSize(30)
+                      textAlign(CENTER, TOP)
+                      text("Modules must be connected",width/2,height/2-5.5*side)
+                      setTimeout(function(){
+												if(gameState==2){
+													clearScreen()
+													background(220)
+													drawR()
+													draw_Grid();
+												}
+                      },2000)
+                    pop()
+                    break
+                  }
+                }else{ // Modules from the edges or the screen, still bad fix, not testing if connected
+                  arrtiles[i][j].moduleType=moduleType;
+                  arrtiles[i][j].deleted=0;
+									resource[1].change_inUse(1,currCCost)
+                  
+                  let dataToSend={
+                    "moduleType":moduleType,
+                    "x":i,
+                    "y":j,
+                    "playerId":playerId,
+                    "deleted":deleted
+                  }
+
+                  httpPost('/insertModule',"json",dataToSend,(dataReceived)=>{
+                    placedModule[moduleType-1]++
+                    if(moduleType==2 ||moduleType==3 || moduleType==4){
+                      let dataToSend={
+                        "playerId":playerId,
+                        "building":moduleType,
+                        "oldMax":resource[moduleType-1].maxAmount,
+                        "resource":moduleType,
+                        "op":1
+                      }
+                      httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
+                        loadJSON('/getEffect/'+moduleType,(dataReceived)=>{
+
+                          resource[moduleType-1].maxAmount+=dataReceived[0].effect
+                          drawR()
+                        })
+                      })
+                    }
+                  });
+                  draw_Grid()
+                  console.log(arrtiles[i][j])
+                }
+              }else
+							if(currMCost>resource[2].currAmount){
+                push()
+                  fill("crimson")
+                  textSize(30)
+                  textAlign(CENTER, TOP)
+                  text("Not enough materials!",width/2,height/2-5.5*side)
+                  setTimeout(function(){
 										if(gameState==2){
-												clearScreen()
-												background(220)
-												drawR()
-												draw_Grid();
-											}
-									},2000)
-								pop()
-							}else{
-								arrtiles[i][j].deleted=1
-								resource[1].change_inUse(-1,crewCost[arrtiles[i][j].moduleType]) // Set the crewmembers used by module back to available
-
-								let moduleId
-								let moduleInfo={
-									"posX" :arrtiles[i][j].i,
-									"posY" :arrtiles[i][j].j,
-									"playerId" :playerId,
-									"deleted" :0
-								}
-								httpPost('/getModuleId','json',moduleInfo,(modId)=>{
-									moduleId=modId[0].moduleId; 
-									placedModule[(arrtiles[i][j].moduleType)-1]--
-									
-									erase_Module(moduleId)
-
-									if(arrtiles[i][j].moduleType==2 || arrtiles[i][j].moduleType==3 || arrtiles[i][j].moduleType==4){
-										let dataToSend={
-											"playerId":playerId,
-											"building":arrtiles[i][j].moduleType,
-											"oldMax":resource[arrtiles[i][j].moduleType-1].maxAmount,
-											"resource":arrtiles[i][j].moduleType,
-											"op":-1
+											clearScreen()
+											background(220)
+											drawR()
+											draw_Grid();
 										}
-
-										
-										httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
-											loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
-
-												resource[(arrtiles[i][j].moduleType)-1].maxAmount-=dataReceived[0].effect
-												drawR()
-											})
-										})
-									}
-									// else if(arrtiles[i][j].moduleType==1){
-										
-									//   loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
-									//     let dataToSend={
-									//       "playerId":playerId,
-									//       "effect":dataReceived[0].effect,
-									//       "first":firstMoneyProd,
-									//       "op":-1
-									//     }
-											
-									//     httpPost('/updateMProd','JSON',dataToSend,(dataReceived)=>{
-												
-									//     })
-									//   })
-									// }
-								})
-
-								loop()
-								draw_Grid()
-								break
+                  },2000)
+                pop()
+                break
+              }else
+							if(currCCost>resource[1].currAmount-resource[1].inUse){
+                push()
+                  fill("crimson")
+                  textSize(30)
+                  textAlign(CENTER, TOP)
+                  text("Not enough available crew!",width/2,height/2-5.5*side)
+                  setTimeout(function(){
+										if(gameState==2){
+											clearScreen()
+											background(220)
+											drawR()
+											draw_Grid();
+										}
+                  },2000)
+                pop()
+                break
 							}
-						}
-					}
-				}
-			}
-		}
-	}
+
+              draw_Grid();
+              break;
+
+            }else{
+              push()
+              fill("crimson")
+              textSize(30)
+              textAlign(CENTER, TOP)
+              text("Max module limit reached",width/2,height/2-5.5*side)
+              setTimeout(function(){
+								if(gameState==2){
+									clearScreen()
+									background(220)
+									drawR()
+									draw_Grid();
+								}
+              },2000)
+            pop()
+            break;
+            }
+          }else if(arrtiles[i][j].is_over(mouseX,mouseY)==true && arrtiles[i][j].deleted==0){
+            push()
+              fill("crimson")
+              textSize(30)
+              textAlign(CENTER, TOP)
+              text("There is already a building in that spot",width/2,height/2-5.5*side)
+              setTimeout(function(){
+								if(gameState==2){
+									clearScreen()
+									background(220)
+									drawR()
+									draw_Grid();
+								}
+              },2000)
+            pop()
+            break;
+          }
+          }
+        }
+      }
+    }
+    if (erasing== true){
+      for (let i = 0; i < arrtiles.length; i++) {
+        for (let j = 0; j < arrtiles[i].length; j++) {
+          
+          if(arrtiles[i][j].is_over(mouseX,mouseY) && arrtiles[i][j].moduleType> 0 && arrtiles[i][j].deleted == 0){
+
+            if(arrtiles[i][j].moduleType== 11){ // Trying to delete the middle module
+              push()
+                fill("crimson")
+                textSize(30)
+                textAlign(CENTER, TOP)
+                text("The starting module cannot be destroyed",width/2,height/2-5.5*side)
+                setTimeout(function(){
+									if(gameState==2){
+											clearScreen()
+											background(220)
+											drawR()
+											draw_Grid();
+										}
+								},2000)
+              pop()
+            }else{
+              arrtiles[i][j].deleted=1
+							resource[1].change_inUse(-1,crewCost[arrtiles[i][j].moduleType]) // Set the crewmembers used by module back to available
+
+              let moduleId
+              let moduleInfo={
+                "posX" :arrtiles[i][j].i,
+                "posY" :arrtiles[i][j].j,
+                "playerId" :playerId,
+                "deleted" :0
+              }
+              httpPost('/getModuleId','json',moduleInfo,(modId)=>{
+                moduleId=modId[0].moduleId; 
+                placedModule[(arrtiles[i][j].moduleType)-1]--
+                
+                erase_Module(moduleId)
+
+                if(arrtiles[i][j].moduleType==2 || arrtiles[i][j].moduleType==3 || arrtiles[i][j].moduleType==4){
+                  let dataToSend={
+                    "playerId":playerId,
+                    "building":arrtiles[i][j].moduleType,
+                    "oldMax":resource[arrtiles[i][j].moduleType-1].maxAmount,
+                    "resource":arrtiles[i][j].moduleType,
+                    "op":-1
+                  }
+
+                  
+                  httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
+                    loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
+
+                      resource[(arrtiles[i][j].moduleType)-1].maxAmount-=dataReceived[0].effect
+                      drawR()
+                    })
+                  })
+                }
+                // else if(arrtiles[i][j].moduleType==1){
+                  
+                //   loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
+                //     let dataToSend={
+                //       "playerId":playerId,
+                //       "effect":dataReceived[0].effect,
+                //       "first":firstMoneyProd,
+                //       "op":-1
+                //     }
+                    
+                //     httpPost('/updateMProd','JSON',dataToSend,(dataReceived)=>{
+                      
+                //     })
+                //   })
+                // }
+              })
+
+              loop()
+              draw_Grid()
+              break
+            }
+          }
+        }
+      }
+    }
+  }
 
 
 function timer(){
@@ -623,10 +659,29 @@ function timer(){
 
   setInterval(function(){
     if(gameState==4){
+	  friends.friendsContainer()
       logoffButton.mouse_over()
       logoffButton.draw_button()
+	  onB.draw_button()
+	  onB.mouse_over()
+	  pendingB.draw_button()
+	  pendingB.mouse_over()
+	  if (sb == true)
+	  {
+		searchB.draw_button()
+	  }
+	  addFriendB.draw_button()
+	  addFriendB.mouse_over()
+	  playerName.playerDraw()
     }
   })
+
+  setInterval(function(){
+    if(gameState>0){
+      profileButton.mouse_over()
+      profileButton.draw_button()
+    }
+  },15)
 
   setInterval(function(){
     if(gameState==2){
@@ -719,27 +774,11 @@ function timer(){
 
   setInterval(function(){
     if(gameState>0){
-      mapBtn.mouse_over()
-      mapBtn.draw_button()
-
-      profileButton.mouse_over()
-      profileButton.draw_button()
-
-			if(playerCard!=''){
-        if(playerCard.visitBtn){
-          playerCard.visitBtn.mouse_over()
-          playerCard.visitBtn.draw_button()
-        }
-			}
-
-			if(gameState!=5 && gameState!=4){
-				missionScreenB.mouse_over()
-				missionScreenB.draw_button()
-
-				buildScreenB.mouse_over()
-				buildScreenB.draw_button()
-			}
-		}
+      missionScreenB.mouse_over()
+      missionScreenB.draw_button()
+      buildScreenB.mouse_over()
+      buildScreenB.draw_button()
+    }
   },15)
 
   setInterval(function(){
@@ -762,8 +801,13 @@ function clearScreen(){
 
 
 function building_Scene(){
-  if(gameState!=2){ // If on the main screen or the missions screen
-    changeScene()
+  if(gameState==1 || gameState==3){ // If on the main screen or the missions screen
+    clearScreen()
+
+    background(220);
+    visitedB=true
+    erasing=false
+    drawR()
     gameState=2
     side=32
 
@@ -793,7 +837,9 @@ function building_Scene(){
 
 
   }else if(gameState==2){ // Return to main screen
-    changeScene()
+    clearScreen()
+    gridEnable=false
+    erasing=false
     gameState=1
     main_Scene()
   }
@@ -865,41 +911,17 @@ function buildShip(){
 
 
 function mission_Scene(){
-  if(gameState!=3){
-		changeScene()
+  if(gameState==1 || gameState==2){
+    gridEnable=false
+    erasing=false
     gameState=3
     refreshM()
 
   }else if(gameState==3){
-    changeScene()
+    clearScreen()
     gameState=1
     main_Scene()
   }
-}
-
-function map_scene(){
-  if(gameState!=5){
-		changeScene()
-    gameState = 5;
-
-		drawMap()
-    
-  } else if(gameState == 5){
-    clearScreen();
-    mapBtn.text='Map'
-    gameState=1
-		main_Scene()
-  }
-}
-
-
-function changeScene(){
-	clearScreen()
-	background('#dbdbdb')
-	drawR()
-	gridEnable=false
-	erasing=false
-	playerCard=''
 }
 
 
@@ -912,8 +934,6 @@ function drawR(){
     let length= (endX-initX)/4
     let boxY=height/17
 
-    resourceBottom=(height/17+height/15)
-
     for(let i = initX; squareCounter <= 4; i += length){ //boxes where the resources are displayed
       squareCounter++;
       rect(i, boxY, length, height/15);
@@ -921,9 +941,10 @@ function drawR(){
     
     textAlign(CENTER, CENTER)
 
-    for(let i = 0, x=initX+length/2; i< resource.length; i++){
+    for(let i = 0, initIndex=0, x=initX+length/2; i< resource.length; i++){
 
       resource[i].draw_resource(x,boxY+height/30);
+      initIndex++
       x+=length
     }
 }
@@ -988,7 +1009,7 @@ function do_Register(){
       }
 
       httpPost('/register', 'json', player, (dataReceived) => {
-
+		
         if (dataReceived[0]== "Existing"){ // Trying to register with an existing username
           clearScreen()
           push()
@@ -1012,7 +1033,6 @@ function do_Register(){
           }
 
           loadResource()
-          getPlayerMap()
           main_scene_setup()
         }
       });
@@ -1055,7 +1075,7 @@ function do_Login() {
 
   httpPost('/login','json', player, (dataReceived) => {
 
-    if (dataReceived.length==0 || dataReceived==false){ // No match in the database
+    if (dataReceived.length==0){ // No match in the database
       push()
         fill("crimson")
         textAlign(CENTER, CENTER)
@@ -1067,23 +1087,10 @@ function do_Login() {
       playerId = dataReceived[0].playerId;
       getMission()
       loadResource()
-      getPlayerMap()
 
       main_scene_setup()
     }
   });
-}
-
-function playerProfile(){
-  if(gameState!=4){
-		changeScene()
-    gameState = 4;
-  }
-  else if(gameState==4){
-		create_Grid()
-    changeScene()
-    gameState=1
-  }
 }
 
 
@@ -1475,142 +1482,3 @@ function moduleColor(moduleType){ // Modules and their buttons have the same col
   colorArray[2]=b
   return colorArray
 }
-
-
-/* v Map/Visit start v // ===============================================================================================================================================================================================================================*/
-
-function visitPlayer(index){
-
-  mapBtn.text='Back to base'
-	changeScene()
-  
-  let x=0;
-  let y=0;
-  let COL=19;
-  let ROW =11;
-
-  for (let i = 0; i < COL; i++) {
-    arrtiles[i] = [];
-
-    if(i==0){
-      //starting point in width
-      x= (width/2) - (COL*side/2);
-    }else{
-      x=x+side;
-    }
-
-    for (let j = 0; j < ROW; j++) {
-
-      //starting point in height
-      if(j==0){
-        y=(height/2) - (ROW*side/2) + side;
-      }else{
-        y=y+side;
-      }
-
-      arrtiles[i][j] = new Module(i,j,x,y, side, 0, 0);
-    }
-  }
-
-  loadJSON('/getModule/'+index,(dataReceived)=>{
-
-    module = dataReceived;
-    
-    for(let i=0;i<module.length;i++){
-      arrtiles[module[i].posX][module[i].posY].moduleType = module[i].moduleType;
-
-      arrtiles[module[i].posX][module[i].posY].deleted = module[i].deleted;
-    }
-    draw_Grid();
-  })
-}
-
-
-function getPlayerMap(){
-
-  let dataToSend={
-    'playerId':playerId
-  }
-  httpPost('/getGalaxy','json',dataToSend,(dataReceived)=>{
-
-    totalPlayers=dataReceived.totalPlayers
-    mapSize=dataReceived.mapSize
-    gLevel=dataReceived.gLevel
-    mapGridSize= Math.round(displayArea.height/mapSize)
-
-    loadJSON('/getCoords/'+gLevel,(dataReceived)=>{
-
-			displayArea.offsetX=width/2-(mapSize/2*mapGridSize)
-			displayArea.offsetY=displayArea.topY
-
-      for(let i=0; i<dataReceived.length; i++){
-        playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId, mapGridSize, displayArea.offsetX,displayArea.offsetY)
-      }
-    })
-  })
-}
-
-function drawMap(){
-	for(let i=0; i<mapSize; i++){
-		for(let j=0; j<mapSize; j++){
-			fill('white')
-			rect(width/2-(mapSize/2*mapGridSize) + i*mapGridSize, displayArea.topY + j*mapGridSize, mapGridSize, mapGridSize)
-		}
-	}
-	
-	for(let i=0; i<playerMapArr.length; i++){
-		playerMapArr[i].draw_player(displayArea)
-	}
-	
-	push()
-	stroke('red')
-	strokeWeight(3)
-	noFill()
-	translate(width/2-(mapSize/2*mapGridSize), displayArea.topY)
-	rect((mapSize/2-1)*mapGridSize, (mapSize/2-1)*mapGridSize, 2*mapGridSize, 2*mapGridSize)
-	pop()
-}
-
-// let tempId=0
-// let squareCycle=1
-
-// function createCoords(){
-
-// 	let sideVar=totalPlayers%4
-// 	let placeVar
-// 	let playerX
-// 	let playerY
-	
-// 	placeVar= (mapSize/2 - squareCycle) + Math.round(random(squareCycle*2 - 1, 1))
-	
-// 	print('\ntotal: '+totalPlayers+'\ncycle:',squareCycle,'\nplace:',+placeVar)
-
-// 		switch (sideVar) {
-// 			case 1: // Top
-// 				print('t')
-// 				playerY=mapSize/2-1-squareCycle
-// 				playerMapArr.push(new Player(placeVar,playerY,tempId,mapGridSize))
-// 				break;
-				
-// 			case 2: // Right
-// 				print('r')
-// 				playerX=mapSize/2+squareCycle
-// 				playerMapArr.push(new Player(playerX,placeVar,tempId,mapGridSize))
-// 				break;
-
-// 			case 3: // Bottom
-// 				print('b')
-// 				playerY=mapSize/2+squareCycle
-// 				playerMapArr.push(new Player(placeVar,playerY,tempId,mapGridSize))
-// 				break;
-				
-// 			case 0: // Left
-// 				print('l')
-// 				playerX=mapSize/2-squareCycle-1
-// 				playerMapArr.push(new Player(playerX,placeVar,tempId,mapGridSize))
-// 				squareCycle++
-// 				break;
-// 		}
-
-// 		totalPlayers++
-// }
