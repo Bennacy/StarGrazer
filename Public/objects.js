@@ -98,11 +98,15 @@ class Resources{
             text("Available: "+av, x, y+10)
           }
           else if(this.resType==3){
-            text(this.resourceName+': '+this.currAmount+'/'+this.maxAmount, x, y)
+            text(this.currAmount+'/'+this.maxAmount, x, y)
           }else if(this.resType==1){
-            text(this.resourceName+': '+this.currAmount, x, y)
+            text(this.currAmount, x, y)
           }
         });
+        image(matIcon, width/2 + 20, height/16.5, 40, 40)
+        image(monIcon, width/2 - 435, height/16.5, 40, 40)
+        image(shipIcon, width/2 + 250, height/16.5, 40, 40)
+        image(crewIcon, width/2 - 215, height/16.5, 40, 40)
       pop()
     }
 }
