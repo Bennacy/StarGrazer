@@ -3,12 +3,12 @@ let button
 function setup() {
   cv=createCanvas(720, 720);
   cv.position(windowWidth/2-width/2, windowHeight/2-height/2)
-  button= new Button(0,0, 200,75, 0,171,235, btn, 'Increase')
+  button= new Button(width/2-100,height/2-37.5, 200,75, 0,171,235, btn, 'Increase')
 }
 
 
 function draw() {
-  background(255)
+  background(230)
 
   button.mouse_over()
   button.draw_button()
