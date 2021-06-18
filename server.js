@@ -69,6 +69,19 @@ app.get('/getPlayerList/:playerId',(req,res)=>{
 		res.send(result)
 	});
 });
+app.post('/sendFriendReq',(req,res)=>{
+
+	let requestFrom = req.body.requestFrom;
+	let requestTo = req.body.requestTo;
+	let accepted = req.body.accepted;
+
+	let sql = "INSERT INTO player_friends (requestFrom,requestTo,accepted) VALUES ('"+requestFrom+"','"+requestTo+"','"+accepted+"')"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err;
+		res.send(result)
+	});
+});
 
 app.get('/getResources/:playerId', (req, res) =>{
 	let playerId = req.params.playerId;

@@ -46,40 +46,31 @@ class Button{
 	
 	function addPlayer()
 	{
-		loadJSON('/getPlayerName/'+playerId,(idReceived)=>
+		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
-			pName = idReceived
+			pName = nameReceived
 			console.log(pName)
 			loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
 			{
 				allPlayers = pNamesReceived
-				console.log(allPlayers)
-				if (searchPlayer.value == "a")
+				
+				console.log(pName[0].name)
+				for (let p=0; p<allPlayers.length; p++)
 				{
-					console.log("totsugeki")
-					/* friend = {
-						"requestFrom": pName
-						"requestTo": searchPlayer.value
-						"accepted": false
-					} */
-					/* httpPost('/sendFriendReq/',json,friend,(dataReceived)=>
+					if (searchPlayer.value() == allPlayers[p].name)
 					{
-
-						if (dataReceived[0] == "Exists")
-						{
-							console.log(allPlayers[p].name)
-							searchPlayer.input(addPlayer);
+						console.log("totsugeki")
+						friend = {
+							"requestFrom": pName[0].name,
+							"requestTo": searchPlayer.value(),
+							"accepted": false,
 						}
-
-							if (mouseX > this.x + width/9)
-							{
-								for (let f = 0; f < allPlayers.length; f++)
-								{
-									text(allPlayers[f].name,this.textX,this.textY + 25 * f)
-								}
-							}
-					}) */
-				}  
+						httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
+						{
+							
+						}) 
+					} 
+				}		
 			})
 		})
 	}
