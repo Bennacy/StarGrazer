@@ -172,7 +172,8 @@ function map_scene(){
     gameState = 5;
     clearScreen();
     createCanvas(windowWidth, windowHeight);
-    background('#dbdbdb');
+    image(bckgrndimg, 0, 0, width, height);
+    //background('#dbdbdb');
 
     for(let i=0; i<10; i++){
 
@@ -183,7 +184,8 @@ function map_scene(){
     
   } else if(gameState == 5){
     clearScreen();
-    background('#dbdbdb');
+    //background('#dbdbdb');
+    main_Scene();
     create_Grid()
     drawR()
     gameState=1
