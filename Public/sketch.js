@@ -37,6 +37,7 @@ let mainLoop= true
 let visitedB=false
 
 let bckgrndimg
+let loginBg
 let matIcon
 let monIcon
 let shipIcon
@@ -83,8 +84,9 @@ function preload(){
 			crewCost[i]=dataReceived[0].crewCost
     })
   }
-  matIcon = loadImage('mineral.png');
+  loginBg = loadImage('galaxy2.jpg');
   bckgrndimg = loadImage('galaxy1.jpg');
+  matIcon = loadImage('mineral.png');
   monIcon = loadImage('dollar.png');
   shipIcon = loadImage('spaceship.png');
   crewIcon = loadImage('crew.png');
@@ -950,8 +952,9 @@ function drawR(){
 
 
 function loginScene() {
+  image(loginBg, 0, 0, width, height);
   registering= false
-  background(220);
+  //background(220);
   nameInput = createInput('');
   nameInput.position(windowWidth/2 - nameInput.size().width/2, windowHeight/2.5 - nameInput.size().height);
   passInput = createInput('');
@@ -969,7 +972,7 @@ function do_Register(){
 
   if (registering==false){ // If moved from Log-in page to Register page
     registering= true
-    background(220)
+    //background(220)
 
     nameInput.remove();
     passInput.remove();
