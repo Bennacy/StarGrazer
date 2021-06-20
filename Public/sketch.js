@@ -47,9 +47,7 @@ let mainLoop= true
 let visitedB=false
 let buildingProbe=false;
 let probeBuilt=false;
-let communications;
-let research;
-let probe;
+let research=false;
 
 // Button initialization
 let loginBtn
@@ -403,7 +401,17 @@ function mousePressed(){
 															drawR()
 														})
 													})
-												}
+												}else if (moduleType == 7){
+                          research = true
+                          let dataToSend={
+                            "playerId": playerId
+                          }
+                          httpPost('/updatePlayerResearch','json',dataToSend,(dataReceived)=>{
+                          })
+                          httpPost('/updateResearch','JSON',dataToSend,(dataReceived)=>{
+                          })
+
+                        }
 											});
 											draw_Grid()
 											
@@ -967,8 +975,8 @@ function buildProbe(){
 
 function getProbe(){
   loadJSON('/getProbe/'+playerId,(dataReceived)=>{
-    probeBuilt = true
-    buildProbe()
+    print(dataReceived)
+    probeBuilt = dataReceived[0].probe
   });
 }
 
@@ -979,6 +987,7 @@ function updateProbe(){
   httpPost('/updateProbe','json',dataToSend,(dataReceived)=>{
   })
 }
+
 function mission_Scene(){
   if(gameState!=3){
 		changeScene()
@@ -1004,7 +1013,7 @@ function map_scene(){
     mapBtn.text='Map'
     gameState=1
 		main_Scene()
-  } else if (gameState==1 && placedModule[5]==0){
+  } else if (placedModule[5]==0){
     push()
     fill("red")
     textSize(15)
@@ -1013,39 +1022,23 @@ function map_scene(){
     pop()
     setTimeout(function(){
       clearScreen()
-      main_Scene()
-    },1500)
-  } else if (gameState==2 && placedModule[5]==0){
-    push()
-    fill("red")
-    textSize(15)
-    textAlign(CENTER, TOP)
-    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
-    pop()
-    setTimeout(function(){
-      clearScreen()
-      building_Scene()
-    },1500)
-  } else if (gameState==3 && placedModule[5]==0){
-    push()
-    fill("red")
-    textSize(15)
-    textAlign(CENTER, TOP)
-    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
-    pop()
-    setTimeout(function(){
-      refreshM()
-    },1500)
-  } else if (gameState==4 && placedModule[5]==0){
-    push()
-    fill("red")
-    textSize(15)
-    textAlign(CENTER, TOP)
-    text("Communications Modules is required \n to get the map",mapBtn.x+mapBtn.w/2,mapBtn.y+mapBtn.h+5)
-    pop()
-    setTimeout(function(){
-      clearScreen()
-      playerProfile()
+      switch(gameState){
+        case 1: 
+          main_Scene()
+        break
+        case 2:
+          gameState = 1
+          building_Scene()
+        break
+        case 3:
+          gameState = 1
+          mission_Scene()
+        break
+        case 4:
+          gameState = 1
+          playerProfile()
+        break
+      }
     },1500)
   }
 }
@@ -1772,3 +1765,46 @@ function drawMap(){
 
 // 		totalPlayers++
 // }
+
+function updatePlayerResearch(){
+  let dataToSend={
+    "playerId": playerId
+  }
+  httpPost('/updatePlayerResearch','json',dataToSend,(dataReceived)=>{
+  })
+}
+
+function getResearch(){
+  loadJSON('/getResearch/'+playerId,(dataReceived)=>{
+    print(dataReceived)
+    research = true
+  });
+}
+
+function startResearch(){  let dataToSend={
+  "galixyId":galixyId,
+  "researching":researching,
+  }
+
+  httpPost('/startResearch','JSON',dataToSend,dataReceived=>{
+    getResearchTimer()
+  })
+}
+
+function getResearchTimer(){
+  loadJSON('/getResearchTimer/'+galixyId, (dataReceived)=>{
+
+    loadJSON('/getResearchFinishTimer'+galixyId, (dataReceived)=>{
+
+      let timePassed = 0
+      let timeRemaining = 0
+      let finM = month()
+      let finD = day()
+      let finH = hour()
+
+      timePassed = 0
+      timeRemaining = 0
+      
+    })
+  })
+}

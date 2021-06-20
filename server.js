@@ -256,7 +256,7 @@ app.post('/register',(req,res)=>{
 											if(err) throw err
 
 											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`) values (1,1,1,48)"
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `finishDay`, `finishHour`, `finishMonth`) values (1,1,1,48,0,0,0,0,0)"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
@@ -364,6 +364,61 @@ app.post('/createMission', (req,res)=>{
 		});
 	})
 	res.send()
+})
+
+app.post('/updateResearch',(req,res)=>{
+
+	let sql = "UPDATE galaxy SET researching = (SELECT COUNT(*) FROM player WHERE research=player.research)"
+	
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		res.send()
+	})
+})
+
+app.post('/updatePlayerResearch',(req,res)=>{
+
+	let sql = "UPDATE player SET research = 1"
+	research = true
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		res.send()
+	})
+})
+
+
+app.get('/getResearch/:playerId',(req,res)=>{
+
+	let playerId=req.params.playerId
+
+	let sql = "SELECT research FROM player WHERE playerId='"+playerId+"'";
+	db.query(sql,(err,result)=>{
+		console.log(result)
+		research = true
+
+		if(err) throw err
+		res.send(result)
+	})
+
+})
+app.get('/getResearchTimer/:galaixyId', (req,res)=>{
+	let galaixyId= req.params.galaixyId
+	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaixyId+"'"
+	db.query(sql, (err,result)=>{
+		if(err) throw err
+		res.send(result)
+	})
+})
+
+
+app.get('/getResearchFinishTimer:galaixyId',(req,res)=>{
+	let galaixyId= req.params.galaixyId
+
+	let sql="SELECT finishMonth ,finishDay, finishHour FROM galaxy WHERE galaixyId='"+galaixyId+"'"
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		res.send(result)
+	})
 })
 
 
@@ -504,12 +559,14 @@ app.post('/updateResourceValues', (req, res)=>{
 	})
 })
 
-app.post('/getProbe',(req,res)=>{
+app.get('/getProbe/:playerId',(req,res)=>{
 
-	let playerId=req.body.playerId
+	let playerId=req.params.playerId
 
-	let sql = "SELECT player WHERE playerId='"+playerId+"' AND probe = 1";
+	let sql = "SELECT probe FROM player WHERE playerId='"+playerId+"'";
 	db.query(sql,(err,result)=>{
+		console.log(result)
+		probeBuilt = true
 
 		if(err) throw err
 		res.send(result)
@@ -591,24 +648,6 @@ app.post('/updateMProd',(req,res)=>{
 	}
 })
 
-
-app.post('/updateMProd',(req,res)=>{
-	let playerId=req.body.playerId
-
-	
-})
-
-
-/*app.post('/getProbe',(req,res)=>{
-	let playerId=req.body.playerId
-	let probe = req.body.probe
-
-	let sql="UPDATE player SET probe = '"+probe+"' WHERE playerId='"+playerId+"'"
-	db.query(sql,(err,result)=>{
-		if(err) throw err
-		res.send()
-	})
-})*/
 
 
 
@@ -734,22 +773,6 @@ app.post('/getModuleId',(req,res)=>{
 		if (err) throw err;
 		res.send(result);
 
-	});
-
-});
-
-app.post('/alterModule',(req,res)=>{
-
-	let moduleId = req.body.moduleId;
-
-	
-	let sql = "UPDATE player_module SET moduleType = 0 WHERE (moduleId='"+moduleId+"')";
-
-	
-	db.query(sql,(err,result)=>{
-		 if(err) throw err;
-
-		 res.send(result);	
 	});
 
 });
