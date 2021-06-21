@@ -13,6 +13,7 @@ let mapSize
 let gLevel
 let totalPlayers
 let testImg
+let font
 
 let displayArea={}
 
@@ -47,6 +48,7 @@ let registering
 let firstLoad= true
 let mainLoop= true
 let visitedB=false
+let pressing=false
 
 // Button initialization
 let loginBtn
@@ -88,7 +90,8 @@ function preload(){
 			crewCost[i]=dataReceived[0].crewCost
     })
   }
-  testImg= loadImage('Images/galaxy1.jpg')
+  testImg= loadImage('Assets/Images/galaxy1.jpg')
+  font= loadFont('Assets/Fonts/AstroSpace-eZ2Bg.ttf')
 }
 
 function setup(){
@@ -151,13 +154,13 @@ function main_scene_setup(){
 			moneyTimer++
 	},1000*timeScale)
 
-  logoffButton= new Button(width/2-width/20,height/2-height/20, width/10,height/10, 210,210,210, logOff, 'Log Off')
-  profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, playerProfile, 'Profile')
-  missionScreenB= new Button(width-200-15, height-90, 200, 75, 200,200,200, mission_Scene, "Missions")
-  buildScreenB= new Button(15, height-90, 200, 75, 200,200,200, building_Scene, "Modules")
-	collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money')
-  mapBtn = new Button(width/1.5 + 250, height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, map_scene, "Map");
-  buildShipB= new Button(width/2-75, height/2+150, 150, 50, 240,240,240, buildShip, 'Build Ship\nMoney Cost:1000') // Button to build new ships
+  logoffButton= new Button(width/2-width/20,height/2-height/20, width/10,height/10, 0,171,255, logOff, 'Log Off',1)
+  profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 0,171,255, playerProfile, 'Profile',1)
+  missionScreenB= new Button(width-200-15, height-90, 200, 75, 0,171,255, mission_Scene, "Missions",1)
+  buildScreenB= new Button(15, height-90, 200, 75, 0,171,255, building_Scene, "Modules",1)
+	collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money',1)
+  mapBtn = new Button(width/1.5 + 250, height/17, ((width/2)-(19*48/2))-width/40,height/15, 0,171,255, map_scene, "Map",1);
+  buildShipB= new Button(width/2-75, height/2+150, 150, 50, 240,240,240, buildShip, 'Build Ship\nMoney Cost:1000',1) // Button to build new ships
 
   create_Grid(playerId)
 
@@ -286,6 +289,77 @@ function keyPressed(){
 }
 
 
+function mouseReleased(){
+  if(gameState==3){
+    for(let i=0; i<missionButton.length; i++){
+      if(missionButton[i].pressed){
+        missionButton[i].mouse_released(i)
+      }
+    }
+
+		if(buildShipB.pressed){
+			buildShipB.mouse_released()
+		}
+  }
+
+  if(gameState==4){
+    if(logoffButton.pressed)
+      logoffButton.mouse_released()
+  }
+
+  if(gameState==2){
+    for(let i=0; i<moduleBuildButton.length; i++){
+      if(moduleBuildButton[i].pressed){
+        moduleBuildButton[i].mouse_released(i+1)
+      }
+    }
+  }
+
+  if(gameState==5){
+		for(let i=0; i<playerMapArr.length; i++){
+			if(playerMapArr[i].pressed){
+				playerMapArr[i].mouse_released()
+			}
+			if(playerCard!=''){
+        if(playerCard.visitBtn){
+          if(playerCard.visitBtn.pressed){
+            playerCard.visitBtn.mouse_released(playerCard.pId) //visit player with that id
+				  }
+				}
+
+				playerCard.over_x()
+			}
+		}
+	}
+
+  if(gameState>0){  
+		
+		if(mapBtn.pressed){
+			mapBtn.mouse_released('')
+		}
+
+		if(profileButton.pressed){
+			profileButton.mouse_released()
+		}
+
+		if(gameState<4){
+
+			if(collectMB.pressed){
+				collectMB.mouse_released()
+			}
+
+			if(missionScreenB.pressed){
+				missionScreenB.mouse_released('')
+			}
+			
+			if(buildScreenB.pressed){
+				buildScreenB.mouse_released('')
+			}
+    }
+  }
+}
+
+
 function mousePressed(){
 
   if(gameState==3){
@@ -305,7 +379,6 @@ function mousePressed(){
       logoffButton.mouse_pressed()
   }
 
-
   if(gameState==2){
     for(let i=0; i<moduleBuildButton.length; i++){
       if(moduleBuildButton[i].mouse_over()){
@@ -313,6 +386,7 @@ function mousePressed(){
       }
     }
   }
+
 	if(gameState==5){
 		for(let i=0; i<playerMapArr.length; i++){
 			if(playerMapArr[i].mouse_over() && playerCard==''){
@@ -340,7 +414,7 @@ function mousePressed(){
 			profileButton.mouse_pressed()
 		}
 
-		if(gameState!=5 && gameState!=4){
+		if(gameState<4){
 
 			if(collectMB.mouse_over()){
 				collectMB.mouse_pressed()

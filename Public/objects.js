@@ -399,7 +399,7 @@ class Button{
       noStroke()
       textFont(font)
       fill("black")
-      textSize(this.w/this.text.length)
+      textSize(20)
       textAlign(CENTER, CENTER)
       text(this.text, this.x+this.w/2, this.y+this.h/2)
     pop()
@@ -431,11 +431,9 @@ class Button{
     pressing=true
   }
   
-  mouse_released(array,index){
-    
-    if(array[index].mouse_over()){
-      this.func(index)
-    }
+  mouse_released(index){
+
+    this.func(index)
     this.pressed=false
     this.strkWeight=this.strkSave
     this.y-=this.clickDepth
