@@ -6,6 +6,9 @@ const saltRounds = 10;
 const mysql = require('mysql');
 const app = express()
 const port = 3000
+
+let currDate = new Date()
+
 let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
 
 
@@ -114,11 +117,27 @@ app.post('/login',(req,res)=>{
 			console.log(result)
 			// result == true
 			if(result){
-				let sql = "SELECT playerId FROM Player WHERE name='"+username+"'";
+				let sql = "SELECT playerId, gLevel FROM Player WHERE name='"+username+"'";
 
 				db.query(sql,(err,result)=>{
+
 					if(err) throw err;
-					res.send(result)
+
+					let gLevel = result[0].gLevel
+					let playerId = result[0].playerId
+
+					let sql = "SELECT galaxyId FROM galaxy WHERE gLevel = '"+gLevel+"'"
+					db.query(sql,(err,result)=>{
+
+						if(err) throw err;
+
+						let sending = {
+							"playerId": playerId,
+							"galaxyId": result[0].galaxyId
+						}
+						console.log(sending)
+						res.send(sending)
+					})
 				});
 			}else{
 				res.send(result)
@@ -343,27 +362,23 @@ app.post('/register',(req,res)=>{
 	});	
 });
 
+app.post('/startResearch', (req, res)=>{
 
-app.post('/createMission', (req,res)=>{
-	let playerId= req.body.playerId
-	let resource= req.body.resource
-	let length= req.body.length
-	
-	let sql= "SELECT * FROM mission WHERE id='"+length+"'"
+	let galaxyId= req.body.galaxyId
+
+	let sql = "SELECT researching FROM galaxy WHERE galaxyId = '"+galaxyId+"'"
+
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 
-		let missionTime= Math.floor(randomInt(result[0].maxTime, result[0].minTime))
-		let missionReward= Math.floor(randomInt(result[0].maxReward, result[0].minReward))
-		let successChance= Math.floor(randomInt(100, result[0].minChance))
+		let month = getMonth()
+		let day = getDay()
+		let hour = getHour()
 
-		let sql= "INSERT INTO player_mission (`playerId`, `resourceType`, `reward`, `duration`, `failTime`, `successChance`, `missionType`, `state`) VALUES ('"+playerId+"', '"+resource+"', '"+missionReward+"', '"+missionTime+"', 0, '"+successChance+"', '"+length+"', 1)"
-		
-		db.query(sql,(err,result)=>{
-			if(err) throw err;
-		});
+		if (result[0].researching == 0){
+			let sql = "UPDATE galaxy SET researching = 1, finishMonth, finishDay, finishHour"
+		}
 	})
-	res.send()
 })
 
 app.post('/updateResearch',(req,res)=>{
@@ -401,9 +416,9 @@ app.get('/getResearch/:playerId',(req,res)=>{
 	})
 
 })
-app.get('/getResearchTimer/:galaixyId', (req,res)=>{
-	let galaixyId= req.params.galaixyId
-	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaixyId+"'"
+app.get('/getResearchTimer/:galaxyId', (req,res)=>{
+	let galaxyId= req.params.galaxyId
+	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaxyId+"'"
 	db.query(sql, (err,result)=>{
 		if(err) throw err
 		res.send(result)
@@ -411,16 +426,38 @@ app.get('/getResearchTimer/:galaixyId', (req,res)=>{
 })
 
 
-app.get('/getResearchFinishTimer:galaixyId',(req,res)=>{
-	let galaixyId= req.params.galaixyId
+app.get('/getResearchFinishTimer:galaxyId',(req,res)=>{
+	let galaxyId= req.params.galaxyId
 
-	let sql="SELECT finishMonth ,finishDay, finishHour FROM galaxy WHERE galaixyId='"+galaixyId+"'"
+	let sql="SELECT finishMonth ,finishDay, finishHour FROM galaxy WHERE galaxyId='"+galaxyId+"'"
+
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 		res.send(result)
 	})
 })
 
+app.post('/createMission', (req,res)=>{
+	let playerId= req.body.playerId
+	let resource= req.body.resource
+	let length= req.body.length
+	
+	let sql= "SELECT * FROM mission WHERE id='"+length+"'"
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+
+		let missionTime= Math.floor(randomInt(result[0].maxTime, result[0].minTime))
+		let missionReward= Math.floor(randomInt(result[0].maxReward, result[0].minReward))
+		let successChance= Math.floor(randomInt(100, result[0].minChance))
+
+		let sql= "INSERT INTO player_mission (`playerId`, `resourceType`, `reward`, `duration`, `failTime`, `successChance`, `missionType`, `state`) VALUES ('"+playerId+"', '"+resource+"', '"+missionReward+"', '"+missionTime+"', 0, '"+successChance+"', '"+length+"', 1)"
+		
+		db.query(sql,(err,result)=>{
+			if(err) throw err;
+		});
+	})
+	res.send()
+})
 
 app.post('/discardMission', (req,res)=>{
 	let playerId= req.body.playerId
@@ -798,7 +835,8 @@ app.post('/delModule',(req,res)=>{
 
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
+	console.log(day.getDate())
+  	console.log(`Example app listening at http://localhost:${port}`)
 })
 
 

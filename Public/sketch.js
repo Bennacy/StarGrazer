@@ -1215,7 +1215,8 @@ function do_Login() {
       pop()
     }
     else{
-      playerId = dataReceived[0].playerId;
+      playerId = dataReceived.playerId;
+      galaxyId = dataReceived.galaxyId;
       getMission()
       loadResource()
       getPlayerMap()
@@ -1782,8 +1783,7 @@ function getResearch(){
 }
 
 function startResearch(){  let dataToSend={
-  "galixyId":galixyId,
-  "researching":researching,
+  "galaxyId":galaxyId,
   }
 
   httpPost('/startResearch','JSON',dataToSend,dataReceived=>{
@@ -1792,9 +1792,9 @@ function startResearch(){  let dataToSend={
 }
 
 function getResearchTimer(){
-  loadJSON('/getResearchTimer/'+galixyId, (dataReceived)=>{
+  loadJSON('/getResearchTimer/'+galaxyId, (dataReceived)=>{
 
-    loadJSON('/getResearchFinishTimer'+galixyId, (dataReceived)=>{
+    loadJSON('/getResearchFinishTimer'+galaxyId, (dataReceived)=>{
 
       let timePassed = 0
       let timeRemaining = 0
