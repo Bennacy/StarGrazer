@@ -835,7 +835,7 @@ app.post('/delModule',(req,res)=>{
 
 
 app.listen(port, () => {
-	console.log(day.getDate())
+	console.log(currDate.getDate())
   	console.log(`Example app listening at http://localhost:${port}`)
 })
 
