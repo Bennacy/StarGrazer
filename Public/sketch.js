@@ -36,6 +36,7 @@ let playerId;
 let playerCard=''
 let cv;
 let mainSceneEnable = false;
+let visiting
 let resourceType;
 let currentAmount;
 let maxAmount;
@@ -156,7 +157,11 @@ function main_scene_setup(){
   buildScreenB= new Button(15, height-90, 200, 75, 200,200,200, building_Scene, "Modules")
 	collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money')
   mapBtn = new Button(width/1.5 + 250, height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, map_scene, "Map");
+  buildShipB= new Button(width/2-75, height/2+150, 150, 50, 240,240,240, buildShip, 'Build Ship\nMoney Cost:1000') // Button to build new ships
 
+  create_Grid(playerId)
+
+  visiting=false
   mainLoop= true
   gameState= 1
   loop()
@@ -170,7 +175,7 @@ function main_Scene() {
     moduleType=0
     gridEnable=false
     side= 48
-    create_Grid()
+    create_Grid(playerId)
     drawR()
 }
 
@@ -316,7 +321,7 @@ function mousePressed(){
 			if(playerCard!=''){
         if(playerCard.visitBtn){
           if(playerCard.visitBtn.mouse_over()){
-            playerCard.visitBtn.mouse_pressed(playerCard.pId, playerId) //visit player with that id
+            playerCard.visitBtn.mouse_pressed(playerCard.pId) //visit player with that id
 				  }
 				}
 
@@ -615,151 +620,115 @@ function mousePressed(){
 
 
 function timer(){
-// {
-//   setInterval(function(){
-//     switch(gameState){
+{
+  setInterval(function(){
+    background(220)
+    
+    switch(gameState){
       
-//       case 1:
-//         main_Scene()
+      case 1:
+        draw_Grid()
+        if(visiting==false){
+          if(moneyTimer>2){
+            collectMB.func=collectMoney
+            collectMB.mouse_over()
+            collectMB.draw_button()
+          }else{ // Money not available to collect, darken button with no function
+            collectMB.r=150
+            collectMB.g=150
+            collectMB.b=150
+            collectMB.func=function(){}
+            collectMB.draw_button()
+          }
+        }
+        break
 
-//         if(moneyTimer>2){
-//           collectMB.func=collectMoney
-//           collectMB.mouse_over()
-//           collectMB.draw_button()
-//         }else{ // Money not available to collect, darken button with no function
-//           collectMB.r=150
-//           collectMB.g=150
-//           collectMB.b=150
-//           collectMB.func=function(){}
-//           collectMB.draw_button()
-//         }
-//         break
+      case 2:
+        if(erasing==true){
+          push()
+            fill("red")
+            textSize(30)
+            textAlign(CENTER, TOP)
+            text("Erasing",width/2,height/2+6.5*side)
+          pop()
+        }
 
-//       case 2:
+        if(gameState==2){
+          for(let i=0; i<moduleBuildButton.length; i++){
+            moduleBuildButton[i].mouse_over()
+            moduleBuildButton[i].draw_button()
+          }
+        }
 
-//         break
+        draw_Grid()
+        break
 
-//       case 3:
+      case 3:
+        refreshM()
 
-//         break
-
-//       case 4:
-
-//         break
-
-//       case 5:
-
-//         break
+        for(let i=0; i<missionButton.length; i++){
+          missionButton[i].mouse_over()
+          missionButton[i].draw_button()
+        }
         
-//     }
-//   },10)
-// }
-  setInterval(function(){
-    if(gameState==3){
-      for(let i=0; i<missionButton.length; i++){
-        missionButton[i].mouse_over() // Darkens the button
-        missionButton[i].draw_button()
-      }
+        if(placedModule[4]==0 || resource[3].currAmount==resource[3].maxAmount){ // If there are no ship constructors, or the ships array is full, darkens button
+          buildShipB.r=180
+          buildShipB.g=180
+          buildShipB.b=180
+          buildShipB.func= function(){
+            if(resource[3].currAmount==resource[3].maxAmount){
+              push()
+                fill("red")
+                textSize(15)
+                textAlign(CENTER)
+                text("Hangar bay already full",buildShipB.x+buildShipB.w/2,buildShipB.y-15)
+              pop()
+              setTimeout(function(){
+                if(gameState==3)
+                refreshM()
+              },1500)
+            }else if(placedModule[4]==0){
+              push()
+                fill("red")
+                textSize(15)
+                textAlign(CENTER)
+                text("No ship construction modules active",buildShipB.x+buildShipB.w/2,buildShipB.y-15)
+              pop()
+              setTimeout(function(){
+                if(gameState==3)
+                refreshM()
+              },1500)
+            }
+          }
+        }else{
+          buildShipB.r=240
+          buildShipB.g=240
+          buildShipB.b=240
+          buildShipB.mouse_over()
+          buildShipB.func=buildShip
+        }
+        buildShipB.draw_button()
+
+        break
+
+      case 4:
+        logoffButton.mouse_over()
+        logoffButton.draw_button()
+        break
+
+      case 5:
+        drawMap()
+        if(playerCard!=''){
+          playerCard.draw_card()
+          if(playerCard.visitBtn){
+            playerCard.visitBtn.mouse_over()
+            playerCard.visitBtn.draw_button()
+          }
+        }
+        break
+        
     }
-  },15)
 
-  setInterval(function(){
-    if(gameState==4){
-      logoffButton.mouse_over()
-      logoffButton.draw_button()
-    }
-  })
-
-  setInterval(function(){
-    if(gameState==2){
-
-      if(erasing==true){
-				clearedErase=false
-        push()
-          fill("red")
-          textSize(30)
-          textAlign(CENTER, TOP)
-          text("Erasing",width/2,height/2+6.5*side)
-        pop()
-      }else if(clearedErase==false){
-        clearedErase=true
-        clearScreen()
-        background(220)
-        drawR()
-        draw_Grid();
-      }
-    }
-  },15)
-
-	setInterval(function(){
-		if(gameState>0 && gameState<4){
-			if(moneyTimer>2){
-				collectMB.func=collectMoney
-				collectMB.mouse_over()
-				collectMB.draw_button()
-			}else{ // Money not available to collect, darken button with no function
-				collectMB.r=150
-				collectMB.g=150
-				collectMB.b=150
-				collectMB.func=function(){}
-				collectMB.draw_button()
-			}
-		}
-	})
-
-	setInterval(function(){
-		if(gameState==3){
-			if(placedModule[4]==0 || resource[3].currAmount==resource[3].maxAmount){ // If there are no ship constructors, or the ships array is full, darkens button
-				buildShipB.r=180
-				buildShipB.g=180
-				buildShipB.b=180
-				buildShipB.func= function(){
-					if(resource[3].currAmount==resource[3].maxAmount){
-						push()
-							fill("red")
-							textSize(15)
-							textAlign(CENTER)
-							text("Hangar bay already full",buildShipB.x+buildShipB.w/2,buildShipB.y-15)
-						pop()
-						setTimeout(function(){
-							if(gameState==3)
-							refreshM()
-						},1500)
-					}else if(placedModule[4]==0){
-						push()
-							fill("red")
-							textSize(15)
-							textAlign(CENTER)
-							text("No ship construction modules active",buildShipB.x+buildShipB.w/2,buildShipB.y-15)
-						pop()
-						setTimeout(function(){
-							if(gameState==3)
-							refreshM()
-						},1500)
-					}
-				}
-			}else{
-				buildShipB.r=240
-				buildShipB.g=240
-				buildShipB.b=240
-				buildShipB.mouse_over()
-				buildShipB.func=buildShip
-			}
-			buildShipB.draw_button()
-		}
-	},15)
-
-  
-  setInterval(function(){
-    if(gameState==2){
-      for(let i=0; i<moduleBuildButton.length; i++){
-        moduleBuildButton[i].mouse_over()
-        moduleBuildButton[i].draw_button()
-      }
-    }
-  },15)
-
-  setInterval(function(){
     if(gameState>0){
       mapBtn.mouse_over()
       mapBtn.draw_button()
@@ -767,28 +736,23 @@ function timer(){
       profileButton.mouse_over()
       profileButton.draw_button()
 
-			if(playerCard!=''){
-        if(playerCard.visitBtn){
-          playerCard.visitBtn.mouse_over()
-          playerCard.visitBtn.draw_button()
-        }
-			}
+      if(gameState<4 && visiting==false){
+        missionScreenB.mouse_over()
+        missionScreenB.draw_button()
 
-			if(gameState!=5 && gameState!=4){
-				missionScreenB.mouse_over()
-				missionScreenB.draw_button()
+        buildScreenB.mouse_over()
+        buildScreenB.draw_button()
 
-				buildScreenB.mouse_over()
-				buildScreenB.draw_button()
-			}
-		}
+      }
+      drawR()
+    }
   },15)
+}
 
   setInterval(function(){
-    if(gameState==1){
-      mainLoop= true
+    if(gameState==4){
     }
-  },mainLoopTimer*1000) // Every minute the main screen reloads
+  })
 }
 
 
@@ -799,7 +763,7 @@ function clearScreen(){
 
 
 
-// v Different scenes v // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
+// v Scene transitions v // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
 // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
 
 
@@ -822,7 +786,7 @@ function building_Scene(){
       }
     }
 
-    create_Grid()
+    create_Grid(playerId)
 
 		setTimeout(function(){
 			push()
@@ -843,14 +807,9 @@ function building_Scene(){
 
 
 function refreshM(){
-	clearScreen()
-	background(235)
-  drawR()
   for(let i=0; i<mission.length; i++){
     mission[i].draw_mission()
   }
-	buildShipB= new Button(width/2-75, height/2+150, 150, 50, 240,240,240, buildShip, 'Build Ship\nMoney Cost:1000') // Button to build new ships
-
 }
 
 function buildShip(){
@@ -1122,7 +1081,7 @@ function playerProfile(){
     gameState = 4;
   }
   else if(gameState==4){
-		create_Grid()
+		create_Grid(playerId)
     changeScene()
     gameState=1
   }
@@ -1132,7 +1091,16 @@ function playerProfile(){
 function loadResource(){
   loadJSON('/getResources/'+playerId, (dataReceived)=>{
     for(let i = 0; i < dataReceived.length; i++){
-      resource[i] = new Resources ((width/4)+(i*width/6), (height/10), 10, dataReceived[i].ResourceType, dataReceived[i].CurrentAmount, dataReceived[i].MaxAmount, dataReceived[i].inUse)
+      let rType=dataReceived[i].ResourceType
+      let maxAmount=dataReceived[i].MaxAmount
+      let currAmount=dataReceived[i].CurrentAmount
+      let inUse=dataReceived[0].inUse
+
+      resource[i] = new Resources ((width/4)+(i*width/6), (height/10), 10, rType, currAmount, maxAmount, inUse)
+      loadJSON('/getResourceNames/'+rType, (dataReceived)=>{
+        resource[i].resourceName= dataReceived[0].resourceName
+      });
+
     }
     main_Scene()
   });
@@ -1343,7 +1311,7 @@ function changeAvailableShips(op, value){
 // [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]
 
 
-function create_Grid(){
+function create_Grid(id){
 
   let x=0;
   let y=0;
@@ -1373,7 +1341,7 @@ function create_Grid(){
     }
   }
 
-  loadJSON('/getModule/'+playerId,(dataReceived)=>{
+  loadJSON('/getModule/'+id,(dataReceived)=>{
 
     module = dataReceived;
     
@@ -1389,6 +1357,7 @@ function create_Grid(){
 
 function draw_Grid(){
   for (let i = 0; i < arrtiles.length; i++) {
+
     for (let j = 0; j < arrtiles[i].length; j++) {
       if(gameState==2){
         arrtiles[i][j].draw_Module()
@@ -1522,50 +1491,17 @@ function moduleColor(moduleType){ // Modules and their buttons have the same col
 
 /* v Map/Visit start v // ===============================================================================================================================================================================================================================*/
 
-function visitPlayer(index){
+function visitPlayer(vId){
 
+  visiting=true
+  gameState=1
   mapBtn.text='Back to base'
-	changeScene()
-  
-  let x=0;
-  let y=0;
-  let COL=19;
-  let ROW =11;
-
-  for (let i = 0; i < COL; i++) {
-    arrtiles[i] = [];
-
-    if(i==0){
-      //starting point in width
-      x= (width/2) - (COL*side/2);
-    }else{
-      x=x+side;
-    }
-
-    for (let j = 0; j < ROW; j++) {
-
-      //starting point in height
-      if(j==0){
-        y=(height/2) - (ROW*side/2) + side;
-      }else{
-        y=y+side;
-      }
-
-      arrtiles[i][j] = new Module(i,j,x,y, side, 0, 0);
-    }
+  mapBtn.func=function(){
+    main_scene_setup()
+    mapBtn.func=map_scene
   }
 
-  loadJSON('/getModule/'+index,(dataReceived)=>{
-
-    module = dataReceived;
-    
-    for(let i=0;i<module.length;i++){
-      arrtiles[module[i].posX][module[i].posY].moduleType = module[i].moduleType;
-
-      arrtiles[module[i].posX][module[i].posY].deleted = module[i].deleted;
-    }
-    draw_Grid();
-  })
+  create_Grid(vId)
 }
 
 

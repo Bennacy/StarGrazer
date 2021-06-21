@@ -86,23 +86,20 @@ class Resources{
   
     draw_resource(x,y){
       push()
+        textAlign(CENTER,CENTER)
         fill(0);
-    
-        let rType= this.resType
-        loadJSON('/getResourceNames/'+rType, (dataReceived)=>{
-          fill("black")
-          this.resourceName= dataReceived[0].resourceName
-          if(this.resType==4 || this.resType==2){
-            let av= this.currAmount-this.inUse
-            text(this.resourceName+': '+this.currAmount+'/'+this.maxAmount, x, y-10)
-            text("Available: "+av, x, y+10)
-          }
-          else if(this.resType==3){
-            text(this.resourceName+': '+this.currAmount+'/'+this.maxAmount, x, y)
-          }else if(this.resType==1){
-            text(this.resourceName+': '+this.currAmount, x, y)
-          }
-        });
+        fill("black")
+        if(this.resType==4 || this.resType==2){
+          let av= this.currAmount-this.inUse
+          text(this.resourceName+': '+this.currAmount+'/'+this.maxAmount, x, y-10)
+          text("Available: "+av, x, y+10)
+        }
+        else if(this.resType==3){
+          text(this.resourceName+': '+this.currAmount+'/'+this.maxAmount, x, y)
+        }else if(this.resType==1){
+          text(this.resourceName+': '+this.currAmount, x, y)
+        }
+
       pop()
     }
 }
@@ -129,7 +126,6 @@ class Mission{
   }
 
   draw_mission(){
-    loadJSON('/getResourceNames/'+this.missionResource, (dataReceived)=>{
       push()
         if(this.state==1){
           fill("black")
@@ -140,10 +136,8 @@ class Mission{
         }else if(this.state==4){
           fill("red")
         }
-        text('Resource: '+ this.missionResource+' Type: '+this.missionType, this.x,this.y-10)
-        text('Resource: '+dataReceived[0].resourceName+'; Reward: '+this.reward+'; Duration: '+this.duration+' minutes; Chance of success: '+this.successChance+'%', this.x, this.y)
+        text('Resource: '+resource[this.missionResource-1].resourceName+'; Reward: '+this.reward+'; Duration: '+this.duration+' minutes; Chance of success: '+this.successChance+'%', this.x, this.y)
       pop()
-    });
   }
 
   start_mission(index){
@@ -452,14 +446,20 @@ class PlayerCard{
     this.lineX2
     this.lineY1=this.y+this.pSize/2
     this.lineY2
+
+    this.playerInfo
     
-    if(this.x+this.w+500>width){
+    loadJSON('/getUserInfo/'+this.pId,(dataReceived)=>{
+      this.playerInfo=dataReceived.name
+    })
+    
+    if(this.x+this.w+200>width){
       this.x-=this.w
-      this.x-=500
+      this.x-=200
 
       this.lineX2= this.x+this.w
     }else{
-      this.x+=500
+      this.x+=200
 
       this.lineX2= this.x
     }
@@ -467,10 +467,18 @@ class PlayerCard{
       this.y-=this.h
       this.y-=50
       
+      if(this.y<displayArea.topY){
+        this.y=displayArea.topY
+      }
       this.lineY2= this.y+this.h
+
     }else{
       this.y+=50
-      
+
+      if(this.y+this.h>displayArea.bottomY){
+        this.y=displayArea.bottomY-this.h
+      }
+
       this.lineY2= this.y
     }
 
@@ -479,10 +487,6 @@ class PlayerCard{
   }
 
   draw_card(){
-    
-    loadJSON('/getUserInfo/'+this.pId,(dataReceived)=>{
-      let playerInfo=dataReceived
-
       push()
         fill('white')
         rect(this.x,this.y,this.w,this.h)
@@ -493,7 +497,7 @@ class PlayerCard{
         fill(0)
         textAlign(CENTER,CENTER)
         textSize(20)
-        text(playerInfo.name,this.x,this.y, this.w-this.xSize, this.xSize)
+        text(this.playerInfo,this.x,this.y, this.w-this.xSize, this.xSize)
         pop()
     
         push()
@@ -513,16 +517,17 @@ class PlayerCard{
         stroke(255,0,0,200)
         line(this.lineX1,this.lineY1,this.lineX2,this.lineY2)
       pop()
-    })
   }
 
   over_x(){
     if(mouseX>this.x+(this.w-this.xSize)&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.xSize){
-      changeScene()
-      drawMap()
+      playerCard=''
     }
   }
 }
+
+
+
 
 
 class Player{
