@@ -22,11 +22,11 @@ function setup() {
 
   button[7]= new Button(width/2-200,600, 100,100, 0,171,255, btn, 'Button', 4,5)
   button[8]= new Button(width/2-200,500, 100,100, 0,171,255, btn, 'Button', 4,5)
-  background(230)
 }
 
 
 function draw() {
+  background(230)
 
   for(let i=0; i<button.length; i++){
     button[i].mouse_over()
