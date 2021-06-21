@@ -336,14 +336,14 @@ function mousePressed(){
 	if(onB.mouse_over())
 	{
 		friendTab = 1
-      onB.mouse_pressed()
-	  pendingB.onClickSearch()
+		onB.onClickSearch()
+		onB.mouse_pressed()
 	}
 	if(pendingB.mouse_over())
 	{
 		friendTab = 2
-      pendingB.mouse_pressed()
-	  pendingB.onClickSearch()
+		pendingB.onClickSearch()
+		pendingB.mouse_pressed()
 	  
 	}
 	if(addFriendB.mouse_over())
@@ -670,12 +670,12 @@ function timer(){
 	  onB.mouse_over()
 	  pendingB.draw_button()
 	  pendingB.mouse_over()
-	  if (sb == true)
+	  addFriendB.draw_button()
+	  addFriendB.mouse_over()
+	  if (friendTab == 3)
 	  {
 		searchB.draw_button()
 	  }
-	  addFriendB.draw_button()
-	  addFriendB.mouse_over()
 	  playerName.playerDraw()
     }
   })

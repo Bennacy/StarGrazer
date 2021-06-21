@@ -14,15 +14,10 @@ class Button{
     this.r=this.origR
     this.g=this.origG
     this.b=this.origB
+	
     this.text=text
     this.active
 	//this.array =  array
-	/* let allPlayers
-	loadJSON('/getPlayerList/:playerId',(dataReceived)=>
-	{
-		allPlayers = dataReceived
-		//console.log(allPlayers)
-	}) */
   }
   draw_button(){
     push()
@@ -37,20 +32,44 @@ class Button{
 
   onClickSearch()
   {
-	  let searchPlayer = createInput('enter a username')
-		searchPlayer.input(addPlayer)
+	let searchPlayer = createInput('enter a username')
 	  
 	let allPlayers
 	let pName
+	let friendRequest
 	let friend 
+	let accept
+	let checked
+	let redX
 	
-	searchPlayer.position(this.x-width/10,this.y + height / 10)
-	test.position(this.x-width/10,this.y + height / 8)
-	
+	switch(friendTab)
+	{
+		
+		case 0:
+		break;
+		
+		case 1:
+		searchPlayer.input(onlinePlayers)
+		break;
+		
+		case 2:
+		searchPlayer.input(resolveRequest)
+		break;
+		
+		case 3: 
+		searchPlayer.input(addPlayer)
+		break;
+	}
 	loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 	{
 		pName = nameReceived
 	})
+	loadJSON('/getFriendList',(reqReceived)=>
+	{
+		friendRequest = reqReceived
+	}) 
+	
+	searchPlayer.position(this.x-width/10,this.y + height / 10)
 	
 	function addPlayer()
 	{
@@ -63,11 +82,9 @@ class Button{
 			{
 				if (searchPlayer.value() == allPlayers[p].name)
 				{
-					console.log("totsugeki")
 					friend = {
 						"requestFrom": pName[0].name,
 						"requestTo": searchPlayer.value(),
-						"accepted": false,
 					}
 					httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
 					{
@@ -77,40 +94,58 @@ class Button{
 			}		
 		})
 		console.log(pName)
+		console.log(friendTab)
+		console.log(friendRequest)
 	}
+	
 	function resolveRequest()
 	{
-		//loadJSON('getFriendReq',
+		console.log(pName)
+		console.log(friendTab)
+		console.log(friendRequest)
 		
+		/* if (friendRequest !='')
+		{ */
+			for (let p=0; p<friendRequest.length; p++)
+			{
+				console.log(friendRequest[p].requestTo)
+				if(friendRequest[p].requestTo = pName)
+				{
+					text(friendRequest[p].requestFrom,this.x - width/10,this.y + (height/10 * p))
+
+					if (checked == true)
+					{
+						accept = {
+							"accepted": true
+						}
+						httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
+						{
+						
+						})
+					}
+					if (redX == true)
+					{	
+						accept = {
+							"accepted": false
+						}
+						httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
+						{
+						
+						})
+					}
+				}
+			}
+		//}
 	}
 	function onlinePlayers()
 	{
-	/* 	loadJSON('getFriendReq',(reqReceived)
+		for (let p=0; p<friendRequest.length;p++)
 		{
-			friendRequest = reqReceived
-			for (let p=0; p<
-				if (accepted == true && friendRequest.requestTo == pName)
-				{ */
-				
-		
-	}
-	switch(friendTab)
-	{
-		case 0:
-		break;
-		
-		case 1:
-		const displayPlayersOn = onlinePlayers()
-		break;
-		
-		case 2:
-		const resolve = resolveRequest() 
-		break;
-		
-		case 3: 
-		let searchPlayer = createInput('enter a username')
-		searchPlayer.input(addPlayer)
-		break;
+			if (accepted == true && friendRequest[p].requestTo == pName)
+			{
+				text(friendRequest[p],this.x - width/10,this.y + (height/10 * p))
+			}	
+		}
 	}
   }
 			
