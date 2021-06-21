@@ -440,19 +440,38 @@ class Module {
 
 
 class PlayerCard{
-  constructor(x,y,pId){
+  constructor(x,y,pSize,pId){
     this.x=x
     this.y=y
     this.w=200
     this.h=300
+    this.pSize=pSize
     this.xSize=25
     this.pId=pId
+    this.lineX1=this.x+this.pSize/2
+    this.lineX2
+    this.lineY1=this.y+this.pSize/2
+    this.lineY2
     
-    if(this.x+this.w>width){
-      this.x=this.x-this.w
+    if(this.x+this.w+500>width){
+      this.x-=this.w
+      this.x-=500
+
+      this.lineX2= this.x+this.w
+    }else{
+      this.x+=500
+
+      this.lineX2= this.x
     }
-    if(this.y+this.h>height){
-      this.y=this.y-this.h
+    if(this.y+this.h+50>height){
+      this.y-=this.h
+      this.y-=50
+      
+      this.lineY2= this.y+this.h
+    }else{
+      this.y+=50
+      
+      this.lineY2= this.y
     }
 
     if(playerId!=this.pId)
@@ -463,8 +482,6 @@ class PlayerCard{
     
     loadJSON('/getUserInfo/'+this.pId,(dataReceived)=>{
       let playerInfo=dataReceived
-
-      print(playerInfo)
 
       push()
         fill('white')
@@ -488,6 +505,13 @@ class PlayerCard{
         textSize(20)
         textAlign(CENTER, CENTER)
         text('X',(this.x+(this.w-this.xSize))+this.xSize/2,this.y+28/2)
+
+        strokeWeight(6)
+        stroke(255,0,0,100)
+        line(this.lineX1,this.lineY1,this.lineX2,this.lineY2)
+        strokeWeight(2)
+        stroke(255,0,0,200)
+        line(this.lineX1,this.lineY1,this.lineX2,this.lineY2)
       pop()
     })
   }
@@ -518,8 +542,14 @@ class Player{
 
   draw_player(displayArea){
     push()
-      fill('black')
+      //
+      noStroke()
+      fill(255,0,0,50)
       circle(this.x+this.size/2, this.y+this.size/2, this.size)
+      fill(255,0,0,100)
+      circle(this.x+this.size/2, this.y+this.size/2, this.size-5)
+      fill(255,0,0)
+      circle(this.x+this.size/2, this.y+this.size/2, this.size-10)
     pop()
   }
 
@@ -533,7 +563,7 @@ class Player{
 
   mouse_pressed(){
 
-    playerCard=new PlayerCard(this.x,this.y,this.id)
+    playerCard=new PlayerCard(this.x,this.y,this.size,this.id)
 
     playerCard.draw_card()
   }
