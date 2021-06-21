@@ -519,7 +519,7 @@ class Player{
   draw_player(displayArea){
     push()
       fill('black')
-      rect(this.x, this.y, this.size, this.size)
+      circle(this.x+this.size/2, this.y+this.size/2, this.size)
     pop()
   }
 

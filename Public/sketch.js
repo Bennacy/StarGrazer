@@ -164,9 +164,9 @@ function main_scene_setup(){
 
 
 function main_Scene() {
-    clearScreen()
-    createCanvas(windowWidth, windowHeight);
-    background('#000')
+    // clearScreen()
+    // createCanvas(windowWidth, windowHeight);
+    background(220)
     moduleType=0
     gridEnable=false
     side= 48
@@ -615,6 +615,45 @@ function mousePressed(){
 
 
 function timer(){
+{
+  // setInterval(function(){
+  //   switch(gameState){
+      
+  //     case 1:
+  //       main_Scene()
+
+  //       if(moneyTimer>2){
+  //         collectMB.func=collectMoney
+  //         collectMB.mouse_over()
+  //         collectMB.draw_button()
+  //       }else{ // Money not available to collect, darken button with no function
+  //         collectMB.r=150
+  //         collectMB.g=150
+  //         collectMB.b=150
+  //         collectMB.func=function(){}
+  //         collectMB.draw_button()
+  //       }
+  //       break
+
+  //     case 2:
+
+  //       break
+
+  //     case 3:
+
+  //       break
+
+  //     case 4:
+
+  //       break
+
+  //     case 5:
+
+  //       break
+        
+  //   }
+  // },1000)
+}
   setInterval(function(){
     if(gameState==3){
       for(let i=0; i<missionButton.length; i++){
