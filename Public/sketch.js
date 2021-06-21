@@ -22,11 +22,11 @@ function setup() {
 
   button[7]= new Button(width/2-200,600, 100,100, 0,171,255, btn, 'Button', 4,5)
   button[8]= new Button(width/2-200,500, 100,100, 0,171,255, btn, 'Button', 4,5)
+  background(230)
 }
 
 
 function draw() {
-  background(230)
 
   for(let i=0; i<button.length; i++){
     button[i].mouse_over()
@@ -51,7 +51,7 @@ function mouseReleased(){
   
   for(let i=0; i<button.length; i++){
     if(button[i].pressed==true){
-      button[i].mouse_released(i)
+      button[i].mouse_released(button,i)
     }
   }
 }
@@ -198,10 +198,12 @@ class Button{
   }
 
   mouse_over(){
-    if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h && this.pressed==false && pressing==false){
-      this.r=this.origR-this.highlight1
-      this.g=this.origG-this.highlight1
-      this.b=this.origB-this.highlight1
+    if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){
+      if(this.pressed==false && pressing==false){
+        this.r=this.origR-this.highlight1
+        this.g=this.origG-this.highlight1
+        this.b=this.origB-this.highlight1
+      }
       return true
     }else if(this.pressed==false){
       this.r=this.origR
@@ -220,12 +222,15 @@ class Button{
     this.strkWeight=this.clickStroke
     pressing=true
   }
-
-  mouse_released(index){
+  
+  mouse_released(array,index){
+    
+    if(array[index].mouse_over()){
+      this.func(index)
+    }
     this.pressed=false
     this.strkWeight=this.strkSave
     this.y-=this.clickDepth
-    this.func(index)
     pressing=false
   }
 }
