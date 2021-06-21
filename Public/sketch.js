@@ -616,43 +616,43 @@ function mousePressed(){
 
 function timer(){
 {
-  // setInterval(function(){
-  //   switch(gameState){
+  setInterval(function(){
+    switch(gameState){
       
-  //     case 1:
-  //       main_Scene()
+      case 1:
+        main_Scene()
 
-  //       if(moneyTimer>2){
-  //         collectMB.func=collectMoney
-  //         collectMB.mouse_over()
-  //         collectMB.draw_button()
-  //       }else{ // Money not available to collect, darken button with no function
-  //         collectMB.r=150
-  //         collectMB.g=150
-  //         collectMB.b=150
-  //         collectMB.func=function(){}
-  //         collectMB.draw_button()
-  //       }
-  //       break
+        if(moneyTimer>2){
+          collectMB.func=collectMoney
+          collectMB.mouse_over()
+          collectMB.draw_button()
+        }else{ // Money not available to collect, darken button with no function
+          collectMB.r=150
+          collectMB.g=150
+          collectMB.b=150
+          collectMB.func=function(){}
+          collectMB.draw_button()
+        }
+        break
 
-  //     case 2:
+      case 2:
 
-  //       break
+        break
 
-  //     case 3:
+      case 3:
 
-  //       break
+        break
 
-  //     case 4:
+      case 4:
 
-  //       break
+        break
 
-  //     case 5:
+      case 5:
 
-  //       break
+        break
         
-  //   }
-  // },1000)
+    }
+  },10)
 }
   setInterval(function(){
     if(gameState==3){
