@@ -74,8 +74,30 @@ app.post('/sendFriendReq',(req,res)=>{
 	let requestFrom = req.body.requestFrom;
 	let requestTo = req.body.requestTo;
 	let accepted = req.body.accepted;
+	
 
 	let sql = "INSERT INTO player_friends (requestFrom,requestTo,accepted) VALUES ('"+requestFrom+"','"+requestTo+"','"+accepted+"')"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err;
+		res.send(result)
+	});
+});
+
+app.get('/getFriendReq',(req,res)=>{
+
+	let sql = "SELECT * from player_friends"
+	
+	db.query(sql,(err,result)=>{
+		if(err) throw err;
+		res.send(result)
+	});
+});
+app.post('/resolveFriendReq',(req,res)=>{
+	
+	let accepted = req.body.accepted
+
+	let sql = "UPDATE player_friends SET accepted = "+accepted+""
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err;

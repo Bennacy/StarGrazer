@@ -37,45 +37,83 @@ class Button{
 
   onClickSearch()
   {
-	let searchPlayer = createInput('enter a username')
+	  let searchPlayer = createInput('enter a username')
+		searchPlayer.input(addPlayer)
+	  
 	let allPlayers
 	let pName
 	let friend 
 	
 	searchPlayer.position(this.x-width/10,this.y + height / 10)
+	test.position(this.x-width/10,this.y + height / 8)
+	
+	loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
+	{
+		pName = nameReceived
+	})
 	
 	function addPlayer()
 	{
-		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
+		loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
 		{
-			pName = nameReceived
-			console.log(pName)
-			loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
-			{
-				allPlayers = pNamesReceived
+			allPlayers = pNamesReceived
 				
-				console.log(pName[0].name)
-				for (let p=0; p<allPlayers.length; p++)
+			console.log(pName[0].name)
+			for (let p=0; p<allPlayers.length; p++)
+			{
+				if (searchPlayer.value() == allPlayers[p].name)
 				{
-					if (searchPlayer.value() == allPlayers[p].name)
+					console.log("totsugeki")
+					friend = {
+						"requestFrom": pName[0].name,
+						"requestTo": searchPlayer.value(),
+						"accepted": false,
+					}
+					httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
 					{
-						console.log("totsugeki")
-						friend = {
-							"requestFrom": pName[0].name,
-							"requestTo": searchPlayer.value(),
-							"accepted": false,
-						}
-						httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
-						{
-							
-						}) 
-					} 
-				}		
-			})
+					
+					}) 
+				} 
+			}		
 		})
+		console.log(pName)
 	}
-	searchPlayer.input(addPlayer);
+	function resolveRequest()
+	{
+		//loadJSON('getFriendReq',
+		
+	}
+	function onlinePlayers()
+	{
+	/* 	loadJSON('getFriendReq',(reqReceived)
+		{
+			friendRequest = reqReceived
+			for (let p=0; p<
+				if (accepted == true && friendRequest.requestTo == pName)
+				{ */
+				
+		
+	}
+	switch(friendTab)
+	{
+		case 0:
+		break;
+		
+		case 1:
+		const displayPlayersOn = onlinePlayers()
+		break;
+		
+		case 2:
+		const resolve = resolveRequest() 
+		break;
+		
+		case 3: 
+		let searchPlayer = createInput('enter a username')
+		searchPlayer.input(addPlayer)
+		break;
+	}
   }
+			
   mouseWheeling(event)
 	{
 	 /*  if(this.textY>this.y-height/6)

@@ -6,7 +6,7 @@ let deleted = 0;
 let moduleType=0;
 let clearedErase=false
 let buildingShip=false
-let sb = false
+let friendTab = 0
 let moneyToCollect
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
@@ -169,8 +169,7 @@ function addFriend()
 	{
 		clearScreen()
 		console.log(gameState)
-		img.resize(width/5,height/5)
-		image(img,width/4.5,height/10);
+		
 	}
 }
 
@@ -336,17 +335,22 @@ function mousePressed(){
   if(gameState==4){
 	if(onB.mouse_over())
 	{
+		friendTab = 1
       onB.mouse_pressed()
+	  pendingB.onClickSearch()
 	}
 	if(pendingB.mouse_over())
 	{
+		friendTab = 2
       pendingB.mouse_pressed()
+	  pendingB.onClickSearch()
+	  
 	}
 	if(addFriendB.mouse_over())
 	{
+	  friendTab = 3
 	  addFriendB.onClickSearch()
 	  searchB = new Button(width/1.5 + width/5,height/5,width/40,height/40,0,255,255)
-	  sb = true
       addFriendB.mouse_pressed()
 	}
     if(logoffButton.mouse_over())
