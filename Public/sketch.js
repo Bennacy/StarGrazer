@@ -47,7 +47,7 @@ let mainLoop= true
 let visitedB=false
 let buildingProbe=false;
 let probeBuilt=false;
-let research=false;
+let researching=false;
 
 // Button initialization
 let loginBtn
@@ -402,13 +402,15 @@ function mousePressed(){
 														})
 													})
 												}else if (moduleType == 7){
-                          research = true
+
+                          researching = true
+                      
                           let dataToSend={
                             "playerId": playerId
                           }
                           httpPost('/updatePlayerResearch','json',dataToSend,(dataReceived)=>{
                           })
-                          httpPost('/updateResearch','JSON',dataToSend,(dataReceived)=>{
+                          httpPost('/updateResearching','JSON',dataToSend,(dataReceived)=>{
                           })
 
                         }
@@ -865,6 +867,7 @@ function refreshM(){
   }
 }
 
+
 function buildShip(){
 	if(buildingShip==false && resource[0].currAmount>=1000){
 		let multiplier= placedModule[4]
@@ -924,7 +927,6 @@ function buildProbe(){
 
     resource[0].change_value(-1,5000)
     buildingProbe=true
-    probe = 1
     let bar=0
     let drawBar=setInterval(function(){
       bar+=buildProbeB.w/((1000*5*timeScale)/100)
@@ -1221,6 +1223,7 @@ function do_Login() {
       loadResource()
       getPlayerMap()
       getProbe()
+      getResearch()
       main_scene_setup()
     }
   });
@@ -1767,18 +1770,11 @@ function drawMap(){
 // 		totalPlayers++
 // }
 
-function updatePlayerResearch(){
-  let dataToSend={
-    "playerId": playerId
-  }
-  httpPost('/updatePlayerResearch','json',dataToSend,(dataReceived)=>{
-  })
-}
 
 function getResearch(){
   loadJSON('/getResearch/'+playerId,(dataReceived)=>{
     print(dataReceived)
-    research = true
+    researching = true
   });
 }
 
@@ -1794,17 +1790,40 @@ function startResearch(){  let dataToSend={
 function getResearchTimer(){
   loadJSON('/getResearchTimer/'+galaxyId, (dataReceived)=>{
 
-    loadJSON('/getResearchFinishTimer'+galaxyId, (dataReceived)=>{
-
+    loadJSON('/getResearchStartTimer'+galaxyId, (dataReceived)=>{
+      let duration =  43200 // one month in minutes
       let timePassed = 0
       let timeRemaining = 0
-      let finM = month()
-      let finD = day()
-      let finH = hour()
+      let currM = month()
+      let currD = day()
+      let currH = hour()
 
-      timePassed = 0
-      timeRemaining = 0
-      
+      // for the multiplayer of the total players researching could be something like: 
+      multiplier = (totalPlayers * 0.01) // needs to check if they are researching
+
+      timePassed = ((currH*60)-(dataReceived[0].startHour*60)) + ((currD-dataReceived[0].startDay)*24*60) + ((currM-dataReceived[0].startMonth)*30*24*60)
+
+      timeRemaining = duration - timePassed - (duration * multiplier) // the multiplier would be (for 1 player): 432 minutes less; (for 10 players): 4320 minutes less
+                                                                      // even if there's 50 players researching it would be less 21600 minutes less which is half a month
+      if(timeRemaining>0){
+        setTimeout(function(){
+        }, timeRemaining*1000*timeScale)
+      }
     })
   })
+}
+
+function researchProgressBar(){
+  if (researching == true){
+    let multiplier = 1
+    let bar=0
+		let drawBar
+
+    drawBar=setInterval(function(){
+			if(gameState==2){
+				bar+=(width/4)/((1000*100*timeScale/multiplier)/100)
+				rect(width/3, width*0.90 , bar, 20)
+			}
+		},100)
+  }
 }

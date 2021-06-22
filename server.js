@@ -275,7 +275,7 @@ app.post('/register',(req,res)=>{
 											if(err) throw err
 
 											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `finishDay`, `finishHour`, `finishMonth`) values (1,1,1,48,0,0,0,0,0)"
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `startDay`, `startHour`, `startMonth`) values (1,1,1,48,0,0,0,0,0)"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
@@ -365,25 +365,36 @@ app.post('/register',(req,res)=>{
 app.post('/startResearch', (req, res)=>{
 
 	let galaxyId= req.body.galaxyId
+	let month= req.body.month
+	let day= req.body.day
+	let hour= req.body.hour
+	let time= req.body.time
+	let duration = 43200 // one month in minutes
 
-	let sql = "SELECT researching FROM galaxy WHERE galaxyId = '"+galaxyId+"'"
+	if(time==duration){
+		let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"'"
+		db.query(sql,(err,result)=>{
+			if(err) throw err
+		})
+	}
+	res.send()
+})
 
+app.post('/updatePlayerResearch',(req,res)=>{
+
+	let playerId=req.params.playerId
+
+	let sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
 	db.query(sql,(err,result)=>{
+
 		if(err) throw err
-
-		let month = getMonth()
-		let day = getDay()
-		let hour = getHour()
-
-		if (result[0].researching == 0){
-			let sql = "UPDATE galaxy SET researching = 1, finishMonth, finishDay, finishHour"
-		}
+		res.send(result)
 	})
 })
 
-app.post('/updateResearch',(req,res)=>{
+app.post('/updateResearching',(req,res)=>{
 
-	let sql = "UPDATE galaxy SET researching = (SELECT COUNT(*) FROM player WHERE research=player.research)"
+	let sql = "UPDATE galaxy SET researching = (SELECT COUNT(*) FROM player WHERE research=1)"
 	
 	db.query(sql,(err,result)=>{
 		if(err) throw err
@@ -391,15 +402,6 @@ app.post('/updateResearch',(req,res)=>{
 	})
 })
 
-app.post('/updatePlayerResearch',(req,res)=>{
-
-	let sql = "UPDATE player SET research = 1"
-	research = true
-	db.query(sql,(err,result)=>{
-		if(err) throw err
-		res.send()
-	})
-})
 
 
 app.get('/getResearch/:playerId',(req,res)=>{
@@ -408,8 +410,9 @@ app.get('/getResearch/:playerId',(req,res)=>{
 
 	let sql = "SELECT research FROM player WHERE playerId='"+playerId+"'";
 	db.query(sql,(err,result)=>{
+		
 		console.log(result)
-		research = true
+		researching = true
 
 		if(err) throw err
 		res.send(result)
@@ -417,8 +420,10 @@ app.get('/getResearch/:playerId',(req,res)=>{
 
 })
 app.get('/getResearchTimer/:galaxyId', (req,res)=>{
+
 	let galaxyId= req.params.galaxyId
 	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaxyId+"'"
+
 	db.query(sql, (err,result)=>{
 		if(err) throw err
 		res.send(result)
@@ -429,7 +434,7 @@ app.get('/getResearchTimer/:galaxyId', (req,res)=>{
 app.get('/getResearchFinishTimer:galaxyId',(req,res)=>{
 	let galaxyId= req.params.galaxyId
 
-	let sql="SELECT finishMonth ,finishDay, finishHour FROM galaxy WHERE galaxyId='"+galaxyId+"'"
+	let sql="SELECT startMonth ,startDay, startHour FROM galaxy WHERE galaxyId='"+galaxyId+"'"
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
