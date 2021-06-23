@@ -57,6 +57,9 @@ class Button{
 	
 	function addPlayer()
 	{
+		let pName
+		let friendRequest
+		let allPlayers
 		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
 			pName = nameReceived
@@ -88,10 +91,12 @@ class Button{
 			})
 		})
 	}
-	
-	function resolveRequest()
+  }
+  
+  resolveRequest()
 	{
-		console.log(this.x)
+		let pName
+		let friendRequest
 		let accept
 		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
@@ -100,8 +105,6 @@ class Button{
 			loadJSON('/getFriendList',(reqReceived)=>
 			{
 				friendRequest = reqReceived
-			
-				console.log(this.x)
 			
 				for (let p=0; p<friendRequest.length; p++)
 				{
@@ -134,6 +137,7 @@ class Button{
 						}
 						if (mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h)
 						{	
+							console.log("is it done?")
 							accept = {
 								"accepted": false
 							}
@@ -147,8 +151,10 @@ class Button{
 			}) 
 		})
 	}
-	function onlinePlayers()
+	allPlayers()
 	{
+		let pName
+		let friendRequest
 		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
 			pName = nameReceived
@@ -167,7 +173,6 @@ class Button{
 			})
 		}) 
 	}
-  }
 			
   mouseWheeling(event)
 	{

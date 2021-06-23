@@ -343,13 +343,13 @@ function mousePressed(){
 	if(onB.mouse_over())
 	{
 		friendTab = 1
-		onB.onClickSearch()
+		onB.allPlayers()
 		onB.mouse_pressed()
 	}
 	if(pendingB.mouse_over())
 	{
 		friendTab = 2
-		pendingB.onClickSearch()
+		pendingB.resolveRequest()
 		pendingB.mouse_pressed()
 	}
 	if(addFriendB.mouse_over())
