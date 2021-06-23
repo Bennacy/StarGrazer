@@ -31,11 +31,8 @@ class textBox{
 	{
 		//friends
 		fill("black")
-		//rect(this.x,this.y,this.wi,this.he)
-		fill("white")
-		text("Friends",this.x,this.y)
 		//friends container
-		fill("grey")
+		fill(0,0,150)
 		rect(this.x, this.y + height / 10,this.wi,this.he)
 	}
 }

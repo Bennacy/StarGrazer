@@ -52,7 +52,6 @@ let collectMB
 let profileButton
 let logoffButton
 let friendsButton
-let searchB
 let friendReqB
 let onB 
 let pendingB
@@ -78,13 +77,14 @@ let gameState=0
 function preload()
 {
 	img = loadImage('profile.jpg')
-  for(let i=1; i<=10; i++){
-    let modType=i
-    loadJSON('/getMCost/'+modType,(dataReceived)=>{ // Old name, returns everything on the module table from the database
-      moduleCost[i]=dataReceived[0].matCost
-      moduleName[i]=dataReceived[0].moduleName
-      maxPlace[i]=dataReceived[0].maxPlace
-	  crewCost[i]=dataReceived[0].crewCost
+	//part 2,modules
+	for(let i=1; i<=10; i++){
+		let modType=i
+		loadJSON('/getMCost/'+modType,(dataReceived)=>{ // Old name, returns everything on the module table from the database
+			moduleCost[i]=dataReceived[0].matCost
+			moduleName[i]=dataReceived[0].moduleName
+			maxPlace[i]=dataReceived[0].maxPlace
+			crewCost[i]=dataReceived[0].crewCost
     })
   }
 }
@@ -112,7 +112,6 @@ function draw() {
       }
       break
   }
-
 }
 
 function main_scene_setup(){
@@ -136,13 +135,20 @@ function main_scene_setup(){
 			moneyTimer++
 	},1000*timeScale)
 
-  logoffButton= new Button(width/2,height-height/10, width/10,height/10, 50,50,210, logOff, 'Log Off')
+  logoffButton= new Button(width/2,height-height/10, width/10,height/10, 210,50,50, logOff, 'Log Off')
+  
   profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 50,50,210, playerProfile, 'Profile')
-  onB = new Button(width/1.5+width/40,height/10, width/40,height/15, 50,50,210, ifOnline, 'Online')
+  
+  onB = new Button(width/1.5,height/10, width/20,height/15, 50,50,210, ifOnline, 'Friends')
+  
   pendingB = new Button(width/1.5+width/20,height/10, width/20,height/15, 50,50,210, pendingFriend, 'Pending')
+  
   addFriendB = new Button(width/1.5+width/10,height/10, width/15,height/15, 50,50,210, addFriend, 'Add Friend')
+  
   missionScreenB= new Button(width-200-15, height-90, 200, 75, 50,50,210, mission_Scene, "Missions")
+  
   buildScreenB= new Button(15, height-90, 200, 75, 50,50,210, building_Scene, "Modules")
+  
   collectMB= new Button(width/2-50,height/17+48, 100,35, 50,50,210, collectMoney, 'Collect Money')
   
 
@@ -169,7 +175,6 @@ function addFriend()
 	{
 		clearScreen()
 		console.log(gameState)
-		
 	}
 }
 
@@ -319,6 +324,7 @@ function keyPressed(){
 
 
 function mousePressed(){
+	console.log(mouseX,mouseY)
   if(gameState==3){
     for(let i=0; i<missionButton.length; i++){
       if(missionButton[i].mouse_over()){
@@ -333,6 +339,7 @@ function mousePressed(){
 
 
   if(gameState==4){
+
 	if(onB.mouse_over())
 	{
 		friendTab = 1
@@ -344,21 +351,31 @@ function mousePressed(){
 		friendTab = 2
 		pendingB.onClickSearch()
 		pendingB.mouse_pressed()
-	  
 	}
 	if(addFriendB.mouse_over())
 	{
 	  friendTab = 3
-	  searchB = new Button(width/1.5 + width/5,height/5,width/40,height/40,0,255,255)
 	  addFriendB.onClickSearch()
       addFriendB.mouse_pressed()
 	}
     if(logoffButton.mouse_over())
       logoffButton.mouse_pressed()
   }
-  
-
-
+   /*  switch(friendTab)
+	{
+	  case 1: 
+	  onB.onClickSearch()
+	  break;
+	  
+	  case 2: 
+	  pendingB.onClickSearch()
+	  break;
+	  
+	  case 3: 
+	  addFriendB.onClickSearch()
+	  break;
+	}	   */
+	
   if(gameState>0){
     if(profileButton.mouse_over())
       profileButton.mouse_pressed()
@@ -663,7 +680,7 @@ function timer(){
 
   setInterval(function(){
     if(gameState==4){
-	  friends.friendsContainer()
+	 // friends.friendsContainer()
       logoffButton.mouse_over()
       logoffButton.draw_button()
 	  onB.draw_button()
@@ -681,12 +698,12 @@ function timer(){
 		break;
 		
 		case 2:
-		accept.draw_button()
-		reject.draw_button()
+		//accept.draw_button()
+		//reject.draw_button()
 		break;
 		
 		case 3:
-		searchB.draw_button()
+		//searchB.draw_button()
 		break;
 	  }
 	  playerName.playerDraw()

@@ -28,126 +28,144 @@ class Button{
       text(this.text, this.x+this.w/2, this.y+this.h/2)
     pop()
   }
-
   onClickSearch()
   {
 	let searchPlayer = createInput('enter a username')
-	  
-	let allPlayers
 	let pName
 	let friendRequest
-	let friend 
-	let accept
-	let checked
-	let redX
+	let allPlayers
 	
 	switch(friendTab)
 	{
-		
-		case 0:
+		//pls help
+		/* case 0:
 		break;
 		
 		case 1:
-		searchPlayer.input(onlinePlayers)
+		tabDot.input(onlinePlayers)
 		break;
 		
 		case 2:
-		searchPlayer.input(resolveRequest)
-		break;
+		tabDot.input(resolveRequest)
+		break; */
 		
 		case 3: 
+		searchPlayer.position(this.x-width/10,this.y + height / 10)
 		searchPlayer.input(addPlayer)
 		break;
 	}
-	loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
-	{
-		pName = nameReceived
-	})
-	loadJSON('/getFriendList',(reqReceived)=>
-	{
-		friendRequest = reqReceived
-	}) 
-	
-	searchPlayer.position(this.x-width/10,this.y + height / 10)
 	
 	function addPlayer()
 	{
-		loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
+		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
-			allPlayers = pNamesReceived
-				
-			console.log(pName[0].name)
-			for (let p=0; p<allPlayers.length; p++)
+			pName = nameReceived
+		
+			loadJSON('/getFriendList',(reqReceived)=>
 			{
-				if (searchPlayer.value() == allPlayers[p].name)
+				friendRequest = reqReceived
+			
+				loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
 				{
-					friend = {
-						"requestFrom": pName[0].name,
-						"requestTo": searchPlayer.value(),
-					}
-					httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
+					allPlayers = pNamesReceived
+						
+					console.log(pName[0].name)
+					for (let p=0; p<allPlayers.length; p++)
 					{
-					
-					}) 
-				} 
-			}		
+						if (searchPlayer.value() == allPlayers[p].name)
+						{
+							friend = {
+								"requestFrom": pName[0].name,
+								"requestTo": searchPlayer.value(),
+							}
+							httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
+							{
+							
+							}) 
+						} 
+					}		
+				})
+			})
 		})
-		console.log(pName)
-		console.log(friendRequest)
 	}
 	
 	function resolveRequest()
 	{
-		console.log(pName[0].name)
-		console.log(friendRequest)
+		console.log(this.x)
+		let accept
+		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
+		{
+			pName = nameReceived
 		
-			for (let p=0; p<friendRequest.length; p++)
+			loadJSON('/getFriendList',(reqReceived)=>
 			{
-				if(friendRequest[p].requestTo == pName[0].name)
-				{	
-					//Show my requests
-					fill("white")
-					text(friendRequest[p].requestFrom,this.x - width/10,this.y + (height/10 * p))
-					//Reject
-					fill("red")
-					rect(this.x,this.y + (height/10 * p),width/40,height/40)
-					//Accept
-					fill("green")
-					rect(this.x+width/20,this.y + (height/10 * p),width/40,height/40)
-					
-					console.log(friendRequest[p].requestTo)
-					if (checked == true)
-					{
-						accept = {
-							"accepted": true
-						}
-						httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
-						{
-						
-						})
-					}
-					if (redX == true)
+				friendRequest = reqReceived
+			
+				console.log(this.x)
+			
+				for (let p=0; p<friendRequest.length; p++)
+				{
+					if(friendRequest[p].requestTo == pName[0].name)
 					{	
-						accept = {
-							"accepted": false
-						}
-						httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
-						{
+						//Show my requests
+						fill("white")
+						text(friendRequest[p].requestFrom,this.x + width/20,this.y + (height/10 * p) + height/20)
+						//Reject
+						fill("red")
+						rect(this.x + width/5,this.y + (height/10 * p) + height/20,width/40,height/40)
+						//Accept
+						fill("green")
+						rect(this.x+width/6,this.y + (height/10 * p) + height/20,width/40,height/40)
 						
-						})
+						//console.math
+						console.log(this.x + width/6,this.x + 50,this.y + (height/10 * p) + height/20,this.y+75)
+						//console.log(friendRequest[p].requestTo)
+						
+						if (mouseX<this.x + width/7 )//&& mouseX>this.x+50 && mouseY>this.y + (height/10 * p) + height/20 && mouseY<this.y+75)
+						{
+							console.log("it is done")
+							accept = {
+								"accepted": true
+							}
+							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
+							{
+							
+							})
+						}
+						if (mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h)
+						{	
+							accept = {
+								"accepted": false
+							}
+							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
+							{
+							
+							})
+						}
 					}
 				}
-			}
+			}) 
+		})
 	}
 	function onlinePlayers()
 	{
-		for (let p=0; p<friendRequest.length;p++)
+		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
-			if (accepted == true && friendRequest[p].requestTo == pName)
+			pName = nameReceived
+		
+			loadJSON('/getFriendList',(reqReceived)=>
 			{
-				text(friendRequest[p],this.x - width/10,this.y + (height/10 * p))
-			}	
-		}
+				friendRequest = reqReceived
+			
+				for (let p=0; p<friendRequest.length;p++)
+				{
+					if (friendRequest[p].accepted == true && friendRequest[p].requestTo == pName[0].name)
+					{
+						text(friendRequest[p].requestFrom,this.x + width/20,this.y + (height/10 * p) + height/20)
+					}	
+				}
+			})
+		}) 
 	}
   }
 			
@@ -178,7 +196,5 @@ class Button{
       this.func(index)
   }
 }
-
-
 
 
