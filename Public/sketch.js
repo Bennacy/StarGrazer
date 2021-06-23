@@ -404,7 +404,7 @@ function mousePressed(){
 												}else if (moduleType == 7){
 
                           researching = true
-                      
+
                           let dataToSend={
                             "playerId": playerId
                           }
@@ -1762,8 +1762,14 @@ function getResearch(){
   });
 }
 
-function startResearch(){  let dataToSend={
-  "galaxyId":galaxyId,
+function startResearch(){ 
+
+  let dataToSend={
+    "galaxyId":galaxyId,
+    "month":getMonth(),
+    "day":getDay(),
+    "hour":getHour(),
+    "duration":duration,
   }
 
   httpPost('/startResearch','JSON',dataToSend,dataReceived=>{
@@ -1775,12 +1781,12 @@ function getResearchTimer(){
   loadJSON('/getResearchTimer/'+galaxyId, (dataReceived)=>{
 
     loadJSON('/getResearchStartTimer'+galaxyId, (dataReceived)=>{
-      let duration =  43200 // one month in minutes
+      let duration =  galaxy.duration // one month in minutes
       let timePassed = 0
       let timeRemaining = 0
-      let currM = month()
-      let currD = day()
-      let currH = hour()
+      let currM = getMonth()
+      let currD = getDay()
+      let currH = getHour()
 
       // for the multiplayer of the total players researching could be something like: 
       multiplier = (totalPlayers * 0.01) // needs to check if they are researching
@@ -1797,17 +1803,17 @@ function getResearchTimer(){
   })
 }
 
-function researchProgressBar(){
-  if (researching == true){
-    let multiplier = 1
-    let bar=0
-    let drawBar
-
-    drawBar=setInterval(function(){
-      if(gameState==2){
-        bar+=(width/4)/((1000*100*timeScale/multiplier)/100)
-        rect(width/3, width*0.90 , bar, 20)
-      }
-    },100)
-  }
-}
+//function researchProgressBar(){
+//  if (researching == true){
+//    let multiplier = 1
+//    let bar=0
+//    let drawBar
+//
+//    drawBar=setInterval(function(){
+//      if(gameState==2){
+//        bar+=(width/4)/((1000*100*timeScale/multiplier)/100)
+//        rect(width/3, width*0.90 , bar, 20)
+//      }
+//    },100)
+// }
+//}

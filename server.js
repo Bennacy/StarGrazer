@@ -369,15 +369,25 @@ app.post('/startResearch', (req, res)=>{
 	let day= req.body.day
 	let hour= req.body.hour
 	let time= req.body.time
-	let duration = 43200 // one month in minutes
+	let duration = req.body.duration
+
+	let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"'"
 
 	if(time==duration){
-		let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"' AND researching >= 1"
 		db.query(sql,(err,result)=>{
 			if(err) throw err
+			setTimeout(function(){
+				let sql= "UPDATE galaxy SET found = 1 WHERE galaxyId='"+galaxyId+"'"
+				db.query(sql,(err,result)=>{
+					
+					if(err) throw err
+
+				})
+			},time*1000*timeScale)
+
+			res.send()
 		})
 	}
-	res.send()
 })
 
 app.post('/updatePlayerResearch',(req,res)=>{
@@ -431,7 +441,7 @@ app.get('/getResearchTimer/:galaxyId', (req,res)=>{
 })
 
 
-app.get('/getResearchFinishTimer:galaxyId',(req,res)=>{
+app.get('/getResearchStartTimer:galaxyId',(req,res)=>{
 	let galaxyId= req.params.galaxyId
 
 	let sql="SELECT startMonth ,startDay, startHour FROM galaxy WHERE galaxyId='"+galaxyId+"'"
