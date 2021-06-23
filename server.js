@@ -275,7 +275,7 @@ app.post('/register',(req,res)=>{
 											if(err) throw err
 
 											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `startDay`, `startHour`, `startMonth`) values (1,1,1,48,0,0,0,0,0)"
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `duration`) values (1,1,1,48,0,0,43200)"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
@@ -372,7 +372,7 @@ app.post('/startResearch', (req, res)=>{
 	let duration = 43200 // one month in minutes
 
 	if(time==duration){
-		let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"'"
+		let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"' AND researching >= 1"
 		db.query(sql,(err,result)=>{
 			if(err) throw err
 		})
@@ -382,13 +382,12 @@ app.post('/startResearch', (req, res)=>{
 
 app.post('/updatePlayerResearch',(req,res)=>{
 
-	let playerId=req.params.playerId
+	let playerId=req.body.playerId
 
 	let sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
 	db.query(sql,(err,result)=>{
-
 		if(err) throw err
-		res.send(result)
+		res.send()
 	})
 })
 
@@ -401,6 +400,7 @@ app.post('/updateResearching',(req,res)=>{
 		res.send()
 	})
 })
+
 
 
 

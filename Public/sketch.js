@@ -1225,6 +1225,7 @@ function do_Login() {
       getProbe()
       getResearch()
       main_scene_setup()
+      researchProgressBar()
     }
   });
 }
@@ -1310,10 +1311,6 @@ function getMission(){
               mission[i].state=5
               missionButton[i].text='Collect'
     
-              // missionButton[i].func=function(){
-              //   resource[mission[i].missionResource-1].change_value(1,mission[i].reward)
-              //   discardMission(mission[i].missionResource, mission[i].missionType)
-              // }
               if (gameState==3){
                 refreshM()
               }
@@ -1322,17 +1319,12 @@ function getMission(){
             mission[i].state=5
             missionButton[i].text='Collect'
   
-            // missionButton[i].func=function(){
-            //   resource[mission[i].missionResource-1].change_value(1,mission[i].reward)
-            //   discardMission(mission[i].missionResource, mission[i].missionType)
-            // }
             if (gameState==3){
               refreshM()
             }
 
           }
           
-    // sortMission(mission.length) Didnt't work :(
         })
       }else if(mission[i].state==6){
         loadJSON('/getStartTime'+mission[i].id, (dataReceived)=>{
@@ -1351,10 +1343,6 @@ function getMission(){
               mission[i].state=4
               missionButton[i].text='Mission Failed'
     
-              // missionButton[i].func=function(){
-              //   discardMission(mission[i].missionResource, mission[i].missionType)
-              // }
-    
               if (gameState==3){
                 refreshM()
               }
@@ -1362,11 +1350,7 @@ function getMission(){
           }else{
             mission[i].state=4
             missionButton[i].text='Mission Failed'
-  
-            // missionButton[i].func=function(){
-            //   discardMission(mission[i].missionResource, mission[i].missionType)
-            // }
-  
+
             if (gameState==3){
               refreshM()
             }
@@ -1817,13 +1801,13 @@ function researchProgressBar(){
   if (researching == true){
     let multiplier = 1
     let bar=0
-		let drawBar
+    let drawBar
 
     drawBar=setInterval(function(){
-			if(gameState==2){
-				bar+=(width/4)/((1000*100*timeScale/multiplier)/100)
-				rect(width/3, width*0.90 , bar, 20)
-			}
-		},100)
+      if(gameState==2){
+        bar+=(width/4)/((1000*100*timeScale/multiplier)/100)
+        rect(width/3, width*0.90 , bar, 20)
+      }
+    },100)
   }
 }
