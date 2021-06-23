@@ -1,5 +1,5 @@
 class Button{
-  constructor(x, y, w, h, r, g, b, func, text,array){
+  constructor(x, y, w, h, r, g, b, func, text){
     this.x=x
     this.y=y
 	this.textX = x
@@ -17,7 +17,6 @@ class Button{
 	
     this.text=text
     this.active
-	//this.array =  array
   }
   draw_button(){
     push()
@@ -25,7 +24,7 @@ class Button{
       strokeWeight(1.5)
       textAlign(CENTER, CENTER)
       rect(this.x,this.y,this.w,this.h)
-      fill("black")
+      fill("white")
       text(this.text, this.x+this.w/2, this.y+this.h/2)
     pop()
   }
@@ -94,25 +93,29 @@ class Button{
 			}		
 		})
 		console.log(pName)
-		console.log(friendTab)
 		console.log(friendRequest)
 	}
 	
 	function resolveRequest()
 	{
-		console.log(pName)
-		console.log(friendTab)
+		console.log(pName[0].name)
 		console.log(friendRequest)
 		
-		/* if (friendRequest !='')
-		{ */
 			for (let p=0; p<friendRequest.length; p++)
 			{
-				console.log(friendRequest[p].requestTo)
-				if(friendRequest[p].requestTo = pName)
-				{
+				if(friendRequest[p].requestTo == pName[0].name)
+				{	
+					//Show my requests
+					fill("white")
 					text(friendRequest[p].requestFrom,this.x - width/10,this.y + (height/10 * p))
-
+					//Reject
+					fill("red")
+					rect(this.x,this.y + (height/10 * p),width/40,height/40)
+					//Accept
+					fill("green")
+					rect(this.x+width/20,this.y + (height/10 * p),width/40,height/40)
+					
+					console.log(friendRequest[p].requestTo)
 					if (checked == true)
 					{
 						accept = {
@@ -135,7 +138,6 @@ class Button{
 					}
 				}
 			}
-		//}
 	}
 	function onlinePlayers()
 	{
@@ -159,9 +161,9 @@ class Button{
 	}
   mouse_over(){
     if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){
-      this.r=this.origR-20
-      this.g=this.origG-20
-      this.b=this.origB-20
+      this.r=this.origR+20
+      this.g=this.origG+20
+      this.b=this.origB+20
       return true
     }else{
       this.r=this.origR

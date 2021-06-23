@@ -136,14 +136,14 @@ function main_scene_setup(){
 			moneyTimer++
 	},1000*timeScale)
 
-  logoffButton= new Button(width/2,height-height/10, width/10,height/10, 210,210,210, logOff, 'Log Off')
-  profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, playerProfile, 'Profile')
-  onB = new Button(width/1.5+width/40,height/10, width/40,height/15, 210,210,210, ifOnline, 'Online')
-  pendingB = new Button(width/1.5+width/20,height/10, width/20,height/15, 210,210,210, pendingFriend, 'Pending')
-  addFriendB = new Button(width/1.5+width/10,height/10, width/15,height/15, 210,210,210, addFriend, 'Add Friend')
-  missionScreenB= new Button(width-200-15, height-90, 200, 75, 200,200,200, mission_Scene, "Missions")
-  buildScreenB= new Button(15, height-90, 200, 75, 200,200,200, building_Scene, "Modules")
-  collectMB= new Button(width/2-50,height/17+48, 100,35, 255,255,255, collectMoney, 'Collect Money')
+  logoffButton= new Button(width/2,height-height/10, width/10,height/10, 50,50,210, logOff, 'Log Off')
+  profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 50,50,210, playerProfile, 'Profile')
+  onB = new Button(width/1.5+width/40,height/10, width/40,height/15, 50,50,210, ifOnline, 'Online')
+  pendingB = new Button(width/1.5+width/20,height/10, width/20,height/15, 50,50,210, pendingFriend, 'Pending')
+  addFriendB = new Button(width/1.5+width/10,height/10, width/15,height/15, 50,50,210, addFriend, 'Add Friend')
+  missionScreenB= new Button(width-200-15, height-90, 200, 75, 50,50,210, mission_Scene, "Missions")
+  buildScreenB= new Button(15, height-90, 200, 75, 50,50,210, building_Scene, "Modules")
+  collectMB= new Button(width/2-50,height/17+48, 100,35, 50,50,210, collectMoney, 'Collect Money')
   
 
   mainLoop = true
@@ -349,8 +349,8 @@ function mousePressed(){
 	if(addFriendB.mouse_over())
 	{
 	  friendTab = 3
-	  addFriendB.onClickSearch()
 	  searchB = new Button(width/1.5 + width/5,height/5,width/40,height/40,0,255,255)
+	  addFriendB.onClickSearch()
       addFriendB.mouse_pressed()
 	}
     if(logoffButton.mouse_over())
@@ -672,9 +672,22 @@ function timer(){
 	  pendingB.mouse_over()
 	  addFriendB.draw_button()
 	  addFriendB.mouse_over()
-	  if (friendTab == 3)
+	  switch (friendTab)
 	  {
+		case 0:
+		break;
+		
+		case 1: 
+		break;
+		
+		case 2:
+		accept.draw_button()
+		reject.draw_button()
+		break;
+		
+		case 3:
 		searchB.draw_button()
+		break;
 	  }
 	  playerName.playerDraw()
     }
