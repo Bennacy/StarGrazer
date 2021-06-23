@@ -35,6 +35,7 @@ let registering
 let firstLoad= true
 let mainLoop= true
 let visitedB=false
+let missTypeCrew = true
 
 let bckgrndimg
 let loginBg
@@ -42,6 +43,10 @@ let matIcon
 let monIcon
 let shipIcon
 let crewIcon
+let missionRoom1
+let missionRoom2
+let missionRoom3
+let missionRoom4
 
 // Button initialization
 let loginBtn
@@ -55,6 +60,8 @@ let collectMB
 let profileButton
 let logoffButton
 let mapBtn
+let crewMissBtn
+let matMissBtn
 //let visitBtn
 
 
@@ -90,6 +97,10 @@ function preload(){
   monIcon = loadImage('dollar.png');
   shipIcon = loadImage('spaceship.png');
   crewIcon = loadImage('crew.png');
+  //missionRoom1 = loadImage('control room.jpg');
+  //missionRoom2 = loadImage('control room2.jpg');
+  //missionRoom3 = loadImage('control room3.jpg');
+  missionRoom4 = loadImage('dark smoke.jpg');
 }
 
 function setup() {
@@ -381,6 +392,14 @@ function mousePressed(){
     
     if(buildScreenB.mouse_over()){
       buildScreenB.mouse_pressed('')
+    }
+
+    if(crewMissBtn.mouse_over()){
+      crewMissBtn.mouse_pressed('')
+    }
+
+    if(matMissBtn.mouse_over()){
+      matMissBtn.mouse_pressed('')
     }
     
     if(gridEnable==true && erasing == false){
@@ -780,6 +799,10 @@ function timer(){
       visitBtn[i].draw_button()
     }
   }
+    if(gameState == 3){
+      crewMissBtn.draw_button();
+      matMissBtn.draw_button();
+    }
   },15)
 
   setInterval(function(){
@@ -846,16 +869,33 @@ function building_Scene(){
   }
 }
 
+function crewMissions(){
+  missTypeCrew = true
+  refreshM()
+  console.log("Crew missions");
+}
+
+function materialMissions(){
+  missTypeCrew = false
+  refreshM()
+  console.log("Material missions");
+}
 
 function refreshM(){
 	clearScreen()
-	background(235)
+	//background(235)
+  //image(missionRoom1, 0, 0, width, height);
+  //image(missionRoom2, 0, 0, width, height);
+  //image(missionRoom3, 0, 0, width, height);
+  image(missionRoom4, 0, 0, width, height);
   drawR()
   for(let i=0; i<mission.length; i++){
     mission[i].draw_mission()
   }
-	buildShipB= new Button(width/2-75, height/2+150, 150, 50, 240,240,240, buildShip, 'Build Ship\nMoney Cost:1000') // Button to build new ships
-
+	buildShipB= new Button(width/2-75, height/2+150, 150, 50, 240,240,240, buildShip, 'Build Ship\nMoney Cost:1000')// Button to build new ships
+  crewMissBtn = new Button(width/60,height/4, 100, 150, 210,210,210, crewMissions, 'Crew')
+  matMissBtn = new Button(width/60,height/2, 100, 150, 210,210,210, materialMissions, 'Materials')
+  
 }
 
 function buildShip(){
@@ -917,6 +957,7 @@ function mission_Scene(){
     erasing=false
     gameState=3
     refreshM()
+    //crewMissBtn = new Button(width/60,height/2, ((width/2)-(19*48/2))-width/40,height/15, 210,210,210, playerProfile, 'Crew')
 
   }else if(gameState==3){
     clearScreen()
@@ -1127,13 +1168,14 @@ function createMission(resource, length){
 function getMission(){
   loadJSON('/getMission/'+playerId, (dataReceived)=>{
     let counter=1
-
+    
     for(let i=0; i<dataReceived.length; i++){ // Display 3 missions on each side, still unsorted though
       if(counter<4){
         mission[i]= new Mission(dataReceived[i].missionId, dataReceived[i].resourceType, dataReceived[i].reward, dataReceived[i].duration, dataReceived[i].successChance, dataReceived[i].missionType, dataReceived[i].state, width/4, height/2-100+i*100, 100, 30)
       }else{
         mission[i]= new Mission(dataReceived[i].missionId, dataReceived[i].resourceType, dataReceived[i].reward, dataReceived[i].duration, dataReceived[i].successChance, dataReceived[i].missionType, dataReceived[i].state, 3*width/4, height/2-100+(i-3)*100, 100, 30)
       }
+    
 
       
       if(mission[i].state==1){

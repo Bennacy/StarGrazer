@@ -144,6 +144,7 @@ class Mission{
         }else if(this.state==4){
           fill("red")
         }
+        fill("white")
         text('Resource: '+ this.missionResource+' Type: '+this.missionType, this.x,this.y-10)
         text('Resource: '+dataReceived[0].resourceName+'; Reward: '+this.reward+'; Duration: '+this.duration+' minutes; Chance of success: '+this.successChance+'%', this.x, this.y)
       pop()
