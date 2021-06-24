@@ -1,0 +1,1 @@
+CREATE TABLE `stargrazer`.`player_friends` ( `requestId` INT NOT NULL AUTO_INCREMENT , `requestFrom` TEXT NOT NULL , `requestTo` TEXT NOT NULL , `accepted` BOOLEAN NULL , PRIMARY KEY (`requestId`)) ENGINE = InnoDB;

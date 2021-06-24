@@ -1,11 +1,12 @@
 class Button{
-  constructor(x, y, w, h, r, g, b, func, text){
+  constructor(x, y, w, h, r, g, b, func, text,round){
     this.x=x
     this.y=y
 	this.textX = x
 	this.textY = y
     this.w=w
     this.h=h
+	this.r=round
     this.func=func
     
     this.origR=r
@@ -23,7 +24,7 @@ class Button{
       fill(this.r,this.g,this.b)
       strokeWeight(1.5)
       textAlign(CENTER, CENTER)
-      rect(this.x,this.y,this.w,this.h)
+      rect(this.x,this.y,this.w,this.h,15)
       fill("white")
       text(this.text, this.x+this.w/2, this.y+this.h/2)
     pop()
@@ -31,8 +32,6 @@ class Button{
   onClickSearch()
   {
 	let searchPlayer = createInput('enter a username')
-	let pName
-	let friendRequest
 	let allPlayers
 	
 	switch(friendTab)
@@ -57,6 +56,7 @@ class Button{
 	
 	function addPlayer()
 	{
+		let friend
 		let pName
 		let friendRequest
 		let allPlayers
@@ -112,19 +112,19 @@ class Button{
 					{	
 						//Show my requests
 						fill("white")
-						text(friendRequest[p].requestFrom,this.x + width/20,this.y + (height/10 * p) + height/20)
+						text(friendRequest[p].requestFrom,this.x ,this.y + (height/10 * p) + height/5)
 						//Reject
 						fill("red")
-						rect(this.x + width/5,this.y + (height/10 * p) + height/20,width/40,height/40)
+						rect(this.x + width/6,this.y + (height/10 * p) + height/10,width/40,height/40)
 						//Accept
 						fill("green")
-						rect(this.x+width/6,this.y + (height/10 * p) + height/20,width/40,height/40)
+						rect(this.x+width/8,this.y + (height/10 * p) + height/10,width/40,height/40)
 						
 						//console.math
-						console.log(this.x + width/6,this.x + 50,this.y + (height/10 * p) + height/20,this.y+75)
+						console.log(this.x+width/6,this.x+width/10)
 						//console.log(friendRequest[p].requestTo)
 						
-						if (mouseX<this.x + width/7 )//&& mouseX>this.x+50 && mouseY>this.y + (height/10 * p) + height/20 && mouseY<this.y+75)
+					 	if (mouseX<this.x+width/6 && mouseX>this.x+width/10)//&& mouseX>this.x+50 && mouseY>this.y + (height/10 * p) + height/20 && mouseY<this.y+75)
 						{
 							console.log("it is done")
 							accept = {
@@ -135,7 +135,7 @@ class Button{
 							
 							})
 						}
-						if (mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h)
+						/* if (mouseX<this.x-width/20,mouseX>this.x+this.w //&& mouseY>this.y + (height/10 * p) + height/20&&mouseY<this.y+this.h)
 						{	
 							console.log("is it done?")
 							accept = {
@@ -145,7 +145,7 @@ class Button{
 							{
 							
 							})
-						}
+						}  */
 					}
 				}
 			}) 
@@ -167,7 +167,7 @@ class Button{
 				{
 					if (friendRequest[p].accepted == true && friendRequest[p].requestTo == pName[0].name)
 					{
-						text(friendRequest[p].requestFrom,this.x + width/20,this.y + (height/10 * p) + height/20)
+						text(friendRequest[p].requestFrom,this.x,this.y + (height/10 * p) + height/10)
 					}	
 				}
 			})

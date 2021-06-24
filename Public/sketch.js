@@ -339,7 +339,6 @@ function mousePressed(){
 
 
   if(gameState==4){
-
 	if(onB.mouse_over())
 	{
 		friendTab = 1
@@ -349,7 +348,8 @@ function mousePressed(){
 	if(pendingB.mouse_over())
 	{
 		friendTab = 2
-		pendingB.resolveRequest()
+	/* 	let accept = new Button(width/1.5+width/10,height/10
+		let reject = new Button(width/1.5+width/11,height/10 */
 		pendingB.mouse_pressed()
 	}
 	if(addFriendB.mouse_over())
@@ -361,20 +361,18 @@ function mousePressed(){
     if(logoffButton.mouse_over())
       logoffButton.mouse_pressed()
   }
-   /*  switch(friendTab)
+    switch(friendTab)
 	{
 	  case 1: 
-	  onB.onClickSearch()
 	  break;
 	  
 	  case 2: 
-	  pendingB.onClickSearch()
+	  pendingB.resolveRequest()
 	  break;
 	  
 	  case 3: 
-	  addFriendB.onClickSearch()
 	  break;
-	}	   */
+	}	  
 	
   if(gameState>0){
     if(profileButton.mouse_over())
@@ -680,7 +678,6 @@ function timer(){
 
   setInterval(function(){
     if(gameState==4){
-	 // friends.friendsContainer()
       logoffButton.mouse_over()
       logoffButton.draw_button()
 	  onB.draw_button()
