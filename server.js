@@ -7,7 +7,11 @@ const mysql = require('mysql');
 const app = express()
 const port = 3000
 
-let currDate = new Date()
+let currMonth = new Date()
+let currDay = new Date()
+let currHour = new Date()
+
+let researchMult = 0;
 
 let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
 
@@ -38,14 +42,15 @@ db.connect(function(err) {
 });
 
 
-app.post('/getGalaxy',(req,res)=>{
+app.get('/getGalaxy/:playerId',(req,res)=>{
 
-	let pId= req.body.playerId
+	let pId= req.params.playerId
 	let sql="select gLevel from player where playerId='"+pId+"'"
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 
+		console.log(result)
 		let gLevel=result[0].gLevel
 		let sql="select * from galaxy where gLevel='"+gLevel+"'"
 	
@@ -121,6 +126,7 @@ app.post('/login',(req,res)=>{
 
 					let gLevel = result[0].gLevel
 					let playerId = result[0].playerId
+
 
 					let sql = "SELECT galaxyId FROM galaxy WHERE gLevel = '"+gLevel+"'"
 					db.query(sql,(err,result)=>{
@@ -270,10 +276,13 @@ app.post('/register',(req,res)=>{
 										db.query(sql,(err,result)=>{
 											if(err) throw err
 
-											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `duration`) values (1,1,1,48,0,0,43200)"
+											console.log(result,'\n',result.length)
 
+											if(result.length==0){
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `found`, `totalPoints`) values (1,1,1,48,0,0,1000000)"
+												console.log('test')
 												db.query(sql,(err,result)=>{
+
 													if(err) throw err
 													console.log('created')
 												})
@@ -358,83 +367,107 @@ app.post('/register',(req,res)=>{
 	});	
 });
 
-app.post('/startResearch', (req, res)=>{
+// app.post('/startResearch', (req, res)=>{
 
-	let galaxyId= req.body.galaxyId
-	let month= getMonth()
-	let day= getDay()
-	let hour= getHour()
-	let time= req.body.time
-	let duration = req.body.duration
+// 	let galaxyId= req.body.galaxyId
+// 	let month= req.body.month
+// 	let day= req.body.day
+// 	let hour= req.body.hour
+// 	let time= req.body.time
+// 	let duration = req.body.duration
 
-	let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"' AND researching >= 1"
+// 	let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"' AND researching >= 1"
 
-	if(time==duration){
-		db.query(sql,(err,result)=>{
-			if(err) throw err
-			setTimeout(function(){
-				let sql= "UPDATE galaxy SET found = 1 WHERE galaxyId='"+galaxyId+"'"
-				db.query(sql,(err,result)=>{
+// 	if(time==duration){
+// 		db.query(sql,(err,result)=>{
+// 			if(err) throw err
+// 			setTimeout(function(){
+// 				let sql= "UPDATE galaxy SET found = 1 WHERE galaxyId='"+galaxyId+"'"
+// 				db.query(sql,(err,result)=>{
 					
-					if(err) throw err
+// 					if(err) throw err
 
-				})
-			},time*1000*timeScale)
+// 				})
+// 			},time*1000*timeScale)
 
-			res.send()
-		})
-	}
-})
+// 			res.send()
+// 		})
+// 	}
+// })
 
-app.post('/updatePlayerResearch',(req,res)=>{
-
-	let playerId=req.body.playerId
-
-	let sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
-	db.query(sql,(err,result)=>{
-		if(err) throw err
-		res.send()
-	})
-})
 
 app.post('/updateResearching',(req,res)=>{
 
-	let sql = "UPDATE galaxy SET researching = (SELECT COUNT(*) FROM player WHERE research=1)"
+	let playerId=req.body.playerId
+	
+	let sql = "UPDATE galaxy SET researching = (SELECT COUNT(*)+1 FROM player WHERE research=1)"
 	
 	db.query(sql,(err,result)=>{
+
 		if(err) throw err
-		res.send()
+
+		researchMult++
+
+		let sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
+
+		db.query(sql,(err,result)=>{
+			if(err) throw err
+			res.send()
+		})
 	})
 })
 
 
 
 
-app.get('/getResearch/:playerId',(req,res)=>{
+app.get('/getResearch',(req,res)=>{
 
-	let playerId=req.params.playerId
+	let sql = "SELECT * FROM galaxy"
 
-	let sql = "SELECT research FROM player WHERE playerId='"+playerId+"'";
 	db.query(sql,(err,result)=>{
-		
+		if(err) throw err;
+
 		console.log(result)
-		researching = true
 
-		if(err) throw err
-		res.send(result)
-	})
+		researchMult = result[0].researching
+		let test = result[0].currPoints
+		let max = result[0].totalPoints
+
+		let rFunction = setInterval(function(){
+			test = test + 100 * researchMult
+			console.log(test)
+
+			let sql = 'UPDATE galaxy SET currPoints = "'+test+'"'
+			db.query(sql,(err,result)=>{
+				if(err) throw err;
+			})
+
+
+			if (test >= max){
+
+			clearInterval(rFunction)
+
+				let sql = 'UPDATE galaxy SET found=1'
+				db.query(sql,(err,result)=>{
+					if(err) throw err;
+				})
+
+			}
+		},1000)
+   	});
 
 })
-/*app.get('/getResearchTimer/:galaxyId', (req,res)=>{
 
-	let galaxyId= req.params.galaxyId
-	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaxyId+"'"
+// app.get('/getResearchTimer/:galaxyId', (req,res)=>{
 
-	db.query(sql, (err,result)=>{
-		if(err) throw err
-		res.send(result)
-	})
-})
+// 	let galaxyId= req.params.galaxyId
+// 	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaxyId+"'"
+
+// 	db.query(sql, (err,result)=>{
+// 		if(err) throw err
+// 		res.send(result)
+// 	})
+// })
 
 
 app.get('/getResearchStartTimer:galaxyId',(req,res)=>{
@@ -446,7 +479,7 @@ app.get('/getResearchStartTimer:galaxyId',(req,res)=>{
 		if(err) throw err
 		res.send(result)
 	})
-}) */
+})
 
 app.post('/createMission', (req,res)=>{
 	let playerId= req.body.playerId
@@ -846,7 +879,48 @@ app.post('/delModule',(req,res)=>{
 
 
 app.listen(port, () => {
-	console.log(currDate.getDate())
+
+	console.log("Hour:",currHour.getHours())
+	console.log("Day:",currDay.getDate())
+	console.log("Month",currMonth.getMonth())
+
+
+
+	// let sql = "SELECT * FROM galaxy"
+
+	// db.query(sql,(err,result)=>{
+	// 	if(err) throw err;
+
+	// 	console.log(result)
+
+	// 	researchMult = result[0].researching
+	// 	let test = result[0].currPoints
+	// 	let max = result[0].totalPoints
+
+	// 	let rFunction = setInterval(function(){
+	// 		test = test + 100 * researchMult
+	// 		console.log(test)
+
+	// 		let sql = 'UPDATE galaxy SET currPoints = "'+test+'"'
+	// 		db.query(sql,(err,result)=>{
+	// 			if(err) throw err;
+	// 		})
+
+
+	// 		if (test >= max){
+
+	// 		clearInterval(rFunction)
+
+	// 			let sql = 'UPDATE galaxy SET found=1'
+	// 			db.query(sql,(err,result)=>{
+	// 				if(err) throw err;
+	// 			})
+
+	// 		}
+	// 	},1000)
+   	// });
+
+
   	console.log(`Example app listening at http://localhost:${port}`)
 })
 
