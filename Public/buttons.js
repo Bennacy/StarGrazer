@@ -112,19 +112,18 @@ class Button{
 					{	
 						//Show my requests
 						fill("white")
-						text(friendRequest[p].requestFrom,this.x ,this.y + (height/10 * p) + height/5)
+						text(friendRequest[p].requestFrom,this.x ,this.y + (height/10 * p) + height/7)
 						//Reject
 						fill("red")
-						rect(this.x + width/6,this.y + (height/10 * p) + height/10,width/40,height/40)
+						rect(this.x + width/9,this.y + (height/10 * p) + height/8,width/40,height/40)
 						//Accept
 						fill("green")
-						rect(this.x+width/8,this.y + (height/10 * p) + height/10,width/40,height/40)
+						rect(this.x+width/12,this.y + (height/10 * p) + height/8,width/40,height/40)
 						
 						//console.math
-						console.log(this.x+width/6,this.x+width/10)
-						//console.log(friendRequest[p].requestTo)
+						//console.log(this.y + (height/10 * p) + height/8 + height/40,this.y + (height/10 * p) + height/8)
 						
-					 	if (mouseX<this.x+width/6 && mouseX>this.x+width/10)//&& mouseX>this.x+50 && mouseY>this.y + (height/10 * p) + height/20 && mouseY<this.y+75)
+					 	if (mouseX<this.x+width/12 + width/40 && mouseX>this.x+width/12 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
 						{
 							console.log("it is done")
 							accept = {
@@ -135,7 +134,7 @@ class Button{
 							
 							})
 						}
-						/* if (mouseX<this.x-width/20,mouseX>this.x+this.w //&& mouseY>this.y + (height/10 * p) + height/20&&mouseY<this.y+this.h)
+						if (mouseX<this.x+width/9 + width/40 && mouseX>this.x+width/9 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
 						{	
 							console.log("is it done?")
 							accept = {
@@ -145,7 +144,7 @@ class Button{
 							{
 							
 							})
-						}  */
+						} 
 					}
 				}
 			}) 
