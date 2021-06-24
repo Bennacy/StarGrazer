@@ -355,7 +355,6 @@ function mousePressed(){
 	if(addFriendB.mouse_over())
 	{
 	  friendTab = 3
-	  addFriendB.onClickSearch()
       addFriendB.mouse_pressed()
 	}
     if(logoffButton.mouse_over())
@@ -371,6 +370,7 @@ function mousePressed(){
 	  break;
 	  
 	  case 3: 
+	  addFriendB.onClickSearch()
 	  break;
 	}	  
 	

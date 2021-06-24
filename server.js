@@ -69,13 +69,15 @@ app.get('/getPlayerList/:playerId',(req,res)=>{
 		res.send(result)
 	});
 });
+//send the request from a person to another, with 0 as a pending value to be resolved
 app.post('/sendFriendReq',(req,res)=>{
 
 	let requestFrom = req.body.requestFrom;
 	let requestTo = req.body.requestTo;
+	let accepted = req.body.accepted
 	
 
-	let sql = "INSERT INTO player_friends (requestFrom,requestTo) VALUES ('"+requestFrom+"','"+requestTo+"')"
+	let sql = "INSERT INTO player_friends (requestFrom,requestTo,accepted) VALUES ('"+requestFrom+"','"+requestTo+"','"+accepted+"')"
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err;
@@ -218,7 +220,6 @@ app.post('/register',(req,res)=>{
 							}
 						});
 					}
-
 						res.send(result);
 					});
 			});

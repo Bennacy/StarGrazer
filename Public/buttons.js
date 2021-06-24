@@ -41,16 +41,21 @@ class Button{
 		break;
 		
 		case 1:
-		tabDot.input(onlinePlayers)
 		break;
 		
 		case 2:
-		tabDot.input(resolveRequest)
 		break; */
 		
 		case 3: 
+		rect(this.x + this.w/2,this.y + height/10,this.w/2,this.h/2)
 		searchPlayer.position(this.x-width/10,this.y + height / 10)
-		searchPlayer.input(addPlayer)
+		searchPlayer.size(width/10,height/40)
+		console.log(this.x + this.w,this.x+this.w/2,this.y + this.h,this.h/2)
+		if(mouseX<this.x + this.w && mouseX>this.x+this.w/2 && mouseY<this.y + this.h && mouseY>this.y+this.h/2)
+		{
+			console.log("a")
+			searchPlayer.input(addPlayer)
+		}
 		break;
 	}
 	
@@ -77,9 +82,11 @@ class Button{
 					{
 						if (searchPlayer.value() == allPlayers[p].name)
 						{
+							//0 is default, 1 is true, 2 is false
 							friend = {
 								"requestFrom": pName[0].name,
 								"requestTo": searchPlayer.value(),
+								"accepted": "0",
 							}
 							httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
 							{
@@ -93,7 +100,7 @@ class Button{
 	}
   }
   
-  resolveRequest()
+	resolveRequest()
 	{
 		let pName
 		let friendRequest
@@ -108,7 +115,7 @@ class Button{
 			
 				for (let p=0; p<friendRequest.length; p++)
 				{
-					if(friendRequest[p].requestTo == pName[0].name)
+					if(friendRequest[p].requestTo == pName[0].name && friendRequest[p].accepted == 0)
 					{	
 						//Show my requests
 						fill("white")
@@ -123,22 +130,24 @@ class Button{
 						//console.math
 						//console.log(this.y + (height/10 * p) + height/8 + height/40,this.y + (height/10 * p) + height/8)
 						
+						//0 is default, 1 is true, 2 is false
 					 	if (mouseX<this.x+width/12 + width/40 && mouseX>this.x+width/12 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
 						{
 							console.log("it is done")
 							accept = {
-								"accepted": true
+								"accepted": "1",
 							}
 							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
 							{
 							
 							})
 						}
+						
 						if (mouseX<this.x+width/9 + width/40 && mouseX>this.x+width/9 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
 						{	
 							console.log("is it done?")
 							accept = {
-								"accepted": false
+								"accepted": "2",
 							}
 							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
 							{
@@ -164,9 +173,9 @@ class Button{
 			
 				for (let p=0; p<friendRequest.length;p++)
 				{
-					if (friendRequest[p].accepted == true && friendRequest[p].requestTo == pName[0].name)
+					if (friendRequest[p].accepted == 1 && friendRequest[p].requestTo == pName[0].name)
 					{
-						text(friendRequest[p].requestFrom,this.x,this.y + (height/10 * p) + height/10)
+						text(friendRequest[p].requestFrom,this.x,this.y + (height/10 * p) + height/7)
 					}	
 				}
 			})
