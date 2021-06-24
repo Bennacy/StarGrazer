@@ -89,10 +89,6 @@ app.get('/getUserInfo/:pId',(req,res)=>{
 
 
 
-
-
-
-
 app.post('/login',(req,res)=>{
 
 	let username = req.body.username;
@@ -365,13 +361,13 @@ app.post('/register',(req,res)=>{
 app.post('/startResearch', (req, res)=>{
 
 	let galaxyId= req.body.galaxyId
-	let month= req.body.month
-	let day= req.body.day
-	let hour= req.body.hour
+	let month= getMonth()
+	let day= getDay()
+	let hour= getHour()
 	let time= req.body.time
 	let duration = req.body.duration
 
-	let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"'"
+	let sql = "UPDATE galaxy startMonth='"+month+"', startDay='"+day+"', startHour='"+hour+"' WHERE galaxyId='"+galaxyId+"' AND researching >= 1"
 
 	if(time==duration){
 		db.query(sql,(err,result)=>{
@@ -429,7 +425,7 @@ app.get('/getResearch/:playerId',(req,res)=>{
 	})
 
 })
-app.get('/getResearchTimer/:galaxyId', (req,res)=>{
+/*app.get('/getResearchTimer/:galaxyId', (req,res)=>{
 
 	let galaxyId= req.params.galaxyId
 	let sql= "SELECT * FROM galaxy WHERE galaxyId='"+galaxyId+"'"
@@ -450,7 +446,7 @@ app.get('/getResearchStartTimer:galaxyId',(req,res)=>{
 		if(err) throw err
 		res.send(result)
 	})
-})
+}) */
 
 app.post('/createMission', (req,res)=>{
 	let playerId= req.body.playerId

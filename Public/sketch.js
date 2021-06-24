@@ -1225,7 +1225,7 @@ function do_Login() {
       getProbe()
       getResearch()
       main_scene_setup()
-      researchProgressBar()
+      //researchProgressBar()
     }
   });
 }
@@ -1766,27 +1766,45 @@ function startResearch(){
 
   let dataToSend={
     "galaxyId":galaxyId,
-    "month":getMonth(),
-    "day":getDay(),
-    "hour":getHour(),
+    "month":Month(),
+    "day":Day(),
+    "hour":Hour(),
     "duration":duration,
   }
 
   httpPost('/startResearch','JSON',dataToSend,dataReceived=>{
-    getResearchTimer()
+
+    let duration =  galaxy.duration // one month in minutes
+    let timePassed = 0
+    let timeRemaining = 0
+    let currM = Month()
+    let currD = Day()
+    let currH = Hour()
+
+    // for the multiplayer of the total players researching could be something like: 
+    multiplier = (totalPlayers * 0.01) // needs to check if they are researching
+
+    timePassed = ((currH*60)-(dataReceived[0].startHour*60)) + ((currD-dataReceived[0].startDay)*24*60) + ((currM-dataReceived[0].startMonth)*30*24*60)
+
+    timeRemaining = duration - timePassed - (duration * multiplier) // the multiplier would be (for 1 player): 432 minutes less; (for 10 players): 4320 minutes less
+                                                                    // even if there's 50 players researching it would be less 21600 minutes less which is half a month
+    if(timeRemaining>0){
+      setTimeout(function(){
+      }, timeRemaining*1000*timeScale)
+    }
   })
 }
 
-function getResearchTimer(){
+/*function getResearchTimer(){
   loadJSON('/getResearchTimer/'+galaxyId, (dataReceived)=>{
 
     loadJSON('/getResearchStartTimer'+galaxyId, (dataReceived)=>{
       let duration =  galaxy.duration // one month in minutes
       let timePassed = 0
       let timeRemaining = 0
-      let currM = getMonth()
-      let currD = getDay()
-      let currH = getHour()
+      let currM = Month()
+      let currD = Day()
+      let currH = Hour()
 
       // for the multiplayer of the total players researching could be something like: 
       multiplier = (totalPlayers * 0.01) // needs to check if they are researching
@@ -1801,7 +1819,7 @@ function getResearchTimer(){
       }
     })
   })
-}
+}*/
 
 //function researchProgressBar(){
 //  if (researching == true){
