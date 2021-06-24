@@ -75,8 +75,9 @@ let gameState=0
 
 
 function preload()
-{
-	img = loadImage('profile.jpg')
+{	
+	imgProfileBackground('profileBackground.jpg')
+	imgProfilePic = loadImage('profile.jpg')
 	//part 2,modules
 	for(let i=1; i<=10; i++){
 		let modType=i
@@ -161,7 +162,7 @@ function main_scene_setup(){
 function main_Scene() {
     clearScreen()
     createCanvas(windowWidth, windowHeight);
-    background('#dbdbdb')
+    background(imgProfileBackground)
     moduleType=0
     gridEnable=false
     side = 48
@@ -178,15 +179,10 @@ function addFriend()
 	}
 }
 
-function pendingFriend()
-{
-	
-}
+function pendingFriend(){}
 
-function ifOnline()
-{
-	
-}
+function ifOnline(){}
+
 function playerProfile(){
   if(gameState<4){
 	friends = new textBox(width/1.5,height/8,width/4,height/3)
@@ -194,10 +190,8 @@ function playerProfile(){
     clearScreen()
     background(100);
     gameState = 4;
-	img.resize(width/3,height/5)
-	image(img,width/4.5,height/10);
-	console.log(img)
-	
+	imgProfilePic.resize(width/3,height/5)
+	image(imgProfilePic,width/4.5,height/10);
   }
   else if(gameState==4){
     clearScreen()

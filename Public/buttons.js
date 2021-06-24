@@ -50,8 +50,8 @@ class Button{
 		rect(this.x + this.w/2,this.y + height/10,this.w/2,this.h/2)
 		searchPlayer.position(this.x-width/10,this.y + height / 10)
 		searchPlayer.size(width/10,height/40)
-		console.log(this.x + this.w,this.x+this.w/2,this.y + this.h,this.h/2)
-		if(mouseX<this.x + this.w && mouseX>this.x+this.w/2 && mouseY<this.y + this.h && mouseY>this.y+this.h/2)
+		console.log(this.x + this.w,this.x+this.w/2,this.y + (this.h * 2),this.y + this.h)
+		if(mouseX<this.x + this.w && mouseX>this.x+this.w/2 && mouseY<this.y + (this.h * 2) && mouseY>this.y+this.h)
 		{
 			console.log("a")
 			searchPlayer.input(addPlayer)
