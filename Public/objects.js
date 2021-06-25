@@ -321,8 +321,8 @@ class Button{
   }
 
   mouse_pressed(index){
-
-      this.func(index)
+    clickSound.play()
+    this.func(index)
   }
 }
 

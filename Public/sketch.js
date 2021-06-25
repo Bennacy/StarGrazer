@@ -47,6 +47,8 @@ let missionRoom1
 let missionRoom2
 let missionRoom3
 let missionRoom4
+let music
+let clickSound
 
 // Button initialization
 let loginBtn
@@ -101,6 +103,8 @@ function preload(){
   //missionRoom2 = loadImage('control room2.jpg');
   //missionRoom3 = loadImage('control room3.jpg');
   missionRoom4 = loadImage('dark smoke.jpg');
+  music = loadSound('bensound-slowmotion.mp3');
+  clickSound = loadSound('multimedia_button_click.mp3')
 }
 
 function setup() {
@@ -119,6 +123,8 @@ function draw() {
       break
 
     case 1: // Main menu
+    
+    
       if (mainLoop== true){
         loopCounter++
         mainLoop= false
@@ -135,6 +141,10 @@ function main_scene_setup(){
   passInput.remove();
   loginBtn.remove();
   signupBtn.remove();
+
+  music.setVolume(0.3);
+  music.loop();
+
 	moneyTimer=0
 	moneyToCollect=0
 
@@ -175,6 +185,7 @@ function main_Scene() {
     side= 48
     //create_Grid()
     drawR()
+    
 }
 
 
