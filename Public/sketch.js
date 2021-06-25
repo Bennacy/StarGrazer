@@ -76,8 +76,8 @@ let gameState=0
 
 function preload()
 {	
-	imgProfileBackground('profileBackground.jpg')
-	imgProfilePic = loadImage('profile.jpg')
+	imgProfileBackground = loadImage('profileBackground.jpg')
+	imgProfilePic = loadImage('profile.png')
 	//part 2,modules
 	for(let i=1; i<=10; i++){
 		let modType=i
@@ -178,17 +178,17 @@ function addFriend()
 		console.log(gameState)
 	}
 }
-
+//"worthless" functions
 function pendingFriend(){}
 
 function ifOnline(){}
-
+//Display the player's name, his profile picture and the background; furthermore, changes to the 4th screen in the game
 function playerProfile(){
   if(gameState<4){
 	friends = new textBox(width/1.5,height/8,width/4,height/3)
 	playerName = new textBox(width/3,height/10,width/10,height/15)
     clearScreen()
-    background(100);
+    background(imgProfileBackground);
     gameState = 4;
 	imgProfilePic.resize(width/3,height/5)
 	image(imgProfilePic,width/4.5,height/10);

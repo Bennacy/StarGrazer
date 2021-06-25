@@ -31,7 +31,9 @@ class Button{
   }
   onClickSearch()
   {
+	let search
 	let searchPlayer = createInput('enter a username')
+	searchPlayer.size(0,0)
 	let allPlayers
 	
 	switch(friendTab)
@@ -41,13 +43,14 @@ class Button{
 		break;
 		
 		case 1:
-		break;
-		
-		case 2:
 		break; */
 		
+		case 2:
+		searchPlayer.remove()
+		break; 
+		
 		case 3: 
-		rect(this.x + this.w/2,this.y + height/10,this.w/2,this.h/2)
+		search = rect(this.x + this.w/2,this.y + height/10,this.w/2,this.h/2)
 		searchPlayer.position(this.x-width/10,this.y + height / 10)
 		searchPlayer.size(width/10,height/40)
 		console.log(this.x + this.w,this.x+this.w/2,this.y + (this.h * 2),this.y + this.h)
@@ -141,6 +144,7 @@ class Button{
 							{
 							
 							})
+							break;
 						}
 						
 						if (mouseX<this.x+width/9 + width/40 && mouseX>this.x+width/9 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
