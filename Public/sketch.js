@@ -6,7 +6,7 @@ let deleted = 0;
 let moduleType=0;
 let clearedErase=false
 let buildingShip=false
-let friendTab = 0
+
 let moneyToCollect
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
@@ -41,6 +41,8 @@ let firstLoad= true
 let mainLoop= true
 let visitedB=false
 // Button initialization
+let acceptB
+let rejectB
 let loginBtn
 let registerBtn
 let signupBtn
@@ -56,6 +58,7 @@ let friendReqB
 let onB 
 let pendingB
 let addFriendB
+let addB
 
 
 // Input initialization
@@ -63,10 +66,10 @@ let nameInput
 let passInput
 let suNameInput
 let suPassInput
+let searchPlayer 
 
 // Timers initialization (In seconds)
 let mainLoopTimer= 60
-
 let moneyTimer
 let loopCounter= 0
 let gameState=0
@@ -170,23 +173,16 @@ function main_Scene() {
     drawR()
 }
 
-function addFriend()
-{	
-	if(gameState < 4)
-	{
-		clearScreen()
-		console.log(gameState)
-	}
-}
 //"worthless" functions
+function addFriend(){}
 function pendingFriend(){}
-
 function ifOnline(){}
+
 //Display the player's name, his profile picture and the background; furthermore, changes to the 4th screen in the game
 function playerProfile(){
   if(gameState<4){
-	friends = new textBox(width/1.5,height/8,width/4,height/3)
-	playerName = new textBox(width/3,height/10,width/10,height/15)
+	//friends = new textBox(width/1.5,height/8,width/4,height/3)
+	//playerName = new textBox(width/3,height/10,width/10,height/15)
     clearScreen()
     background(imgProfileBackground);
     gameState = 4;
@@ -194,6 +190,14 @@ function playerProfile(){
 	image(imgProfilePic,width/4.5,height/10);
   }
   else if(gameState==4){
+	if (typeof searchPlayer !="undefined")
+	{
+		  searchPlayer.remove()
+	}
+/* 	if (typeof playerName !="undefined")
+	{
+		   playerName.remove()
+	} */
     clearScreen()
     background(219)
     create_Grid()
@@ -333,40 +337,45 @@ function mousePressed(){
 
 
   if(gameState==4){
+
 	if(onB.mouse_over())
 	{
-		friendTab = 1
 		onB.allPlayers()
-		onB.mouse_pressed()
+		if (typeof searchPlayer !="undefined")
+		{
+			searchPlayer.remove()
+		}
 	}
 	if(pendingB.mouse_over())
-	{
-		friendTab = 2
-	/* 	let accept = new Button(width/1.5+width/10,height/10
-		let reject = new Button(width/1.5+width/11,height/10 */
-		pendingB.mouse_pressed()
+	{	
+		accept = new Button(width/1.5+width/10,height/10 + (height/20 * p) + height/7)
+		reject = new Button(width/1.5+width/8,height/10 + (height/20 * p) + height/7)
+		pendingB.resolveRequest()
+		if (typeof searchPlayer !="undefined")
+		{
+			searchPlayer.remove()
+		}
 	}
 	if(addFriendB.mouse_over())
 	{
-	  friendTab = 3
-      addFriendB.mouse_pressed()
+		addB = new Button(width/1.5+width/7.5,height/5,width/30,height/30,200,200,200)
+		addFriendB.onClickSearch()
+	}
+	if (addB.mouse_over())
+	{
+		addB.addPlayer()
 	}
     if(logoffButton.mouse_over())
       logoffButton.mouse_pressed()
   }
-    switch(friendTab)
-	{
-	  case 1: 
-	  break;
-	  
-	  case 2: 
-	  pendingB.resolveRequest()
-	  break;
-	  
-	  case 3: 
-	  addFriendB.onClickSearch()
-	  break;
-	}	  
+  if (gameState < 4)
+  {
+	  if (typeof searchPlayer !="undefined")
+	  {
+		searchPlayer.remove()
+	  }
+  }
+    
 	
   if(gameState>0){
     if(profileButton.mouse_over())
@@ -672,6 +681,11 @@ function timer(){
 
   setInterval(function(){
     if(gameState==4){
+		if (typeof addB !="undefined")
+		{
+			  addB.draw_button()
+			  addB.mouse_over()
+		}
       logoffButton.mouse_over()
       logoffButton.draw_button()
 	  onB.draw_button()
@@ -680,24 +694,7 @@ function timer(){
 	  pendingB.mouse_over()
 	  addFriendB.draw_button()
 	  addFriendB.mouse_over()
-	  switch (friendTab)
-	  {
-		case 0:
-		break;
-		
-		case 1: 
-		break;
-		
-		case 2:
-		//accept.draw_button()
-		//reject.draw_button()
-		break;
-		
-		case 3:
-		//searchB.draw_button()
-		break;
-	  }
-	  playerName.playerDraw()
+	 // playerName.playerDraw()
     }
   })
 

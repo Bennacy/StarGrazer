@@ -25,6 +25,7 @@ class textBox{
 			rectMode(CORNER)
 			fill("white")
 			text(playerName[0].name,this.x,this.y)
+			
 		})
 	}
 	friendsContainer()

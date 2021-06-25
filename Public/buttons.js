@@ -32,37 +32,14 @@ class Button{
   onClickSearch()
   {
 	let search
-	let searchPlayer = createInput('enter a username')
-	searchPlayer.size(0,0)
 	let allPlayers
 	
-	switch(friendTab)
-	{
-		//pls help
-		/* case 0:
-		break;
-		
-		case 1:
-		break; */
-		
-		case 2:
-		searchPlayer.remove()
-		break; 
-		
-		case 3: 
-		search = rect(this.x + this.w/2,this.y + height/10,this.w/2,this.h/2)
-		searchPlayer.position(this.x-width/10,this.y + height / 10)
-		searchPlayer.size(width/10,height/40)
-		console.log(this.x + this.w,this.x+this.w/2,this.y + (this.h * 2),this.y + this.h)
-		if(mouseX<this.x + this.w && mouseX>this.x+this.w/2 && mouseY<this.y + (this.h * 2) && mouseY>this.y+this.h)
-		{
-			console.log("a")
-			searchPlayer.input(addPlayer)
-		}
-		break;
-	}
+	searchPlayer = createInput('enter a username')
 	
-	function addPlayer()
+	searchPlayer.position(this.x-width/10,this.y + height / 10)
+	searchPlayer.size(width/10,height/40)
+  }
+  addPlayer()
 	{
 		let friend
 		let pName
@@ -101,7 +78,6 @@ class Button{
 			})
 		})
 	}
-  }
   
 	resolveRequest()
 	{
@@ -122,16 +98,17 @@ class Button{
 					{	
 						//Show my requests
 						fill("white")
-						text(friendRequest[p].requestFrom,this.x ,this.y + (height/10 * p) + height/7)
+						text(friendRequest[p].requestFrom,this.x,this.y + (height/20 * p) + height/7)
 						//Reject
 						fill("red")
-						rect(this.x + width/9,this.y + (height/10 * p) + height/8,width/40,height/40)
+						rect(this.x + width/9,this.y + (height/20 * p) + height/8,width/40,height/40)
 						//Accept
 						fill("green")
-						rect(this.x+width/12,this.y + (height/10 * p) + height/8,width/40,height/40)
-						
+						rect(this.x+width/12,this.y + (height/20 * p) + height/8,width/40,height/40)
+						//reset to default color
+						fill("white")
 						//console.math
-						//console.log(this.y + (height/10 * p) + height/8 + height/40,this.y + (height/10 * p) + height/8)
+						console.log(this.y + (height/10 * p) + height/8 + height/40,this.y + (height/10 * p) + height/8)
 						
 						//0 is default, 1 is true, 2 is false
 					 	if (mouseX<this.x+width/12 + width/40 && mouseX>this.x+width/12 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
@@ -142,9 +119,9 @@ class Button{
 							}
 							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
 							{
-							
+	
 							})
-							break;
+							break
 						}
 						
 						if (mouseX<this.x+width/9 + width/40 && mouseX>this.x+width/9 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
@@ -157,6 +134,7 @@ class Button{
 							{
 							
 							})
+							break
 						} 
 					}
 				}
