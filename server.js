@@ -42,12 +42,14 @@ app.post('/getGalaxy',(req,res)=>{
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
-
+		
+		console.log('\n\n',result,'\n\n')
 		let gLevel=result[0].gLevel
 		let sql="select * from galaxy where gLevel='"+gLevel+"'"
 	
 		db.query(sql,(err,result)=>{
 			if(err) throw err
+			console.log('\n\n',result,'\n\n')
 
 			let send={
 				'gLevel': gLevel,
@@ -105,13 +107,10 @@ app.post('/login',(req,res)=>{
 			hash= result[0].pass
 		else
 			hash= 'WrongUsernameDumbass'
-		
-		console.log(hash)
 
 		bcrypt.compare(password, hash, function(err, result) {
 			if(err) throw err
 
-			console.log(result)
 			// result == true
 			if(result){
 				let sql = "SELECT playerId FROM Player WHERE name='"+username+"'";
@@ -371,6 +370,7 @@ app.post('/discardMission', (req,res)=>{
 	let playerId= req.body.playerId
 	let resource= req.body.resource
 	let length= req.body.length
+	console.log(resource, length)
 	let sql= "UPDATE player_mission SET state=3 WHERE (state=1 OR state=2 OR state=4 OR state=5 OR state=6) AND playerId='"+playerId+"' AND resourceType='"+resource+"' AND missionType='"+length+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
@@ -484,7 +484,6 @@ app.get('/getStartTime:mId',(req,res)=>{
 	let sql="SELECT startDay, startHour, StartMin FROM player_mission WHERE missionId='"+mId+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
-		console.log(result[0])
 		res.send(result)
 	})
 })
