@@ -1,12 +1,7 @@
 let side = 52;
-let gridEnable=false;
-let erasing= false;
 let deleted = 0;
 let moduleType=0;
-let clearedErase=false
-let buildingShip=false
-let reloadMissions=false
-let refreshM=false
+
 let moneyToCollect
 let mapGridSize
 let mapSize
@@ -45,8 +40,10 @@ let moduleBuildButton=[]
 let arrtiles = [];
 let playerMapArr=[];
 let drawnMission=[]
+let buildProbeB;
 
 let playerId;
+let galaxyId
 let playerCard=''
 let cv;
 let mainSceneEnable = false;
@@ -65,6 +62,15 @@ let visitedB=false
 let pressing=false
 let canCollect=false
 let drawBar=false
+let gridEnable=false;
+let erasing= false;
+let clearedErase=false
+let buildingShip=false
+let reloadMissions=false
+let refreshM=false
+let buildingProbe=false;
+let probeBuilt=false;
+let researching=false;
 let shipBar=0
 
 // Button initialization
@@ -447,7 +453,7 @@ function mousePressed(){
 
   if(gameState>0){  
 		
-		if(mapBtn.mouse_over()){
+		if(mapBtn.mouse_over() && placedModule[5]>0){
 			mapBtn.mouse_pressed('')
 		}
 
@@ -461,7 +467,7 @@ function mousePressed(){
 				collectMB.mouse_pressed()
 			}
 
-			if(missionScreenB.mouse_over()){
+			if(missionScreenB.mouse_over() && placedModule[7]>0){
 				missionScreenB.mouse_pressed('')
 			}
 			
@@ -495,6 +501,7 @@ function mousePressed(){
 												"x":i,
 												"y":j,
 												"playerId":playerId,
+                        "gLevel":gLevel,
 												"deleted":deleted
 											}
 
@@ -516,7 +523,18 @@ function mousePressed(){
 															drawR()
 														})
 													})
-												}
+												}else if (moduleType == 7){ // on placing a research station
+
+                          researching = true
+                          // getResearch()
+                          let dataToSend={
+                            "playerId": playerId,
+                            "galaxyId": galaxyId
+                          }
+                          httpPost('/updateResearching','JSON',dataToSend,(dataReceived)=>{
+
+                          })
+                        }
 											});
 											draw_Grid()
 											
@@ -544,6 +562,7 @@ function mousePressed(){
 										
 										let dataToSend={
 											"moduleType":moduleType,
+                      "gLevel":gLevel,
 											"x":i,
 											"y":j,
 											"playerId":playerId,
@@ -1094,8 +1113,10 @@ function timer(){
     
     if(gameState>0){
       drawR()
-      mapBtn.mouse_over()
-      mapBtn.draw_button()
+      if(placedModule[5]>0){
+        mapBtn.mouse_over()
+        mapBtn.draw_button()
+      }
 
       profileButton.mouse_over()
       profileButton.draw_button()
@@ -1116,14 +1137,46 @@ function timer(){
             collectMB.draw_button()
           }
         }
-        missionScreenB.mouse_over()
-        missionScreenB.draw_button()
+        if(placedModule[7]>0){
+          missionScreenB.mouse_over()
+          missionScreenB.draw_button()
+        }
 
         buildScreenB.mouse_over()
         buildScreenB.draw_button()
 
       }
     }
+
+
+    if(gameState==3){
+      if(placedModule[8]==0){
+        buildProbeB.r=180
+        buildProbeB.g=180
+        buildProbeB.b=180
+        buildProbeB.func= function(){
+          if(placedModule[4]==0){
+            push()
+            fill("red")
+            textSize(15)
+            textAlign(CENTER, TOP)
+            text("No probe construction module active",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+            pop()
+            setTimeout(function(){
+              refreshM()
+            },1500)
+          }
+        }
+      }else{
+        buildProbeB.r=240
+        buildProbeB.g=240
+        buildProbeB.b=240
+        buildProbeB.mouse_over()
+        buildProbeB.func=buildProbe
+      }
+      buildProbeB.draw_button()
+    }
+
 
     if(errMsg.active==true){
       push()
@@ -1232,6 +1285,62 @@ function clearScreen(){
       errMsg.w=width-width/2-width/3 + 2*((width/2+width/3)-(width/2-width/3))/3 + displayArea.height/3
       errMsg.h=buildShipB.h
       setTimeout(function(){errMsg.active=false},1500)
+    }
+  }
+
+
+  
+  function buildProbe(){
+
+    if(buildingProbe==false && resource[0].currAmount>=5000 && probeBuilt == false){
+
+      resource[0].change_value(-1,5000)
+      buildingProbe=true
+      let bar=0
+      let drawBar=setInterval(function(){
+        bar+=buildProbeB.w/((1000*5*timeScale)/100)
+        rect(buildProbeB.x, buildProbeB.y+buildProbeB.h, bar, 10)
+      },100)
+    
+
+      setTimeout(function(){
+        buildingProbe=false
+        probeBuilt=true
+        updateProbe()
+        clearInterval(drawBar)
+        refreshM()
+      },(1000*5*timeScale)) 
+
+    }else if(buildingProbe== true){
+      push()
+        fill("red")
+        textSize(15)
+        textAlign(CENTER, TOP)
+        text("The probe is already under construction",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+      pop()
+      setTimeout(function(){
+        refreshM()
+      },1500)
+    }else if(resource[0].currAmount<5000){
+      push()
+        fill("red")
+        textSize(15)
+        textAlign(CENTER, TOP)
+        text("Not enough money to buy a probe",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+      pop()
+      setTimeout(function(){
+        refreshM()
+      },1500)
+    }else if (probeBuilt==true){
+      push()
+        fill("red")
+        textSize(15)
+        textAlign(CENTER, TOP)
+        text("There is no place to go",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+      pop()
+      setTimeout(function(){
+      refreshM()
+      },1500)
     }
   }
 
@@ -1372,15 +1481,19 @@ function clearScreen(){
             registerBtn.remove();
             registerBackBtn.remove()
 
-            for(let j=2; j<4; j++){ // j: Mission resource (Crew, Materials)
-              for (let i=1; i<4; i++){ // i: Mission length (Short, Medium, Long)
-                createMission(j,i)
+            setTimeout(function(){ // on register, wait a bit before loading
+              for(let j=2; j<4; j++){ // j: Mission resource (Crew, Materials)
+                  for (let i=1; i<4; i++){ // i: Mission length (Short, Medium, Long)
+                  createMission(j,i)
+                  }
               }
-            }
-
-            loadResource()
-            getPlayerMap()
-            main_scene_setup()
+          
+              loadResource()
+              getPlayerMap()
+              main_scene_setup()
+              getProbe()
+              // getResearch()
+            },500)
           }
         });
       }else{
@@ -1435,6 +1548,8 @@ function clearScreen(){
         getMission()
         loadResource()
         getPlayerMap()
+        getProbe()
+        // getResearch()
 
         main_scene_setup()
       }
@@ -1676,6 +1791,30 @@ function clearScreen(){
   }
 
 
+  function getProbe(){
+    loadJSON('/getProbe/'+playerId,(dataReceived)=>{
+      print(dataReceived)
+      probeBuilt = dataReceived[0].probe
+    });
+  }
+
+
+  function updateProbe(){
+    let dataToSend={
+      "playerId": playerId
+    }
+    httpPost('/updateProbe','json',dataToSend,(dataReceived)=>{
+    })
+  }
+
+
+  // function getResearch(){
+  //   loadJSON('/getResearch',(dataReceived)=>{
+    
+  //   });
+  // }
+
+
 }
 
 
@@ -1884,6 +2023,7 @@ function clearScreen(){
     }
     httpPost('/getGalaxy','json',dataToSend,(dataReceived)=>{
 
+      galaxyId=dataReceived.gId
       totalPlayers=dataReceived.totalPlayers
       mapSize=dataReceived.mapSize
       gLevel=dataReceived.gLevel

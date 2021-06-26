@@ -6,6 +6,15 @@ const saltRounds = 10;
 const mysql = require('mysql');
 const app = express()
 const port = 3000
+
+let galaxyCount= 0
+let researchingG= 0
+let researching= []
+let researchMult= [];
+let researchLevel= []
+let found= []
+let isResearching= []
+let researchFunc= []
 let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
 
 
@@ -45,21 +54,30 @@ app.post('/getGalaxy',(req,res)=>{
 		
 		console.log('\n\n',result,'\n\n')
 		let gLevel=result[0].gLevel
-		let sql="select * from galaxy where gLevel='"+gLevel+"'"
-	
+
+		let sql="select galaxyId from player_galaxy where playerId='"+pId+"' and active=1"
+
 		db.query(sql,(err,result)=>{
 			if(err) throw err
-			console.log('\n\n',result,'\n\n')
+			let gId=result[0].galaxyId
+				
+			let sql="select * from galaxy where gLevel='"+gLevel+"'"
+		
+			db.query(sql,(err,result)=>{
+				if(err) throw err
+				console.log('\n\n',result,'\n\n')
 
-			let send={
-				'gLevel': gLevel,
-				'totalPlayers': result[0].totalPlayers,
-				'mapSize':result[0].mapSize
-			}
+				let send={
+					'gId': gId,
+					'gLevel': gLevel,
+					'totalPlayers': result[0].totalPlayers,
+					'mapSize':result[0].mapSize
+				}
 
-			res.send(send)
+				res.send(send)
+			})
 		})
-	})
+		})
 })
 
 
@@ -200,7 +218,7 @@ app.post('/register',(req,res)=>{
 		
 		if(result.length<1){ //no player with that name
 			bcrypt.hash(password, saltRounds, function(err, hash) {
-				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`) VALUES ('"+username+"','"+hash+"',1)";
+				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,research,probe) VALUES ('"+username+"','"+hash+"',1,0,0)";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;
@@ -255,7 +273,7 @@ app.post('/register',(req,res)=>{
 											if(err) throw err
 
 											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`) values (1,1,1,48)"
+												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `isFound`, `totalPoints`,currPoints) values (1,1,1,48,0,0,1000000,0)"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
@@ -322,6 +340,12 @@ app.post('/register',(req,res)=>{
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
+
+													let sql="insert into player_galaxy (galaxyId, playerId, active) values (1,'"+pId+"',1)"
+													db.query(sql,(err,result)=>{
+														if(err) throw err
+													
+													})
 												})
 											})
 										})
@@ -677,9 +701,10 @@ app.post('/insertModule',(req,res)=>{
 	let posX = req.body.x;
 	let posY = req.body.y;
 	let playerId = req.body.playerId;
+	let gLevel= req.body.gLevel
 	
 	
-	let sql = "INSERT INTO player_module (`playerId`,`posX`,`posY`,`moduleType`,`deleted`) VALUES ('"+playerId+"','"+posX+"','"+posY+"','"+moduleType+"',0)";
+	let sql = "INSERT INTO player_module (`playerId`,`posX`,`posY`,`moduleType`,`deleted`,gLevel) VALUES ('"+playerId+"','"+posX+"','"+posY+"','"+moduleType+"',0,'"+gLevel+"')";
 	
 	db.query(sql,(err,result)=>{
 		 if(err) throw err;
@@ -742,14 +767,162 @@ app.post('/delModule',(req,res)=>{
 });
 
 
+app.post('/updateResearching',(req,res)=>{
+
+	let playerId=req.body.playerId
+	let gId=req.body.galaxyId
+	
+	let sql = "UPDATE galaxy SET researching = researching+1 where galaxyId='"+gId+"'"
+	// (SELECT COUNT(*)+1 FROM player WHERE research=1)
+	
+	db.query(sql,(err,result)=>{
+
+		if(err) throw err
+
+		startResearchTimer()
+
+		let sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
+
+		db.query(sql,(err,result)=>{
+			if(err) throw err
+			res.send()
+		})
+	})
+})
+
+// app.get('/getResearch',(req,res)=>{
+
+// 	let sql = "SELECT * FROM galaxy"
+
+// 	db.query(sql,(err,result)=>{
+// 		if(err) throw err;
+
+// 		console.log(result)
+
+// 		researchMult = result[0].researching
+// 		let test = result[0].currPoints
+// 		let max = result[0].totalPoints
+
+// 		let rFunction = setInterval(function(){
+// 			test = test + 100 * researchMult
+// 			console.log(test)
+
+// 			let sql = 'UPDATE galaxy SET currPoints = "'+test+'"'
+// 			db.query(sql,(err,result)=>{
+// 				if(err) throw err;
+// 			})
+
+
+// 			if (test >= max){
+
+// 			clearInterval(rFunction)
+
+// 				let sql = 'UPDATE galaxy SET found=1'
+// 				db.query(sql,(err,result)=>{
+// 					if(err) throw err;
+// 				})
+
+// 			}
+// 		},1000)
+//    	});
+
+// })
+
+
+app.get('/getProbe/:playerId',(req,res)=>{
+
+	let playerId=req.params.playerId
+
+	let sql = "SELECT probe FROM player WHERE playerId='"+playerId+"'";
+	db.query(sql,(err,result)=>{
+		console.log(result)
+		probeBuilt = true
+
+		if(err) throw err
+		res.send(result)
+	})
+
+})
+
+
+app.post('/updateProbe',(req,res)=>{
+
+	let playerId=req.body.playerId
+
+	let sql="UPDATE player SET probe = 1 WHERE playerId='"+playerId+"'"
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		res.send()
+	})
+})
+
+
 
 
 
 app.listen(port, () => {
+	startResearchTimer()
+
   console.log(`Example app listening at http://localhost:${port}`)
 })
 
 
+
+
 function randomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
+
+function startResearchTimer(){
+	let sql= "Select count(galaxyId) as 'gCount' from galaxy"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+		galaxyCount=result[0].gCount
+
+		for(let i=0; i<galaxyCount; i++){
+			let sql= "select researching,isFound,currPoints from galaxy where galaxyId='"+(i+1)+"'"
+			db.query(sql,(err,result)=>{
+				console.log(result)
+
+				researching[i]=result[0].researching
+				found[i]=result[0].isFound
+				researchLevel[i]=result[0].currPoints
+				isResearching[i]=false
+			})
+		}
+		
+		setTimeout(function(){
+			console.log(researchingG)
+				for(let i=0; i<galaxyCount; i++){
+					if(found[i]==0 && researching[i]>0 && researchLevel[i]<10000 && isResearching[i]==false){
+						isResearching[i]=true
+
+						researchFunc[i]=setInterval(function(){
+							researchLevel[i]+=(100*researching[i])
+							let sql="update galaxy set currPoints='"+researchLevel[i]+"' where galaxyId='"+(i+1)+"'"
+							console.log('Galaxy ',i+1,':',researchLevel[i])
+	
+							db.query(sql,(err,result)=>{
+								if(err) throw err
+								
+								if(researchLevel[i]>=10000){
+									let sql="update galaxy set isFound=1 where galaxyId='"+(i+1)+"'"
+									db.query(sql,(err,result)=>{
+										if(err) throw err
+										
+										clearInterval(researchFunc[i])
+									})
+								}
+							})
+	
+						},1000*timeScale)
+						researchingG++
+					}
+				}
+				console.log('\n\n___')
+				console.log(researchingG)
+		},500)
+	})
 }
