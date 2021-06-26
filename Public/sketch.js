@@ -160,6 +160,8 @@ function setup(){
   timer()
   testImg.resize(width,height)
   starsImg.resize(width,height)
+  music.setVolume(0.3);
+  music.play();
 }
 
 
