@@ -21,6 +21,10 @@ let mapImg
 let buildImg
 let starsImg
 
+let music
+let clickSound
+
+
 
 let displayArea={}
 
@@ -122,6 +126,9 @@ function preload(){
   buildImg= loadImage('Assets/Images/build.png')
   testImg= loadImage('Assets/Images/galaxy1.jpg')
   starsImg=loadImage('Assets/Images/starsBG.jpg')
+
+  music = loadSound('Assets/Audio/bensound-slowmotion.mp3');
+  clickSound = loadSound('Assets/Audio/multimedia_button_click.mp3')
 
   font= loadFont('Assets/Fonts/AstroSpace-eZ2Bg.ttf')
 }
@@ -1149,33 +1156,33 @@ function timer(){
     }
 
 
-    if(gameState==3){
-      if(placedModule[8]==0){
-        buildProbeB.r=180
-        buildProbeB.g=180
-        buildProbeB.b=180
-        buildProbeB.func= function(){
-          if(placedModule[4]==0){
-            push()
-            fill("red")
-            textSize(15)
-            textAlign(CENTER, TOP)
-            text("No probe construction module active",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-            pop()
-            setTimeout(function(){
-              refreshM()
-            },1500)
-          }
-        }
-      }else{
-        buildProbeB.r=240
-        buildProbeB.g=240
-        buildProbeB.b=240
-        buildProbeB.mouse_over()
-        buildProbeB.func=buildProbe
-      }
-      buildProbeB.draw_button()
-    }
+    // if(gameState==3){
+    //   if(placedModule[8]==0){
+    //     buildProbeB.r=180
+    //     buildProbeB.g=180
+    //     buildProbeB.b=180
+    //     buildProbeB.func= function(){
+    //       if(placedModule[4]==0){
+    //         push()
+    //         fill("red")
+    //         textSize(15)
+    //         textAlign(CENTER, TOP)
+    //         text("No probe construction module active",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+    //         pop()
+    //         setTimeout(function(){
+    //           refreshM()
+    //         },1500)
+    //       }
+    //     }
+    //   }else{
+    //     buildProbeB.r=240
+    //     buildProbeB.g=240
+    //     buildProbeB.b=240
+    //     buildProbeB.mouse_over()
+    //     buildProbeB.func=buildProbe
+    //   }
+    //   buildProbeB.draw_button()
+    // }
 
 
     if(errMsg.active==true){

@@ -473,7 +473,8 @@ class Button{
   }
   
   mouse_released(index){
-
+    
+    clickSound.play()
     this.func(index)
     this.pressed=false
     this.strkWeight=this.strkSave
