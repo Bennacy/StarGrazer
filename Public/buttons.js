@@ -78,12 +78,12 @@ class Button{
 			})
 		})
 	}
-  
-	resolveRequest()
+	//display the list of pending requests
+	displayRequest()
 	{
 		let pName
 		let friendRequest
-		let accept
+		
 		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
 			pName = nameReceived
@@ -96,51 +96,15 @@ class Button{
 				{
 					if(friendRequest[p].requestTo == pName[0].name && friendRequest[p].accepted == 0)
 					{	
-						//Show my requests
+						//show my requests
 						fill("white")
 						text(friendRequest[p].requestFrom,this.x,this.y + (height/20 * p) + height/7)
-						//Reject
-						fill("red")
-						rect(this.x + width/9,this.y + (height/20 * p) + height/8,width/40,height/40)
-						//Accept
-						fill("green")
-						rect(this.x+width/12,this.y + (height/20 * p) + height/8,width/40,height/40)
-						//reset to default color
-						fill("white")
-						//console.math
-						console.log(this.y + (height/10 * p) + height/8 + height/40,this.y + (height/10 * p) + height/8)
-						
-						//0 is default, 1 is true, 2 is false
-					 	if (mouseX<this.x+width/12 + width/40 && mouseX>this.x+width/12 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
-						{
-							console.log("it is done")
-							accept = {
-								"accepted": "1",
-							}
-							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
-							{
-	
-							})
-							break
-						}
-						
-						if (mouseX<this.x+width/9 + width/40 && mouseX>this.x+width/9 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
-						{	
-							console.log("is it done?")
-							accept = {
-								"accepted": "2",
-							}
-							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
-							{
-							
-							})
-							break
-						} 
 					}
 				}
 			}) 
 		})
 	}
+	//displays the list of players the user has added.
 	allPlayers()
 	{
 		let pName
@@ -156,7 +120,9 @@ class Button{
 				for (let p=0; p<friendRequest.length;p++)
 				{
 					if (friendRequest[p].accepted == 1 && friendRequest[p].requestTo == pName[0].name)
-					{
+					{	
+						//show my friends
+						fill("white")
 						text(friendRequest[p].requestFrom,this.x,this.y + (height/10 * p) + height/7)
 					}	
 				}

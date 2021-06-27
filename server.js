@@ -97,8 +97,9 @@ app.get('/getFriendList',(req,res)=>{
 app.post('/resolveFriendReq/',(req,res)=>{
 	
 	let accepted = req.body.accepted
+	let requestFrom = req.body.requestFrom
 
-	let sql = "UPDATE player_friends SET accepted = "+accepted+""
+	let sql = "UPDATE player_friends SET accepted = '"+accepted+"' WHERE requestFrom = '"+requestFrom+"' ";
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err;

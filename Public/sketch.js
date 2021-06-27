@@ -23,7 +23,6 @@ let maxPlace=[]
 let moduleBuildButton=[]
 let arrtiles = [];
 
-
 let img
 let friends
 let playerName
@@ -41,8 +40,8 @@ let firstLoad= true
 let mainLoop= true
 let visitedB=false
 // Button initialization
-let acceptB
-let rejectB
+let acceptB = [];//doubles as a button and an array of buttons
+let rejectB = [];//doubles as a button and an array of buttons
 let loginBtn
 let registerBtn
 let signupBtn
@@ -73,7 +72,8 @@ let mainLoopTimer= 60
 let moneyTimer
 let loopCounter= 0
 let gameState=0
-
+//funny boolean
+let sent = false
 
 
 
@@ -336,45 +336,111 @@ function mousePressed(){
   }
 
 
-  if(gameState==4){
-
-	if(onB.mouse_over())
+	if(gameState==4)
 	{
-		onB.allPlayers()
-		if (typeof searchPlayer !="undefined")
+		let pName
+		let friendRequest
+		//load the player's name and the incoming requests
+		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
-			searchPlayer.remove()
-		}
+			pName = nameReceived
+			
+			loadJSON('/getFriendList',(reqReceived)=>
+			{
+				friendRequest = reqReceived
+				//after clicking on friends, it displays the list of friends 
+				if(onB.mouse_over())
+				{
+					onB.allPlayers()
+					//removes the input from the friend adding button
+					if (typeof searchPlayer !="undefined")
+					{
+					searchPlayer.remove()
+					}
+				}
+				
+				if(pendingB.mouse_over())
+				{	
+					pendingB.displayRequest()
+					//removes the input from the friend adding button
+					if (typeof searchPlayer !="undefined")
+					{
+					searchPlayer.remove()
+					}
+					
+					for (let p=0; p<friendRequest.length;p++)
+					{
+						if(friendRequest[p].requestTo == pName[0].name && friendRequest[p].accepted == 0)
+						{	
+							
+							acceptB[p] = new Button(width/1.5+width/10,height/10 + (height/20 * p) + height/7 ,25,25,155,205,155)
+						
+							rejectB[p] = new Button(width/1.5+width/8,height/10 + (height/20 * p) + height/7,25,25,205,155,155)
+							console.log(p)
+						}
+					}
+				}
+				
+				for (let p=0; p<friendRequest.length;p++)
+				{
+					if (typeof acceptB[p] !="undefined")
+					{
+						if (acceptB[p].mouse_over())
+						{
+							console.log("stats")
+							
+							accept = {
+								"accepted": "1",
+								"requestFrom": friendRequest[p].requestFrom
+							}
+							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>{}) 
+						}
+					}
+				}
+				
+				
+				for (let p=0; p<friendRequest.length;p++)
+				{
+					if (typeof rejectB[p] !="undefined")
+					{
+						if (rejectB[p].mouse_over())
+						{
+			
+							accept = {
+								"accepted": "2",
+								"requestFrom": friendRequest[p].requestFrom
+							}
+							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>{})
+						}
+					}
+				}
+				
+				if(addFriendB.mouse_over())
+				{
+					addB = new Button(width/1.5+width/7.5,height/5,width/30,height/30,200,200,200)
+					addFriendB.onClickSearch()
+				}
+				if (typeof addB !="undefined")
+				{
+					if (addB.mouse_over())
+					{
+						addB.addPlayer()
+					}
+				}
+				if(logoffButton.mouse_over())
+				{
+				logoffButton.mouse_pressed()
+				}
+				if (gameState < 4)
+				{
+					if (typeof searchPlayer !="undefined")
+					{
+						searchPlayer.remove()
+					}
+				}
+			})
+		})
 	}
-	if(pendingB.mouse_over())
-	{	
-		accept = new Button(width/1.5+width/10,height/10 + (height/20 * p) + height/7)
-		reject = new Button(width/1.5+width/8,height/10 + (height/20 * p) + height/7)
-		pendingB.resolveRequest()
-		if (typeof searchPlayer !="undefined")
-		{
-			searchPlayer.remove()
-		}
-	}
-	if(addFriendB.mouse_over())
-	{
-		addB = new Button(width/1.5+width/7.5,height/5,width/30,height/30,200,200,200)
-		addFriendB.onClickSearch()
-	}
-	if (addB.mouse_over())
-	{
-		addB.addPlayer()
-	}
-    if(logoffButton.mouse_over())
-      logoffButton.mouse_pressed()
-  }
-  if (gameState < 4)
-  {
-	  if (typeof searchPlayer !="undefined")
-	  {
-		searchPlayer.remove()
-	  }
-  }
     
 	
   if(gameState>0){
@@ -683,9 +749,32 @@ function timer(){
     if(gameState==4){
 		if (typeof addB !="undefined")
 		{
-			  addB.draw_button()
-			  addB.mouse_over()
+			addB.draw_button()
+			addB.mouse_over()
 		}
+		loadJSON('/getFriendList',(reqReceived)=>
+		{
+			let friendRequest = reqReceived
+			
+			
+			for (p = 0; p<friendRequest.length;p++)
+			{
+				if (typeof acceptB[p] !="undefined")
+				{	
+					acceptB[p].draw_button()
+					acceptB[p].mouse_over()
+				}
+			}
+			
+			for (p = 0; p<friendRequest.length;p++)
+			{
+				if (typeof rejectB[p] !="undefined")
+				{		
+					rejectB[p].draw_button()
+					rejectB[p].mouse_over()
+				}
+			}
+		})
       logoffButton.mouse_over()
       logoffButton.draw_button()
 	  onB.draw_button()
@@ -694,7 +783,7 @@ function timer(){
 	  pendingB.mouse_over()
 	  addFriendB.draw_button()
 	  addFriendB.mouse_over()
-	 // playerName.playerDraw()
+	 //playerName.playerDraw()
     }
   })
 
