@@ -123,36 +123,79 @@ class Resources{
 
 class Mission{
   constructor(mI, id, missionResource, reward, duration, successChance, missionType, state, startD, startH, startM){
-      this.mI=mI
-      this.id=id
-      this.x
-      this.y
-      this.w
-      this.h
-      this.missionResource= missionResource
-      this.reward= reward
-      this.duration= duration
-      this.successChance= successChance
-      this.failTime= 0
-      this.missionType= missionType
-      this.state=state
-      this.button
-      this.drawn=false
+		this.mI=mI
+		this.id=id
+		this.x
+		this.y
+		this.w
+		this.h
+		this.missionResource= missionResource
+		this.reward= reward
+		this.duration= duration
+		this.successChance= successChance
+		this.failTime= 0
+		this.missionType= missionType
+		this.state=state
+		this.button
+		this.drawn=false
+		this.button
 
-      this.timePassed
-      this.timeRemaining
-      
-      this.startDay=startD
-      this.startHour=startH
-      this.StartMin=startM
+		this.timePassed
+		this.timeRemaining
+		
+		this.startDay=startD
+		this.startHour=startH
+		this.StartMin=startM
 
-      
+		if(this.missionResource==3){
+				this.reward= int(1.2*this.reward)
+		}
+		
+		let sId=this.id
+		if(this.state==2){
+			this.timePassed=minute()-this.StartMin + (hour()-this.startHour)*60 + (day()-this.startDay)*24*60
+			this.timeRemaining=(this.duration - this.timePassed)
 
-      if(this.missionResource==3){
-          this.reward= int(1.2*this.reward)
-      }
+			if(this.timeRemaining>0){ // if there is still time until the mission is done
+				setTimeout(function(){
+					for(let i=0; i<mission.length; i++){
+						if(mission[i].id==sId){
+							mission[i].state=5
+						}
+					}
+				},this.timeRemaining*1000*timeScale)
+			}else{ // if the mission is complete but wasnt updated
+				setTimeout(function(){
+					for(let i=0; i<mission.length; i++){
+						if(mission[i].id==sId){
+							mission[i].state=5
+						}
+					}
+				},250)
+			}
+		}else if(this.state==6){ // if there is still time until the mission is failed
+			this.timePassed=minute()-this.StartMin + (hour()-this.startHour)*60 + (day()-this.startDay)*24*60
+			this.timeRemaining=(this.failTime - this.timePassed)
 
-  }
+			if(this.timeRemaining>0){
+				setTimeout(function(){
+					for(let i=0; i<mission.length; i++){
+						if(mission[i].id==sId){
+							mission[i].state=4
+						}
+					}
+				},this.failTime*1000*timeScale) 
+			}else{ // if the mission is failed but wasnt updated
+				setTimeout(function(){
+					for(let i=0; i<mission.length; i++){
+						if(mission[i].id==sId){
+							mission[i].state=4
+						}
+					}
+				},250)
+			}
+		}
+	}
 
   draw_mission(){
     let length
@@ -175,131 +218,11 @@ class Mission{
 
       textSize(20)
       textAlign(CENTER,BOTTOM)
-      text('Reward: '+this.reward+'\tDuration: '+this.duration+' minutes\nChance of success: '+this.successChance+'%', this.x, this.y-this.h/20, this.w, this.h)
+      text(this.missionResource+'\nReward: '+this.reward+'\tDuration: '+this.duration+' minutes\nChance of success: '+this.successChance+'%', this.x, this.y-this.h/20, this.w, this.h)
     pop()
   }
-
-  start_mission(index){
-    print('allo\n')
-    print(this.missionResource)
-		// if(mission[index].state==1 && resource[3].currAmount-resource[3].inUse<=0){
-		// 	push()
-		// 		fill("red")
-		// 		textSize(15)
-		// 		textAlign(CENTER,BOTTOM)
-		// 		text("No available ships",mission[index].x,mission[index].y-17.5)
-		// 	pop()
-
-		// 	setTimeout(function(){
-		// 		clearScreen()
-		// 		background(250)
-		// 		drawR()
-		// 		refreshM()
-		// 	},1000)
-		// }
-
-    // if(mission[index].state==1 && resource[3].currAmount-resource[3].inUse>0){
-
-    //   changeAvailableShips("decrease",1)
-    //   let roll=random(100,0)
-    //   let missionTime=0
-    //   let failing=false
-    //   mission[index].failTime=int(random(mission[index].duration/2, mission[index].duration/3))
-
-    //   if(roll<=mission[index].successChance){
-    //     missionTime=mission[index].duration
-    //   }else{
-    //     missionTime=mission[index].failTime
-    //     failing=true
-    //   }
-
-    //   let dataToSend={
-    //     "playerId": playerId,
-    //     "mission": mission[index],
-    //     "day":day(),
-    //     "hour":hour(),
-    //     "minute":minute(),
-    //     "time":missionTime,
-    //     "inUse": resource[3].inUse
-    //   }
-    
-      // httpPost('/startMission','JSON',dataToSend,(dataReceived)=>{
-      //   if(failing==false){
-      //     mission[index].state=2
-      //     missionButton[index].text= 'Ongoing'
-			// 		if(gameState==3){
-	    //       refreshM()
-			// 		}
-
-      //     setTimeout(function(){
-			// 			missionButton[index].text='Collect'
-      //       mission[index].state=5
-  
-      //       if(gameState==3){
-			// 				refreshM()
-			// 			}
-      //     }, missionTime*1000*timeScale)
-      //   }
-      //   else{
-      //     mission[index].state=6
-      //     missionButton[index].text= 'Ongoing'
-      //     if(gameState==3){
-	    //       refreshM()
-			// 		}
-
-      //     setTimeout(function(){
-			// 			missionButton[index].text='Mission Failed'
-      //       mission[index].state=4
-  
-      //       if(gameState==3){
-			// 				refreshM()
-			// 			}
-      //     },missionTime*1000*timeScale)
-      //   }
-
-
-      //   if(gameState==3){
-			// 		refreshM()
-			// 	}
-      // })
-    // }
-    // else if(mission[index].state==5){
-    //   missionButton[index].text='Collect'
-            
-    //   missionButton[index].func=function(){
-    //     changeAvailableShips("increase",1)
-
-		// 		let dataToSend={
-		// 			"playerId":playerId,
-		// 			"inUse":resource[3].inUse,
-		// 			"resourceType":resource[3].resType
-		// 		}
-		// 		httpPost('/updateInUse','JSON',dataToSend,(dataReceived)=>{
-		// 			resource[mission[index].missionResource-1].change_value(1,mission[index].reward)
-		// 			discardMission(mission[index].missionResource, mission[index].missionType)
-		// 		})
-    //   }
-    // }
-		// else if(mission[index].state==4){
-    //     missionButton[index].text='Mission Failed'
-        
-    //     missionButton[index].func=function(){
-    //       resource[3].change_value(-1,1)
-		// 			changeAvailableShips("increase",1)
-
-		// 			let dataToSend={
-		// 				"playerId":playerId,
-		// 				"inUse":resource[3].inUse,
-		// 				"resourceType":resource[3].resType
-		// 			}
-		// 			httpPost('/updateInUse','JSON',dataToSend,(dataReceived)=>{
-
-		// 				discardMission(mission[index].missionResource, mission[index].missionType)
-		// 			})
-    //     }
-		// 	}
-  }
 }
+
 
 
 
@@ -474,7 +397,7 @@ class Button{
   
   mouse_released(index){
     
-    clickSound.play()
+    // clickSound.play()
     this.func(index)
     this.pressed=false
     this.strkWeight=this.strkSave
@@ -592,6 +515,7 @@ class Module {
         this.alpha=255
         break
     }
+		push()
     if(gameState==2)
       stroke(255)
     else
@@ -605,10 +529,11 @@ class Module {
       square(this.posX, this.posY, this.sd);
     }
     
-    if(typeof(moduleImg[this.moduleType])!= 'undefined'){
+    if(typeof(moduleImg[this.moduleType])!= 'undefined' && this.deleted==0){
       moduleImg[this.moduleType].resize(side-4,0)
       image(moduleImg[this.moduleType], this.posX+2,this.posY+2)
     }
+		pop()
   } 
 
   is_over(mousex,mousey){

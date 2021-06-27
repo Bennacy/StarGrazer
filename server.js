@@ -776,30 +776,29 @@ app.post('/updateResearching',(req,res)=>{
 
 	let playerId=req.body.playerId
 	let gId=req.body.galaxyId
+	let state=req.body.state
+	let sql
 	
-	let sql = "UPDATE galaxy SET researching = researching+1 where galaxyId='"+gId+"'"
-	// (SELECT COUNT(*)+1 FROM player WHERE research=1)
+	if(state==1){
+		sql = "UPDATE galaxy SET researching = researching+1 where galaxyId='"+gId+"'"
+		startResearchTimer()
+	}else{
+		sql = "UPDATE galaxy SET researching = researching-1 where galaxyId='"+gId+"'"
+		clearInterval(researchFunc[gId-1])
+	}
 	
 	researching[gId-1]++
-
-	// if(typeof(researching[gId-1])== 'undefined'){
-	// 	console.log('first research')
-	// 	researching[gId-1]=1
-	// 	found[gId-1]=0
-	// 	researchLevel[gId-1]=0
-	// 	isResearching[gId-1]=false
-	// 	galaxyCount++
-	// }else{
-	// 	researching[gId-1]++
-	// }
 	
 	db.query(sql,(err,result)=>{
 
 		if(err) throw err
 
-		startResearchTimer()
+		let sql
 
-		let sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
+		if(state==1)
+			sql="UPDATE player SET research = 1 WHERE playerId='"+playerId+"'"
+		else
+			sql="UPDATE player SET research = 0 WHERE playerId='"+playerId+"'"
 
 		db.query(sql,(err,result)=>{
 			if(err) throw err
@@ -808,43 +807,16 @@ app.post('/updateResearching',(req,res)=>{
 	})
 })
 
-// app.get('/getResearch',(req,res)=>{
+app.get('/getResearching',(req,res)=>{
 
-// 	let sql = "SELECT * FROM galaxy"
+	let sql = "SELECT * FROM galaxy"
 
-// 	db.query(sql,(err,result)=>{
-// 		if(err) throw err;
+	db.query(sql,(err,result)=>{
+		if(err) throw err;
 
-// 		console.log(result)
-
-// 		researchMult = result[0].researching
-// 		let test = result[0].currPoints
-// 		let max = result[0].totalPoints
-
-// 		let rFunction = setInterval(function(){
-// 			test = test + 100 * researchMult
-// 			console.log(test)
-
-// 			let sql = 'UPDATE galaxy SET currPoints = "'+test+'"'
-// 			db.query(sql,(err,result)=>{
-// 				if(err) throw err;
-// 			})
-
-
-// 			if (test >= max){
-
-// 			clearInterval(rFunction)
-
-// 				let sql = 'UPDATE galaxy SET found=1'
-// 				db.query(sql,(err,result)=>{
-// 					if(err) throw err;
-// 				})
-
-// 			}
-// 		},1000)
-//    	});
-
-// })
+		res.send(result)
+   	});
+})
 
 
 app.get('/getProbe/:playerId',(req,res)=>{
@@ -865,8 +837,9 @@ app.get('/getProbe/:playerId',(req,res)=>{
 app.post('/updateProbe',(req,res)=>{
 
 	let playerId=req.body.playerId
+	let state=req.body.state
 
-	let sql="UPDATE player SET probe = 1 WHERE playerId='"+playerId+"'"
+	let sql="UPDATE player SET probe = '"+state+"' WHERE playerId='"+playerId+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 		res.send()
@@ -1071,18 +1044,17 @@ function startResearchTimer(){
 
 		console.log('Galaxy Count:',galaxyCount)
 		for(let i=0; i<galaxyCount; i++){
-			if(found[i]==0 && researching[i]>0 && researchLevel[i]<10000 && isResearching[i]==false){
+			if(found[i]==0 && researching[i]>0 && researchLevel[i]<100000 && isResearching[i]==false){
 					isResearching[i]=true
 					// researchFunc[i].clearInterval()
 					researchFunc[i]=setInterval(function(){
 						researchLevel[i]+=(100*researching[i])
 						let sql="update galaxy set currPoints='"+researchLevel[i]+"' where galaxyId='"+(i+1)+"'"
-						console.log(researchLevel[i])
 
 						db.query(sql,(err,result)=>{
 							if(err) throw err
 							
-							if(researchLevel[i]>=10000){
+							if(researchLevel[i]>=100000){
 								let sql="update galaxy set isFound=1 where galaxyId='"+(i+1)+"'"
 								db.query(sql,(err,result)=>{
 									if(err) throw err

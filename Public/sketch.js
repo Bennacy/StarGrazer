@@ -1,6 +1,7 @@
 let side = 52;
 let deleted = 0;
 let moduleType=0;
+let probeBuildBar
 
 let moneyToCollect
 let mapGridSize
@@ -27,12 +28,20 @@ let clickSound
 
 
 let displayArea={}
+let researchText=''
+let researchPoints
+let playersResearching
+let researchTCycle=0
+let researchTCycleFunc=function(){}
+let researchPointsFunc=function(){}
+let galaxyResearchCount=[]
 
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
 // Arrays initialization
 let resource= [];
 let mission= [];
+let tempMission= [];
 let missionButton= [];
 let modules=[];
 let moduleCost=[]
@@ -43,7 +52,6 @@ let maxPlace=[]
 let moduleBuildButton=[]
 let arrtiles = [];
 let playerMapArr=[];
-let drawnMission=[]
 let moduleImg=[]
 let buildProbeB;
 
@@ -76,6 +84,8 @@ let refreshM=false
 let buildingProbe=false;
 let probeBuilt=false;
 let researching=false;
+let updateR=false
+let isFound=false
 let shipBar=0
 
 // Button initialization
@@ -90,6 +100,7 @@ let collectMB
 let profileButton
 let logoffButton
 let mapBtn
+let advanceBtn
 
 
 // Input initialization
@@ -118,6 +129,20 @@ function preload(){
 			crewCost[i]=dataReceived[0].crewCost
     })
   }
+
+	loadJSON('/getResearching',(dataReceived)=>{
+
+		for(let i=0; i<dataReceived.length; i++){
+			galaxyResearchCount[i]={
+				"researchingPlayers":dataReceived[i].researching,
+				"galaxyId":dataReceived[i].galaxyId,
+				"isFound":dataReceived[i].isFound,
+				"currPoints":dataReceived[i].currPoints
+			}
+		}
+
+		print(galaxyResearchCount)
+	})
 
   crewImg= loadImage('Assets/Images/crew.png')
   shipImg= loadImage('Assets/Images/ship.png')
@@ -178,14 +203,6 @@ function draw() {
     loginScene()
     noLoop()
     break
-    
-    case 1: // Main menu
-    if (mainLoop== true){
-      loopCounter++
-      mainLoop= false
-      main_Scene()
-    }
-    break
   }
 }
 
@@ -197,6 +214,15 @@ function main_scene_setup(){
   signupBtn.remove();
 	moneyTimer=0
 	moneyToCollect=0
+
+	researchTCycle=0
+	clearInterval(researchTCycleFunc)
+
+	researchTCycleFunc= setInterval(function(){
+		if(researchTCycle==4)
+			researchTCycle=-1
+		researchTCycle++
+	},500)
 
   loadJSON('/getPlaced/'+playerId,(dataReceived)=>{ // Get a list of how many modules of each type are built
     for(let i=0; i<dataReceived.length; i++){
@@ -221,11 +247,41 @@ function main_scene_setup(){
   mapBtn = new Button(width - 200 - 15, height/17, 200, height/15, 0,171,255, map_scene, "Map",25,2);
   
   buildShipB= new Button(width/2-75, height/2+150, 150, 50, 0,200,230, buildShip, 'Build Ship\nCost:1000',20,1)
+  buildProbeB= new Button((width/2+width/3) + 50,	height/3,	175,75,	140,200,230,	buildProbe,	'Build Probe\nCost:5000',20,1)
+	advanceBtn= new Button(width/2,  displayArea.bottomY-15,  200,height-displayArea.bottomY,  230,20,35, advanceGalaxy, 'Launch Probe', 40, 1)
   
   selectCrew= new Button(50,displayArea.topY, 200,displayArea.height/2, 0,125,150, selectMission, 'Crew\nMissions',25, 4,1)
   selectMat= new Button(50,displayArea.topY+displayArea.height/2, 200,displayArea.height/2, 0,150,175, selectMission, 'Material\nMissions',25, 4,3)
 
-  create_Grid(playerId)
+	setTimeout(function(){
+		if(placedModule[6]>0){
+			researching=true
+		}
+
+		for(let i=0; i<galaxyResearchCount.length; i++){
+			if(galaxyResearchCount[i].galaxyId==galaxyId){
+				researchPoints=galaxyResearchCount[i].currPoints
+				playersResearching=galaxyResearchCount[i].researchingPlayers
+				isFound=galaxyResearchCount[i].isFound
+				clearInterval(researchPointsFunc)
+
+				if(playersResearching>0){
+					researchPointsFunc=setInterval(function(){
+						researchPoints+=(100*playersResearching)
+
+						if(researchPoints>=100000){
+							print('done')
+							isFound=1
+							clearInterval(researchPointsFunc)
+						}
+					},1000*timeScale)
+				}
+			}
+		}
+
+		create_Grid(playerId)
+	},500)
+
 
   visiting=false
   mainLoop= true
@@ -236,13 +292,10 @@ function main_scene_setup(){
 
 
 function main_Scene() {
-    // clearScreen()
-    // createCanvas(windowWidth, windowHeight);
-    // background(220)
     gameState=1
     moduleType=0
     gridEnable=false
-    side= 64
+    side= 48
     create_Grid(playerId)
     drawR()
 }
@@ -250,6 +303,7 @@ function main_Scene() {
 
 function logOff(){
   clearScreen()
+	researching=false
   gameState=0
 }
 
@@ -276,27 +330,33 @@ function keyPressed(){
   if(gameState>0){
     switch(keyCode){
       case 49: // 1 => Sets Money to max
-        resource[0].change_value(1,int(resource[0].maxAmount))
+				if(keyIsDown(32))
+        	resource[0].change_value(1,int(resource[0].maxAmount))
         break
       
       case 50: // 2 => Sets Crew to max
-      resource[1].change_value(1,int(resource[1].maxAmount))
+				if(keyIsDown(32))
+      	resource[1].change_value(1,int(resource[1].maxAmount))
       break
     
       case 51: // 3 => Sets Materials to max
-      resource[2].change_value(1,int(resource[2].maxAmount))
+				if(keyIsDown(32))
+      	resource[2].change_value(1,int(resource[2].maxAmount))
       break
 
       case 52: // 4 => Sets Ships to max
-        resource[3].change_value(1,int(resource[3].maxAmount))
+				if(keyIsDown(32))
+        	resource[3].change_value(1,int(resource[3].maxAmount))
         break
 
 			case 53: // 5 => Sets Ships to 0 (testing build ship button)
-				resource[3].change_value(-1,3)
+				if(keyIsDown(32))
+					resource[3].change_value(-1,3)
 				break
       
       case 81: // q => Testing player galaxy level
-				advanceGalaxy()
+				if(keyIsDown(32))
+					advanceGalaxy()
         break
     }
   }
@@ -344,10 +404,16 @@ function keyPressed(){
 
 function mouseReleased(){
   if(gameState==3){
-    for(let i=0; i<missionButton.length; i++){
-      if(missionButton[i].pressed){
-        missionButton[i].mouse_released(i)
-      }
+		for(let i=0; i<mission.length; i++){
+			if(missionSelect==2 && i<3){
+				if(mission[i].button.pressed){
+					mission[i].button.mouse_released(i)
+				}
+			}else if(missionSelect==3 && i>2){
+				if(mission[i].button.pressed){
+					mission[i].button.mouse_released(i)
+				}
+			}
     }
 
     if(selectCrew.pressed)
@@ -391,6 +457,16 @@ function mouseReleased(){
 		}
 	}
 
+	if(gameState==1){
+		if(placedModule[8]>0 && buildProbeB.pressed){
+			buildProbeB.mouse_released()
+		}
+		if(isFound==1 && probeBuilt==1 && advanceBtn.pressed){
+			advanceBtn.mouse_released()
+		}
+	}
+
+
   if(gameState>0){  
 		
 		if(mapBtn.pressed){
@@ -422,10 +498,16 @@ function mouseReleased(){
 function mousePressed(){
 
   if(gameState==3){
-    for(let i=0; i<missionButton.length; i++){
-      if(missionButton[i].mouse_over()){
-        missionButton[i].mouse_pressed(i)
-      }
+    for(let i=0; i<mission.length; i++){
+			if(missionSelect==2 && i<3){
+				if(mission[i].button.mouse_over()){
+					mission[i].button.mouse_pressed(i)
+				}
+			}else if(missionSelect==3 && i>2){
+				if(mission[i].button.mouse_over()){
+					mission[i].button.mouse_pressed(i)
+				}
+			}
     }
 
     if(selectCrew.mouse_over())
@@ -466,6 +548,15 @@ function mousePressed(){
 
 				playerCard.over_x()
 			}
+		}
+	}
+
+	if(gameState==1){
+		if(placedModule[8]>0 && buildProbeB.mouse_over()){
+			buildProbeB.mouse_pressed()
+		}
+		if(isFound==1 && probeBuilt==1 && advanceBtn.mouse_over()){
+			advanceBtn.mouse_pressed()
 		}
 	}
 
@@ -547,9 +638,21 @@ function mousePressed(){
                           // getResearch()
                           let dataToSend={
                             "playerId": playerId,
-                            "galaxyId": galaxyId
+                            "galaxyId": galaxyId,
+														"state":1
                           }
                           httpPost('/updateResearching','JSON',dataToSend,(dataReceived)=>{
+
+                          })
+                        }else if (moduleType == 8){ // on placing a probe
+
+													probeBuilt=1
+                          let dataToSend={
+                            "playerId": playerId,
+                            "galaxyId": galaxyId,
+														"state":1
+                          }
+                          httpPost('/updateProbe','JSON',dataToSend,(dataReceived)=>{
 
                           })
                         }
@@ -603,6 +706,29 @@ function mousePressed(){
 														resource[moduleType-1].maxAmount+=dataReceived[0].effect
 														drawR()
 													})
+												})
+											}else if (moduleType == 7){ // on placing a research station
+
+												researching = true
+												// getResearch()
+												let dataToSend={
+													"playerId": playerId,
+													"galaxyId": galaxyId,
+													"state":1
+												}
+												httpPost('/updateResearching','JSON',dataToSend,(dataReceived)=>{
+
+												})
+											}else if (moduleType == 8){ // on placing a probe
+
+												probeBuilt=1
+												let dataToSend={
+													"playerId": playerId,
+													"galaxyId": galaxyId,
+													"state":1
+												}
+												httpPost('/updateProbe','JSON',dataToSend,(dataReceived)=>{
+
 												})
 											}
 										});
@@ -741,6 +867,29 @@ function mousePressed(){
 												drawR()
 											})
 										})
+									}else if (arrtiles[i][j].moduleType == 7){ // on placing a research station
+
+										researching = false
+										// getResearch()
+										let dataToSend={
+											"playerId": playerId,
+											"galaxyId": galaxyId,
+											"state":0
+										}
+										httpPost('/updateResearching','JSON',dataToSend,(dataReceived)=>{
+
+										})
+									}else if (moduleType == 9){ // on placing a probe
+
+										probeBuilt=0
+										let dataToSend={
+											"playerId": playerId,
+											"galaxyId": galaxyId,
+											"state":0
+										}
+										httpPost('/updateProbe','JSON',dataToSend,(dataReceived)=>{
+
+										})
 									}
 									// else if(arrtiles[i][j].moduleType==1){
 										
@@ -773,25 +922,134 @@ function mousePressed(){
 
 function timer(){
   setInterval(function(){
-    // background(220)
     
     switch(gameState){
       
       case 1:
+				let researchBar={
+					'rectX': width/2- width/10,
+					'rectY': displayArea.bottomY+20,
+					'rectW': width/2.5,
+					'rectH': height/15
+				}
+				if(updateR==true){
+					updateR=false
+					loadJSON('/getResearching',(dataReceived)=>{
+
+						for(let i=0; i<dataReceived.length; i++){
+							galaxyResearchCount[i]={
+								"researchingPlayers":dataReceived[i].researching,
+								"galaxyId":dataReceived[i].galaxyId,
+								"isFound":dataReceived[i].isFound,
+								"currPoints":dataReceived[i].currPoints
+							}
+						}
+						
+						for(let i=0; i<galaxyResearchCount.length; i++){
+							if(galaxyResearchCount[i].galaxyId==galaxyId){
+								researchPoints=galaxyResearchCount[i].currPoints
+								playersResearching=galaxyResearchCount[i].researchingPlayers
+								isFound=galaxyResearchCount[i].isFound
+								clearInterval(researchPointsFunc)
+				
+								if(playersResearching>0){
+									researchPointsFunc=setInterval(function(){
+										researchPoints+=(100*playersResearching)
+
+										if(researchPoints>=100000){
+											print('done')
+											isFound=1
+											clearInterval(researchPointsFunc)
+										}
+									},1000*timeScale)
+								}
+							}
+						}
+					})
+				}
+
         image(starsImg,0,0)
 
-        if(visiting==false){
-          mapBtn.textS=25
-          mapBtn.text='Map'
-        }
-        else{
+        if(visiting==true){
           mapBtn.textS=20
           mapBtn.text='Back to Base'
         }
-        profileButton.text='Profile'
-        buildScreenB.text='Modules'
-        missionScreenB.text='Missions'
+        else{
+          mapBtn.textS=25
+          mapBtn.text='Map'
+        
+					profileButton.text='Profile'
+					buildScreenB.text='Modules'
+					missionScreenB.text='Missions'
 
+					if(isFound==0){
+						switch(researchTCycle){
+							case 0:
+								researchText='Researching'
+								break
+							case 1:
+								researchText='Researching.'
+								break
+							case 2:
+								researchText='Researching..'
+								break
+							case 3:
+								researchText='Researching...'
+								break
+							case 4:
+								researchText='Researching'
+								break
+						}
+					}else{
+						researchText='Destination Found!'
+					}
+
+					if(researching==true){
+						push()
+
+						fill(255)
+							stroke(0)
+							strokeWeight(10)
+							if(isFound==0){
+								if(researchPoints>500){
+									let resBar=map(researchPoints, 0,100000, 0,researchBar.rectW)
+									rect(researchBar.rectX,	researchBar.rectY,	resBar,	researchBar.rectH,	20)
+								}
+
+								noFill()
+								stroke(255)
+								strokeWeight(5)
+								rect(researchBar.rectX,researchBar.rectY,researchBar.rectW,researchBar.rectH,20)
+							}else{
+								if(isFound==1 && probeBuilt==1){
+									advanceBtn.mouse_over()
+									advanceBtn.draw_button()
+								}
+							}
+
+							textAlign(RIGHT,CENTER)
+							noStroke()
+							fill(255)
+							textSize(30)
+							text(researchText,	researchBar.rectX - width/5- 15,	researchBar.rectY,	width/5,	researchBar.rectH)
+						pop()
+					}
+
+					if(placedModule[8]>0){
+						buildProbeB.mouse_over()
+						buildProbeB.draw_button()
+					}
+
+					if(buildingProbe==true){
+						push()
+						fill(buildProbeB.origR-40, buildProbeB.origG-40, buildProbeB.origB-40)
+						probeBuildBar++
+						let w=map(probeBuildBar, 0,5000/15, 0,buildProbeB.w,true)
+						rect(buildProbeB.x,	buildProbeB.y + buildProbeB.h + 5,	w,	buildProbeB.h/3,25)
+						pop()
+					}
+				}
+				
         draw_Grid()
         break
 
@@ -839,189 +1097,71 @@ function timer(){
         selectCrew.x=missionBG.x-selectCrew.w
         selectMat.x=missionBG.x-selectMat.w
 
-        if(drawnMission.length<3 || refreshM==true){
-          refreshM=false
-          // drawnMission=[]
-          for(let i=0; i<mission.length; i++){
-            if(mission[i].missionResource==missionSelect && mission[i].drawn==false){
-              mission[i].drawn=true
-              drawnMission.push(mission[i])
-
-            }
-          }
-          
-          sortMission(drawnMission.length)
-          
-          for(let i=0; i<drawnMission.length; i++){
-            drawnMission[i].x=missionBG.x
-            drawnMission[i].y=missionBG.y+ i*(missionBG.h)
-            drawnMission[i].w=missionBG.w
-            drawnMission[i].h=missionBG.h
-
-            let buttonW=drawnMission[i].h
-            let buttonH=drawnMission[i].h/2
-
-            let buttonX=(drawnMission[i].x+drawnMission[i].w- buttonW/10)
-            let buttonY=drawnMission[i].y+buttonH/2
-
-            missionButton[i]= new Button(buttonX, buttonY, buttonW, buttonH, 0,150,195, function tempMission(){}, 'F',40,1)
-            
-            // switch(drawnMission[i].state){
-            //   case 1:
-            //     missionButton[i].text='Start\nMission!'
-              
-            //     missionButton[i].func=function(){
-            //       if(resource[3].currAmount-resource[3].inUse>0){
-            //         changeAvailableShips("decrease",1)
-            //         let roll=random(100,0)
-            //         let missionTime=0
-            //         let failing=false
-            //         drawnMission[i].failTime=int(random(drawnMission[i].duration/2, drawnMission[i].duration/3))
-
-            //         if(roll<=drawnMission[i].successChance){
-            //           missionTime=drawnMission[i].duration
-            //         }else{
-            //           missionTime=drawnMission[i].failTime
-            //           failing=true
-            //         }
-
-            //         let savedM=drawnMission[i].missionResource
-                    
-            //         let dataToSend={
-            //           "playerId": playerId,
-            //           "mission": drawnMission[i],
-            //           "day":day(),
-            //           "hour":hour(),
-            //           "minute":minute(),
-            //           "time":missionTime,
-            //           "inUse": resource[3].inUse
-            //         }
-
-            //         httpPost('/startMission','JSON',dataToSend,(dataReceived)=>{
-            //           drawnMission[i].startMin=minute()
-            //           drawnMission[i].startHour=hour()
-            //           drawnMission[i].startDay=day()
-
-            //           if(failing==false){
-            //             drawnMission[i].state=2
-            //             missionButton[i].text= 'Ongoing'
-
-            //             setTimeout(function(){
-            //               if(drawnMission[i].missionResource==savedM){
-            //                 missionButton[i].text='Collect'
-            //                 drawnMission[i].state=5
-
-            //                 refreshM=true
-            //               }
-            //             }, missionTime*1000*timeScale)
-            //           }
-            //           else{
-            //             drawnMission[i].state=6
-            //             missionButton[i].text= 'Ongoing'
-
-            //             setTimeout(function(){
-            //               if(drawnMission[i].missionResource==savedM){
-            //                 missionButton[i].text='Failed'
-            //                 drawnMission[i].state=4
-                            
-            //                 refreshM=true
-            //               }
-            //             },missionTime*1000*timeScale)
-            //           }
-            //           refreshM=true
-            //         })
-
-            //       }
-            //     }
-            //     break
-                
-            //   case 2:
-            //     missionButton[i].text='Ongoing'
-
-            //     drawnMission[i].timePassed=minute()-drawnMission[i].StartMin + (hour()-drawnMission[i].startHour)*60 + (day()-drawnMission[i].startDay)*24*60
-            //     drawnMission[i].timeRemaining=(drawnMission[i].duration - drawnMission[i].timePassed)
-
-            //     print('I:',i,' P:',drawnMission[i].timePassed,' R:',drawnMission[i].timeRemaining,' D:',drawnMission[i].duration)
-            //     print('H:',drawnMission[i].startHour,' M:',drawnMission[i].startMin)
-
-            //     if(drawnMission[i].timeRemaining>0){
-            //       setTimeout(function(){
-            //         drawnMission[i].state=5
-            //         refreshM=true
-            //       },drawnMission[i].timeRemaining*1000*timeScale)
-            //     }else{
-            //       drawnMission[i].state=5
-            //       refreshM=true
-            //     }
-              
-            //     missionButton[i].func=function(){
-                  
-            //     }
-            //     break
-
-            //   case 4:
-            //     missionButton[i].text='Failed'
-            //     missionButton[i].origR=244
-            //     missionButton[i].origG=7
-            //     missionButton[i].origB=7
-                
-            //     missionButton[i].func=function(){
-            //       discardMission(drawnMission[i].missionResource,drawnMission[i].missionType)
-            //     }
-            //     break
-
-            //   case 5:
-            //     missionButton[i].text='Complete'
-            //     missionButton[i].origR=47
-            //     missionButton[i].origG=153
-            //     missionButton[i].origB=8
-                
-            //     missionButton[i].func=function(){
-            //       changeAvailableShips("increase",1)
-            //       resource[drawnMission[i].missionResource-1].change_value(1,drawnMission[i].reward)
-            //       discardMission(drawnMission[i].missionResource,drawnMission[i].missionType)
-            //     }
-            //     break
-                
-            //   case 6:
-            //     missionButton[i].text='Ongoing'
-
-            //     drawnMission[i].timePassed=minute()-drawnMission[i].StartMin + ((hour()*60)-(drawnMission[i].startHour*60)) + ((day()-drawnMission[i].startDay)*24*60)
-            //     drawnMission[i].timeRemaining=(drawnMission[i].failTime - drawnMission[i].timePassed)
-
-            //     if(drawnMission[i].timeRemaining>0){
-            //       setTimeout(function(){
-            //         drawnMission[i].state=4
-            //         refreshM=true
-            //       },drawnMission[i].timeRemaining*1000*timeScale)
-            //     }else{
-            //       drawnMission[i].state=4
-            //       refreshM=true
-            //     }
-              
-            //     missionButton[i].func=function(){
-                  
-            //     }
-                  
-            //     missionButton[i].func=function(){
-
-            //     }
-            //     break
-            // }
-          }
-          // print(mission)
-          // print(drawnMission)
-        }
-        
         push()
           for(let rY=0,i=0; rY<3; rY++,i++){
             
             fill(0,190,235,125)
-            rect(missionBG.x, missionBG.y +rY*missionBG.h, missionBG.w + drawnMission[i].h, missionBG.h,0,50,50,0)
-
-            drawnMission[i].draw_mission()
+            rect(missionBG.x, missionBG.y +rY*missionBG.h, missionBG.w, missionBG.h,0,50,50,0)
           }
         pop()
+
+				if(refreshM==true){
+					for(let i=0;i<mission.length;i++){
+						if(i<3){
+							mission[i].x=missionBG.x
+							mission[i].y=missionBG.y+ i*(missionBG.h)
+							mission[i].w=missionBG.w
+							mission[i].h=missionBG.h
+						}else{
+							mission[i].x=missionBG.x
+							mission[i].y=missionBG.y+ (i-3)*(missionBG.h)
+							mission[i].w=missionBG.w
+							mission[i].h=missionBG.h
+						}
+						mission[i].button= new Button(mission[i].x + mission[i].w - mission[i].w/10, mission[i].y, mission[i].w/2.5, mission[i].h, 0,150,195, missionFunction, i, 35,1)
+						switch(mission[i].state){
+							case 1:
+								mission[i].button.text= 'Start\nMission'
+								break
+								
+							case 2:
+							case 6:
+								mission[i].button.text= 'Ongoing'
+								break
+	
+							case 4:
+								mission[i].button.text= 'Failed'
+								mission[i].button.origR=244
+								mission[i].button.origG=7
+								mission[i].button.origB=7
+								break
+	
+							case 5:
+								mission[i].button.text= 'Complete'
+								mission[i].button.origR=47
+								mission[i].button.origG=153
+								mission[i].button.origB=8
+								break
+						}
+					}
+					refreshM=false
+				}
+
+				if(refreshM==false){
+					if(missionSelect==2){
+						for(let i=0; i<3; i++){
+							mission[i].draw_mission()
+							mission[i].button.mouse_over()
+							mission[i].button.draw_button()
+						}
+					}else{
+						for(let i=3; i<6; i++){
+							mission[i].draw_mission()
+							mission[i].button.mouse_over()
+							mission[i].button.draw_button()
+						}
+					}
+				}
 
         let freeSpace= missionBG.x + missionBG.w + missionBG.h
         
@@ -1088,13 +1228,6 @@ function timer(){
 
         selectMat.mouse_over()
         selectMat.draw_button()
-        
-        for(let i=0; i<missionButton.length; i++){
-          if(drawnMission[i].state!=2 || drawnMission[i].state!=6){
-            missionButton[i].mouse_over()
-            missionButton[i].draw_button()
-          }
-        }
 
         break
 
@@ -1165,35 +1298,6 @@ function timer(){
     }
 
 
-    // if(gameState==3){
-    //   if(placedModule[8]==0){
-    //     buildProbeB.r=180
-    //     buildProbeB.g=180
-    //     buildProbeB.b=180
-    //     buildProbeB.func= function(){
-    //       if(placedModule[4]==0){
-    //         push()
-    //         fill("red")
-    //         textSize(15)
-    //         textAlign(CENTER, TOP)
-    //         text("No probe construction module active",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-    //         pop()
-    //         setTimeout(function(){
-    //           refreshM()
-    //         },1500)
-    //       }
-    //     }
-    //   }else{
-    //     buildProbeB.r=240
-    //     buildProbeB.g=240
-    //     buildProbeB.b=240
-    //     buildProbeB.mouse_over()
-    //     buildProbeB.func=buildProbe
-    //   }
-    //   buildProbeB.draw_button()
-    // }
-
-
     if(errMsg.active==true){
       push()
         textFont(font)
@@ -1227,16 +1331,16 @@ function clearScreen(){
       gameState=2
       side= 48
 
-      let buttonWidth=150
-      let buttonHeight=55
+      let buttonWidth=200
+      let buttonHeight=75
       
       for(let i=0; i<10; i++){
         let cArray=moduleColor(i+1)
 
         if(i<5){
-          moduleBuildButton[i]= new Button (50, height/2-((buttonHeight+25)*(-i+2)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew requirement: '+crewCost[i+1]),10,1)
+          moduleBuildButton[i]= new Button (25, height/2-((buttonHeight+25)*(-i+2)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew requirement: '+crewCost[i+1]),12,1)
         }else{
-          moduleBuildButton[i]= new Button (width-buttonWidth-50, height/2-((buttonHeight+25)*(-i+7)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew requirement: '+crewCost[i+1]),10,1)
+          moduleBuildButton[i]= new Button (width-buttonWidth-25, height/2-((buttonHeight+25)*(-i+7)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew requirement: '+crewCost[i+1]),12,1)
         }
       }
 
@@ -1308,55 +1412,61 @@ function clearScreen(){
   
   function buildProbe(){
 
-    if(buildingProbe==false && resource[0].currAmount>=5000 && probeBuilt == false){
+    if(resource[0].currAmount>=5000 && probeBuilt==0 && buildingProbe==false){
 
       resource[0].change_value(-1,5000)
-      buildingProbe=true
-      let bar=0
-      let drawBar=setInterval(function(){
-        bar+=buildProbeB.w/((1000*5*timeScale)/100)
-        rect(buildProbeB.x, buildProbeB.y+buildProbeB.h, bar, 10)
-      },100)
+			probeBuildBar=0
+			buildingProbe=true
+
+			setTimeout(function(){
+				buildingProbe=false
+				probeBuilt=1
+			}, 5000)
+    //   let bar=0
+    //   let drawBar=setInterval(function(){
+    //     bar+=buildProbeB.w/((1000*5*timeScale)/100)
+    //     rect(buildProbeB.x, buildProbeB.y+buildProbeB.h, bar, 10)
+    //   },100)
     
 
-      setTimeout(function(){
-        buildingProbe=false
-        probeBuilt=true
-        updateProbe()
-        clearInterval(drawBar)
-        refreshM()
-      },(1000*5*timeScale)) 
+    //   setTimeout(function(){
+    //     buildingProbe=false
+    //     probeBuilt=true
+    //     updateProbe()
+    //     clearInterval(drawBar)
+    //     refreshM()
+    //   },(1000*5*timeScale)) 
 
-    }else if(buildingProbe== true){
-      push()
-        fill("red")
-        textSize(15)
-        textAlign(CENTER, TOP)
-        text("The probe is already under construction",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-      pop()
-      setTimeout(function(){
-        refreshM()
-      },1500)
-    }else if(resource[0].currAmount<5000){
-      push()
-        fill("red")
-        textSize(15)
-        textAlign(CENTER, TOP)
-        text("Not enough money to buy a probe",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-      pop()
-      setTimeout(function(){
-        refreshM()
-      },1500)
-    }else if (probeBuilt==true){
-      push()
-        fill("red")
-        textSize(15)
-        textAlign(CENTER, TOP)
-        text("There is no place to go",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-      pop()
-      setTimeout(function(){
-      refreshM()
-      },1500)
+    // }else if(buildingProbe== true){
+    //   push()
+    //     fill("red")
+    //     textSize(15)
+    //     textAlign(CENTER, TOP)
+    //     text("The probe is already under construction",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+    //   pop()
+    //   setTimeout(function(){
+    //     refreshM()
+    //   },1500)
+    // }else if(resource[0].currAmount<5000){
+    //   push()
+    //     fill("red")
+    //     textSize(15)
+    //     textAlign(CENTER, TOP)
+    //     text("Not enough money to buy a probe",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+    //   pop()
+    //   setTimeout(function(){
+    //     refreshM()
+    //   },1500)
+    // }else if (probeBuilt==true){
+    //   push()
+    //     fill("red")
+    //     textSize(15)
+    //     textAlign(CENTER, TOP)
+    //     text("There is no place to go",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
+    //   pop()
+    //   setTimeout(function(){
+    //   refreshM()
+    //   },1500)
     }
   }
 
@@ -1392,6 +1502,7 @@ function clearScreen(){
     errMsg.active=false
     erasing=false
     refreshM=true
+		updateR=true
     playerCard=''
   }
 
@@ -1612,6 +1723,18 @@ function clearScreen(){
 // v Mission start v // ====================================================================================================================================================================================================================================
 {
 
+  function discardMission(resource, length){
+    let dataToSend={
+      "playerId":playerId,
+      "resource":resource,
+      "length":length
+    }
+    httpPost('/discardMission','JSON',dataToSend,(dataReceived)=>{
+      createMission(resource, length)
+    })
+  }
+
+
   function createMission(resource, length){
     let dataToSend={
       "playerId":playerId,
@@ -1649,128 +1772,94 @@ function clearScreen(){
         mission[i].drawn=false
       }
 
-      drawnMission=[]
-      missionButton=[]
-
       missionSelect=selection
+			refreshM=true
     }
   }
 
 
   function getMission(){
     loadJSON('/getMission/'+playerId, (dataReceived)=>{
+			mission=[]
+			tempMission=[]
 
       for(let i=0; i<dataReceived.length; i++){
-        mission[i]= new Mission(i, dataReceived[i].missionId, dataReceived[i].resourceType, dataReceived[i].reward, dataReceived[i].duration, dataReceived[i].successChance, dataReceived[i].missionType, dataReceived[i].state, dataReceived[i].startDay, dataReceived[i].startHour, dataReceived[i].startMin)
+        tempMission[i]= new Mission(i, dataReceived[i].missionId, dataReceived[i].resourceType, dataReceived[i].reward, dataReceived[i].duration, dataReceived[i].successChance, dataReceived[i].missionType, dataReceived[i].state, dataReceived[i].startDay, dataReceived[i].startHour, dataReceived[i].startMin)
       }
-        // missionButton[i]= new Button(mission[i].x-mission[i].w/2, mission[i].y+10, mission[i].w, mission[i].h, 240,240,240, mission[i].start_mission, 'Start Mission!',10,1)
-        
-        // if(mission[i].state==1){
-        //   missionButton[i].text='Start Mission!'
-        // }else if(mission[i].state==2 || mission[i].state==6){
-        //   missionButton[i].text='Ongoing'
-        // }else if(mission[i].state==5){
-        //   missionButton[i].text='Collect'
-        // }else if(mission[i].state==4){
-        //   missionButton[i].text='Mission Failed'
-        // }
-
-      // for(let i=0; i<mission.length; i++){
-      //   if(mission[i].state==2){
-      //     loadJSON('/getStartTime'+mission[i].id, (dataReceived)=>{
-            
-      //       let timePassed=0
-      //       let timeRemaining=0
-
-
-      //       timePassed=currM-dataReceived[0].StartMin + ((currH*60)-(dataReceived[0].startHour*60)) + ((currD-dataReceived[0].startDay)*24*60)
-      //       timeRemaining=mission[i].duration-timePassed
-
-      //       if(timeRemaining>0){
-      //         setTimeout(function(){
-      //           mission[i].state=5
-      //           missionButton[i].text='Collect'
-      
-      //           // missionButton[i].func=function(){
-      //           //   resource[mission[i].missionResource-1].change_value(1,mission[i].reward)
-      //           //   discardMission(mission[i].missionResource, mission[i].missionType)
-      //           // }
-      //           if (gameState==3){
-      //             refreshM()
-      //           }
-      //         }, timeRemaining*1000*timeScale)
-      //       }else{
-      //         mission[i].state=5
-      //         missionButton[i].text='Collect'
-    
-      //         // missionButton[i].func=function(){
-      //         //   resource[mission[i].missionResource-1].change_value(1,mission[i].reward)
-      //         //   discardMission(mission[i].missionResource, mission[i].missionType)
-      //         // }
-      //         if (gameState==3){
-      //           refreshM()
-      //         }
-
-      //       }
-            
-    
-      //     })
-      //   }else if(mission[i].state==6){
-      //     loadJSON('/getStartTime'+mission[i].id, (dataReceived)=>{
-            
-      //       let timePassed=0
-      //       let timeRemaining=0
-      //       let currD=day()
-      //       let currH=hour()
-      //       let currM=minute()
-
-      //       timePassed=currM-dataReceived[0].StartMin + ((currH*60)-(dataReceived[0].startHour*60)) + ((currD-dataReceived[0].startDay)*24*60) // Converts everything to minutes
-      //       timeRemaining=mission[i].failTime-timePassed
-
-      //       if(timeRemaining>0){
-      //         setTimeout(function(){
-      //           mission[i].state=4
-      //           missionButton[i].text='Mission Failed'
-      
-      //           // missionButton[i].func=function(){
-      //           //   discardMission(mission[i].missionResource, mission[i].missionType)
-      //           // }
-      
-      //           if (gameState==3){
-      //             refreshM()
-      //           }
-      //         }, timeRemaining*1000*timeScale)
-      //       }else{
-      //         mission[i].state=4
-      //         missionButton[i].text='Mission Failed'
-    
-      //         // missionButton[i].func=function(){
-      //         //   discardMission(mission[i].missionResource, mission[i].missionType)
-      //         // }
-    
-      //         if (gameState==3){
-      //           refreshM()
-      //         }
-      //       }
-      //     })
-      //   }
-      // }
+			
+			sortMission()
     })
   }
 
 
-  function discardMission(resource, length){
-    let dataToSend={
-      "playerId":playerId,
-      "resource":resource,
-      "length":length
-    }
-    httpPost('/discardMission','JSON',dataToSend,(dataReceived)=>{
-      createMission(resource, length)
-    })
-    drawnMission=[]
-    missionButton=[]
-  }
+	function missionFunction(index){
+		switch(mission[index].state){
+			case 1:
+				if(resource[3].currAmount-resource[3].inUse>0){
+					changeAvailableShips("decrease",1)
+					let roll=random(100,0)
+					let missionTime=0
+					let failing=false
+					mission[index].failTime=int(random(mission[index].duration/2, mission[index].duration/3))
+
+					if(roll<=mission[index].successChance){
+						missionTime=mission[index].duration
+					}else{
+						missionTime=mission[index].failTime
+						failing=true
+					}
+					
+					let dataToSend={
+						"playerId": playerId,
+						"mission": mission[index],
+						"day":day(),
+						"hour":hour(),
+						"minute":minute(),
+						"time":missionTime,
+						"inUse": resource[3].inUse
+					}
+
+					httpPost('/startMission','JSON',dataToSend,(dataReceived)=>{
+						mission[index].startMin=minute()
+						mission[index].startHour=hour()
+						mission[index].startDay=day()
+
+						if(failing==false){ // If mission  will succeed
+							mission[index].state=2
+
+							setTimeout(function(){
+									mission[index].state=5
+
+									refreshM=true
+							}, missionTime*1000*timeScale)
+						}
+						else{ // If mission  will fail
+							mission[index].state=6
+
+							setTimeout(function(){
+									mission[index].state=4
+									
+									refreshM=true
+							},missionTime*1000*timeScale)
+						}
+						refreshM=true
+					})
+				}
+				break
+			
+			case 4:
+				discardMission(mission[index].missionResource, mission[index].missionType)
+				changeAvailableShips('increase',1)
+				resource[3].change_value(-1,1)
+				break
+
+			case 5:
+				changeAvailableShips('increase',1)
+				resource[mission[index].missionResource-1].change_value(1,mission[index].reward)
+				discardMission(mission[index].missionResource, mission[index].missionType)
+				break
+		}
+	}
 
 
   function swap(arr, xp, yp)
@@ -1781,17 +1870,45 @@ function clearScreen(){
   }
 
 
-  function sortMission(n){ // Pointless
-    let i
-    
-    for (i = 0; i < n-1; i++){
-      // print('swap')
-      if (drawnMission[i].missionType > drawnMission[i+1].missionType){
-        swap(drawnMission,i,i+1);
-        i=-1
-      }
-    }
-  }
+  function sortMission(){
+		let i
+		let j
+		
+		for (j = 0; j < 2; j++){
+			if (tempMission[j].missionType > tempMission[j+1].missionType){
+				swap(tempMission,j,j+1);
+				j=-1
+			}
+		}
+		for (j = 3; j < 5; j++){
+			if (tempMission[j].missionType > tempMission[j+1].missionType){
+				swap(tempMission,j,j+1);
+				j=-1
+			}
+		}
+		for (i = 0; i > tempMission.length-1; i++){
+			if (tempMission[i].missionResource > tempMission[i+1].missionResource){
+				swap(tempMission,i,i+1);
+				i=-1
+			}
+		}
+		let mCounter=0
+
+		for(let k=0; k<tempMission.length; k++){
+			if(tempMission[k].missionResource%2==0){
+				mission[mCounter]=tempMission[k]
+				mCounter++
+			}
+		}
+		for(let k=0; k<tempMission.length; k++){
+			if(tempMission[k].missionResource%2!=0){
+				mission[mCounter]=tempMission[k]
+				mCounter++
+			}
+		}
+		print('---------\ni want to die\n---------')
+		refreshM=true
+	}
 
 
   function changeAvailableShips(op, value){
@@ -2036,7 +2153,7 @@ function clearScreen(){
       main_scene_setup()
       mapBtn.func=map_scene
     }
-    side=64
+    side=48
     create_Grid(vId)
   }
 
@@ -2092,6 +2209,7 @@ function clearScreen(){
           placedModule[i]=dataReceived[i].COUNT
         }
 
+				researching=false
         changeScene()
         getMission()
         loadResource()
@@ -2103,48 +2221,4 @@ function clearScreen(){
 
     })
   }
-
-  // let tempId=0
-  // let squareCycle=1
-
-  // function createCoords(){
-
-  // 	let sideVar=totalPlayers%4
-  // 	let placeVar
-  // 	let playerX
-  // 	let playerY
-    
-  // 	placeVar= (mapSize/2 - squareCycle) + Math.round(random(squareCycle*2 - 1, 1))
-    
-  // 	print('\ntotal: '+totalPlayers+'\ncycle:',squareCycle,'\nplace:',+placeVar)
-
-  // 		switch (sideVar) {
-  // 			case 1: // Top
-  // 				print('t')
-  // 				playerY=mapSize/2-1-squareCycle
-  // 				playerMapArr.push(new Player(placeVar,playerY,tempId,mapGridSize))
-  // 				break;
-          
-  // 			case 2: // Right
-  // 				print('r')
-  // 				playerX=mapSize/2+squareCycle
-  // 				playerMapArr.push(new Player(playerX,placeVar,tempId,mapGridSize))
-  // 				break;
-
-  // 			case 3: // Bottom
-  // 				print('b')
-  // 				playerY=mapSize/2+squareCycle
-  // 				playerMapArr.push(new Player(placeVar,playerY,tempId,mapGridSize))
-  // 				break;
-          
-  // 			case 0: // Left
-  // 				print('l')
-  // 				playerX=mapSize/2-squareCycle-1
-  // 				playerMapArr.push(new Player(playerX,placeVar,tempId,mapGridSize))
-  // 				squareCycle++
-  // 				break;
-  // 		}
-
-  // 		totalPlayers++
-  // }
 }
