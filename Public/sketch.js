@@ -128,10 +128,16 @@ function preload(){
   testImg= loadImage('Assets/Images/galaxy1.jpg')
   starsImg=loadImage('Assets/Images/starsBG.jpg')
 
+  moduleImg[1]= loadImage('Assets/Images/Modules/money production.png')
+  moduleImg[2]= loadImage('Assets/Images/Modules/crew capacity.png')
   moduleImg[3]= loadImage('Assets/Images/Modules/matStorage.png')
   moduleImg[4]= loadImage('Assets/Images/Modules/hangar.png')
+  moduleImg[5]= loadImage('Assets/Images/Modules/ship constructor.png')
   moduleImg[6]= loadImage('Assets/Images/Modules/signal-tower.png')
   moduleImg[7]= loadImage('Assets/Images/Modules/radar.png')
+  moduleImg[8]= loadImage('Assets/Images/Modules/mission control.png')
+  moduleImg[9]= loadImage('Assets/Images/Modules/probe constructor.png')
+  moduleImg[11]= loadImage('Assets/Images/Modules/default module.png')
   
   music = loadSound('Assets/Audio/bensound-slowmotion.mp3');
   clickSound = loadSound('Assets/Audio/multimedia_button_click.mp3')
@@ -197,6 +203,9 @@ function main_scene_setup(){
   signupBtn.remove();
 	moneyTimer=0
 	moneyToCollect=0
+
+  music.setVolume(0.3);
+  music.play();
 
   loadJSON('/getPlaced/'+playerId,(dataReceived)=>{ // Get a list of how many modules of each type are built
     for(let i=0; i<dataReceived.length; i++){

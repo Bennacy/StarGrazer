@@ -28,12 +28,10 @@ app.use(bodyParser.json())
 //creates instance to make connection to the sql database
 const db = mysql.createConnection({
   host: "localhost",
-  port: 3306,
+  port: 8889,
   user: "root",
   password: "root",
   database: "stargrazer",
-  //WORKING WITH MAMP ON MAC!!!
-  //socketPath: "/Applications/MAMP/tmp/mysql/mysql.sock"
 });
 
 
