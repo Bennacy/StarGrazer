@@ -72,8 +72,7 @@ let mainLoopTimer= 60
 let moneyTimer
 let loopCounter= 0
 let gameState=0
-//funny boolean
-let sent = false
+
 
 
 
@@ -138,7 +137,7 @@ function main_scene_setup(){
 		if(placedModule[0]>0)
 			moneyTimer++
 	},1000*timeScale)
-
+  
   logoffButton= new Button(width/2,height-height/10, width/10,height/10, 210,50,50, logOff, 'Log Off')
   
   profileButton= new Button(width/60,height/17, ((width/2)-(19*48/2))-width/40,height/15, 50,50,210, playerProfile, 'Profile')
@@ -182,7 +181,7 @@ function ifOnline(){}
 function playerProfile(){
   if(gameState<4){
 	//friends = new textBox(width/1.5,height/8,width/4,height/3)
-	//playerName = new textBox(width/3,height/10,width/10,height/15)
+	playerName = new textBox(width/3,height/10,width/10,height/15)
     clearScreen()
     background(imgProfileBackground);
     gameState = 4;
@@ -192,12 +191,8 @@ function playerProfile(){
   else if(gameState==4){
 	if (typeof searchPlayer !="undefined")
 	{
-		  searchPlayer.remove()
+		searchPlayer.remove()
 	}
-/* 	if (typeof playerName !="undefined")
-	{
-		   playerName.remove()
-	} */
     clearScreen()
     background(219)
     create_Grid()
@@ -338,8 +333,10 @@ function mousePressed(){
 
 	if(gameState==4)
 	{
+		//json variables
 		let pName
 		let friendRequest
+		//creates a text box with the player's name
 		//load the player's name and the incoming requests
 		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
 		{
@@ -367,7 +364,7 @@ function mousePressed(){
 					{
 					searchPlayer.remove()
 					}
-					
+					//creates buttons for the player to either accept or reject requests
 					for (let p=0; p<friendRequest.length;p++)
 					{
 						if(friendRequest[p].requestTo == pName[0].name && friendRequest[p].accepted == 0)
@@ -380,7 +377,7 @@ function mousePressed(){
 						}
 					}
 				}
-				
+				//creates the post that accepts  or rejects requests
 				for (let p=0; p<friendRequest.length;p++)
 				{
 					if (typeof acceptB[p] !="undefined")
@@ -396,11 +393,6 @@ function mousePressed(){
 							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>{}) 
 						}
 					}
-				}
-				
-				
-				for (let p=0; p<friendRequest.length;p++)
-				{
 					if (typeof rejectB[p] !="undefined")
 					{
 						if (rejectB[p].mouse_over())
@@ -783,7 +775,7 @@ function timer(){
 	  pendingB.mouse_over()
 	  addFriendB.draw_button()
 	  addFriendB.mouse_over()
-	 //playerName.playerDraw()
+	  playerName.playerDraw()
     }
   })
 

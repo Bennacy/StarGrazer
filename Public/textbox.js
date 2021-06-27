@@ -14,6 +14,7 @@ class textBox{
 		
 		loadJSON('/getPlayerName/'+playerId,(dataReceived)=>
 		{
+			push()
 			//player profile
 			playerName = dataReceived
 			fill("black")
@@ -25,7 +26,7 @@ class textBox{
 			rectMode(CORNER)
 			fill("white")
 			text(playerName[0].name,this.x,this.y)
-			
+			pop()
 		})
 	}
 	friendsContainer()
