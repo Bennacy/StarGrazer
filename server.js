@@ -10,7 +10,6 @@ const port = 3000
 let galaxyCount= 0
 let researchingG= 0
 let researching= []
-let researchMult= [];
 let researchLevel= []
 let found= []
 let isResearching= []
@@ -52,7 +51,6 @@ app.post('/getGalaxy',(req,res)=>{
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 		
-		console.log('\n\n',result,'\n\n')
 		let gLevel=result[0].gLevel
 
 		let sql="select galaxyId from player_galaxy where playerId='"+pId+"' and active=1"
@@ -65,7 +63,6 @@ app.post('/getGalaxy',(req,res)=>{
 		
 			db.query(sql,(err,result)=>{
 				if(err) throw err
-				console.log('\n\n',result,'\n\n')
 
 				let send={
 					'gId': gId,
@@ -77,13 +74,13 @@ app.post('/getGalaxy',(req,res)=>{
 				res.send(send)
 			})
 		})
-		})
+	})
 })
 
 
-app.get('/getCoords/:gLevel',(req,res)=>{
-	let gLevel= req.params.gLevel
-	let sql="select mapX,mapY,playerId from player where gLevel='"+gLevel+"'"
+app.get('/getCoords/:galaxyId',(req,res)=>{
+	let galaxyId= req.params.galaxyId
+	let sql="select pX,pY,playerId,active from player_galaxy where galaxyId='"+galaxyId+"'"
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
@@ -167,13 +164,21 @@ app.get('/getResourceNames/:rType', (req,res)=>{
 
 
 app.get('/getPlaced/:playerId',(req,res)=>{
+	
 	let playerId= req.params.playerId	
-	let sql= `select module.moduleId as mType, count(moduleType) AS 'COUNT' from module LEFT outer join player_module on module.moduleId=player_module.moduleType and playerId='${playerId}' and deleted=false group by module.moduleId;`
-
+	
+	let sql= "select gLevel from player where playerId='"+playerId+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
-		
-		res.send(result)
+		let gLevel=result[0].gLevel
+
+		let sql= "select module.moduleId as mType, count(moduleType) AS 'COUNT' from module LEFT outer join player_module on module.moduleId=player_module.moduleType and playerId='"+playerId+"' and deleted=false and player_module.gLevel='"+gLevel+"' group by module.moduleId"
+
+		db.query(sql,(err,result)=>{
+			if(err) throw err
+			
+			res.send(result)
+		})
 	})
 })
 
@@ -197,7 +202,6 @@ app.get('/getGalaxyMap/:playerId',(req,res)=>{
 	db.query(sql,(err,result)=>{
 		if(err) throw err
 		gLevel=result[0].gLevel
-		console.log(gLevel)
 		res.send()
 	})
 })
@@ -229,122 +233,124 @@ app.post('/register',(req,res)=>{
 
 						for (i = 1; i <= 4; i++){
 
-						let pId=result[0].playerId
-						let resourceType = i;
-						let currentAmount;
-						let maxAmount;
-						let inUse = 0;
+							let pId=result[0].playerId
+							let resourceType = i;
+							let currentAmount;
+							let maxAmount;
+							let inUse = 0;
 
-						if (i == 3){
-							maxAmount = 1500;
-							currentAmount = 350;
-							
-						}else if(i == 2){
+							if (i == 3){
+								maxAmount = 1500;
+								currentAmount = 350;
+								
+							}else if(i == 2){
 
-							maxAmount = 750;
-							currentAmount = 175;
+								maxAmount = 750;
+								currentAmount = 175;
 
-						}else if(i == 4){
+							}else if(i == 4){
 
-							maxAmount = 3;
-							currentAmount = 1;
+								maxAmount = 3;
+								currentAmount = 1;
 
-						}else if(i == 1){
+							}else if(i == 1){
 
-							maxAmount = 99999999;
-							currentAmount = 200;
+								maxAmount = 99999999;
+								currentAmount = 200;
 
-						}
+							}
 
-							let sql = "INSERT INTO player_resource (`playerId`,`resourceType`,`currentAmount`,`maxAmount`,`inUse`) VALUES ('"+pId+"','"+resourceType+"','"+currentAmount+"','"+maxAmount+"','"+inUse+"')";
+								let sql = "INSERT INTO player_resource (`playerId`,`resourceType`,`currentAmount`,`maxAmount`,`inUse`) VALUES ('"+pId+"','"+resourceType+"','"+currentAmount+"','"+maxAmount+"','"+inUse+"')";
 
-							db.query(sql,(err,result)=>{
-							if(err) throw err;
+								db.query(sql,(err,result)=>{
+								if(err) throw err;
 
-								if(forCount==0){
-									forCount++
-									let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
-									db.query(sql,(err,result)=>{
-										if(err) throw err
-
-										let sql="select * from galaxy where gLevel=1"
-
+									if(forCount==0){
+										forCount++
+										let sql= "INSERT INTO player_module (`playerId`, `posX`, `posY`, `moduleType`, `deleted`) VALUES ('"+pId+"', 9, 5, 11, 0)"
 										db.query(sql,(err,result)=>{
 											if(err) throw err
 
-											if(result.length==0){
-												let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, `mapSize`, `researching`, `isFound`, `totalPoints`,currPoints) values (1,1,1,48,0,0,1000000,0)"
-
-												db.query(sql,(err,result)=>{
-													if(err) throw err
-													console.log('created')
-												})
-											}else{
-												let sql="update galaxy set totalPlayers=totalPlayers+1 where gLevel=1"
-
-												db.query(sql,(err,result)=>{
-													if(err) throw err
-
-												})
-											}
-
-											let sql="select squareCycle, totalPlayers, mapSize from galaxy where gLevel=1"
+											let sql="select * from galaxy where gLevel=1"
 
 											db.query(sql,(err,result)=>{
 												if(err) throw err
 
-												let totalPlayers=result[0].totalPlayers
-												let squareCycle=result[0].squareCycle
-												let mapSize=result[0].mapSize
-												let sideVar=totalPlayers%4
-												let placeVar
-												let sql
-												let playerX
-												let playerY
+												if(result.length==0){
+													let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, currPlayers, `mapSize`, `researching`, `isFound`, `totalPoints`,currPoints) values (1,1,1,1,48,0,0,1000000,0)"
 
-												// console.log('min:'+(mapSize/2-squareCycle)+',','max:'+(mapSize/2+squareCycle-1))
+													db.query(sql,(err,result)=>{
+														if(err) throw err
+														console.log('created new galaxy')
+														getGalaxies()
+													})
+												}else{
+													let sql="update galaxy set totalPlayers=totalPlayers+1, currPlayers=currPlayers+1 where gLevel=1"
 
-												placeVar= randomInt(mapSize/2-squareCycle, mapSize/2+squareCycle-1)
+													db.query(sql,(err,result)=>{
+														if(err) throw err
 
-												switch (sideVar) {
-													case 1: // Top
-
-														playerY=mapSize/2-1-squareCycle
-														sql="Update player set mapX='"+placeVar+"', mapY='"+playerY+"' where playerId='"+pId+"'"
-														break;
-														
-													case 2: // Right
-														
-														playerX=mapSize/2+squareCycle
-														sql="Update player set mapX='"+playerX+"', mapY='"+placeVar+"' where playerId='"+pId+"'"
-														break;
-
-													case 3: // Bottom
-														
-														playerY=mapSize/2+squareCycle
-														sql="Update player set mapX='"+placeVar+"', mapY='"+playerY+"' where playerId='"+pId+"'"
-														break;
-														
-													case 0: // Left
-														
-														playerX=mapSize/2-squareCycle-1
-														let sql1="update galaxy set squareCycle=squareCycle+1 where gLevel=1"
-														db.query(sql1,(err,result)=>{
-															if(err) throw err
-															console.log('updated squareCycle')
-														})
-														sql="Update player set mapX='"+playerX+"', mapY='"+placeVar+"' where playerId='"+pId+"'"
-
-														break;
+													})
 												}
+
+												let sql="select squareCycle, totalPlayers, mapSize from galaxy where gLevel=1"
 
 												db.query(sql,(err,result)=>{
 													if(err) throw err
+
+													let totalPlayers=result[0].totalPlayers
+													let squareCycle=result[0].squareCycle
+													let mapSize=result[0].mapSize
 
 													let sql="insert into player_galaxy (galaxyId, playerId, active) values (1,'"+pId+"',1)"
 													db.query(sql,(err,result)=>{
 														if(err) throw err
 													
+														let sideVar=totalPlayers%4
+														let placeVar
+														let sql
+														let playerX
+														let playerY
+
+
+														placeVar= randomInt(mapSize/2-squareCycle, mapSize/2+squareCycle-1)
+
+														switch (sideVar) {
+															case 1: // Top
+
+																playerY=mapSize/2-1-squareCycle
+																sql="Update player_galaxy set pX='"+placeVar+"', pY='"+playerY+"' where playerId='"+pId+"' and galaxyId=1"
+																break;
+																
+															case 2: // Right
+																
+																playerX=mapSize/2+squareCycle
+																sql="Update player_galaxy set pX='"+playerX+"', pY='"+placeVar+"' where playerId='"+pId+"' and galaxyId=1"
+																break;
+
+															case 3: // Bottom
+																
+																playerY=mapSize/2+squareCycle
+																sql="Update player_galaxy set pX='"+placeVar+"', pY='"+playerY+"' where playerId='"+pId+"' and galaxyId=1"
+																break;
+																
+															case 0: // Left
+																
+																playerX=mapSize/2-squareCycle-1
+																let sql1="update galaxy set squareCycle=squareCycle+1 where gLevel=1"
+																db.query(sql1,(err,result)=>{
+																	if(err) throw err
+																	console.log('updated squareCycle')
+																})
+																sql="Update player_galaxy set pX='"+playerX+"', pY='"+placeVar+"' where playerId='"+pId+"' and galaxyId=1"
+
+																break;
+														}
+
+														db.query(sql,(err,result)=>{
+															if(err) throw err
+
+
 													})
 												})
 											})
@@ -394,7 +400,6 @@ app.post('/discardMission', (req,res)=>{
 	let playerId= req.body.playerId
 	let resource= req.body.resource
 	let length= req.body.length
-	console.log(resource, length)
 	let sql= "UPDATE player_mission SET state=3 WHERE (state=1 OR state=2 OR state=4 OR state=5 OR state=6) AND playerId='"+playerId+"' AND resourceType='"+resource+"' AND missionType='"+length+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
@@ -434,7 +439,6 @@ app.post('/startMission', (req, res)=>{
 	let time= req.body.time
 	let inUse= req.body.inUse
 	
-	console.log("\t",inUse)
 
 	let sql
 	if(time==mission.duration){
@@ -497,7 +501,8 @@ app.post('/updateInUse',(req,res)=>{
 	let sql="UPDATE player_resource SET inUse='"+inUse+"' WHERE playerId='"+playerId+"' AND resourceType='"+type+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
-		res.send()
+
+		res.send(result)
 	})
 })
 
@@ -775,6 +780,19 @@ app.post('/updateResearching',(req,res)=>{
 	let sql = "UPDATE galaxy SET researching = researching+1 where galaxyId='"+gId+"'"
 	// (SELECT COUNT(*)+1 FROM player WHERE research=1)
 	
+	researching[gId-1]++
+
+	// if(typeof(researching[gId-1])== 'undefined'){
+	// 	console.log('first research')
+	// 	researching[gId-1]=1
+	// 	found[gId-1]=0
+	// 	researchLevel[gId-1]=0
+	// 	isResearching[gId-1]=false
+	// 	galaxyCount++
+	// }else{
+	// 	researching[gId-1]++
+	// }
+	
 	db.query(sql,(err,result)=>{
 
 		if(err) throw err
@@ -835,7 +853,6 @@ app.get('/getProbe/:playerId',(req,res)=>{
 
 	let sql = "SELECT probe FROM player WHERE playerId='"+playerId+"'";
 	db.query(sql,(err,result)=>{
-		console.log(result)
 		probeBuilt = true
 
 		if(err) throw err
@@ -857,11 +874,165 @@ app.post('/updateProbe',(req,res)=>{
 })
 
 
+app.post('/advanceGalaxy',(req,res)=>{
+	let pId=req.body.playerId
+	let gLevel=req.body.gLevel
+
+	let sql="update player set gLevel='"+gLevel+"' where playerId='"+pId+"'"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+
+		let sql="select * from galaxy where gLevel='"+gLevel+"'"
+		
+		db.query(sql,(err,result)=>{
+			if(err) throw err
+			
+			if(result.length==0){ // Advancing to new galaxy
+				let sql="insert into galaxy (`gLevel`, `SquareCycle`, `totalPlayers`, currPlayers, `mapSize`, `researching`, `isFound`, `totalPoints`,currPoints) values ('"+gLevel+"',1,1,1,48,0,0,1000000,0)"
+
+				db.query(sql,(err,result)=>{
+					if(err) throw err
+					console.log('created new galaxy')
+					getGalaxies()
+				})
+			}else{ // Advancing to existing galaxy
+				let sql="update galaxy set totalPlayers=totalPlayers+1, currPlayers=currPlayers+1 where gLevel='"+gLevel+"'"
+
+				db.query(sql,(err,result)=>{
+					if(err) throw err
+				})
+			}
+
+			let oldLevel=gLevel-1
+			let sql1="update galaxy set currPlayers=currPlayers-1 where gLevel='"+oldLevel+"'"
+
+			db.query(sql1,(err,result)=>{
+				if(err) throw err
+			})
+
+			let sql="select squareCycle, totalPlayers, mapSize from galaxy where gLevel='"+gLevel+"'"
+
+			db.query(sql,(err,result)=>{
+				if(err) throw err
+
+				let totalPlayers=result[0].totalPlayers
+				let squareCycle=result[0].squareCycle
+				let mapSize=result[0].mapSize
+				let sideVar=totalPlayers%4
+				let placeVar
+				let playerX
+				let playerY
+
+				placeVar= randomInt(mapSize/2-squareCycle, mapSize/2+squareCycle-1)
+
+				let sql="update player_galaxy set active=0 where playerId='"+pId+"'"
+				db.query(sql,(err,result)=>{
+					if(err) throw err
+					
+					let sql="select galaxyId from galaxy where gLevel='"+gLevel+"'"
+					db.query(sql,(err,result)=>{
+						if(err) throw err
+
+						let gId= result[0].galaxyId
+						
+						let sql="insert into player_galaxy (galaxyId, playerId, active) values ('"+gId+"','"+pId+"',1)"
+						db.query(sql,(err,result)=>{
+							if(err) throw err
+
+							
+							let sql
+							switch (sideVar) {
+								case 1: // Top
+			
+									playerY=mapSize/2-1-squareCycle
+									sql="Update player_galaxy set pX='"+placeVar+"', pY='"+playerY+"' where playerId='"+pId+"' and galaxyId='"+gId+"'"
+									break;
+									
+								case 2: // Right
+									
+									playerX=mapSize/2+squareCycle
+									sql="Update player_galaxy set pX='"+playerX+"', pY='"+placeVar+"' where playerId='"+pId+"' and galaxyId='"+gId+"'"
+									break;
+			
+								case 3: // Bottom
+									
+									playerY=mapSize/2+squareCycle
+									sql="Update player_galaxy set pX='"+placeVar+"', pY='"+playerY+"' where playerId='"+pId+"' and galaxyId='"+gId+"'"
+									break;
+									
+								case 0: // Left
+									
+									playerX=mapSize/2-squareCycle-1
+									let sql1="update galaxy set squareCycle=squareCycle+1 where gLevel='"+gLevel+"'"
+									db.query(sql1,(err,result)=>{
+										if(err) throw err
+										console.log('updated squareCycle')
+									})
+									sql="Update player_galaxy set pX='"+playerX+"', pY='"+placeVar+"' where playerId='"+pId+"' and galaxyId='"+gId+"'"
+			
+									break;
+							}
+			
+							db.query(sql,(err,result)=>{
+								if(err) throw err
+
+							})
+
+							for (i = 1; i <= 4; i++){
+
+								let resourceType = i;
+								let currentAmount;
+								let maxAmount;
+								let inUse = 0;
+							
+								if (i == 3){
+									maxAmount = 1500;
+									currentAmount = 350;
+							
+								}else if(i == 2){
+							
+									maxAmount = 750;
+									currentAmount = 175;
+							
+								}else if(i == 4){
+							
+									maxAmount = 3;
+									currentAmount = 1;
+							
+								}else if(i == 1){
+							
+									maxAmount = 99999999;
+									currentAmount = 200;
+							
+								}
+							
+								let sql = "Update player_resource set currentAmount='"+currentAmount+"', maxAmount='"+maxAmount+"', inUse='"+inUse+"' where playerId='"+pId+"' and resourceType='"+resourceType+"'";
+							
+								db.query(sql,(err,result)=>{
+									if(err) throw err
+
+									
+								})
+							}
+						})
+					})
+				})
+
+			})
+		})
+	})
+	let dataToSend={}
+	res.send(dataToSend)
+})
 
 
 
 app.listen(port, () => {
+
+	getGalaxies()
 	startResearchTimer()
+	getResearch()
 
   console.log(`Example app listening at http://localhost:${port}`)
 })
@@ -874,7 +1045,7 @@ function randomInt(min, max) {
 }
 
 
-function startResearchTimer(){
+function getGalaxies(){
 	let sql= "Select count(galaxyId) as 'gCount' from galaxy"
 
 	db.query(sql,(err,result)=>{
@@ -884,7 +1055,6 @@ function startResearchTimer(){
 		for(let i=0; i<galaxyCount; i++){
 			let sql= "select researching,isFound,currPoints from galaxy where galaxyId='"+(i+1)+"'"
 			db.query(sql,(err,result)=>{
-				console.log(result)
 
 				researching[i]=result[0].researching
 				found[i]=result[0].isFound
@@ -892,37 +1062,63 @@ function startResearchTimer(){
 				isResearching[i]=false
 			})
 		}
-		
-		setTimeout(function(){
-			console.log(researchingG)
-				for(let i=0; i<galaxyCount; i++){
-					if(found[i]==0 && researching[i]>0 && researchLevel[i]<10000 && isResearching[i]==false){
-						isResearching[i]=true
-
-						researchFunc[i]=setInterval(function(){
-							researchLevel[i]+=(100*researching[i])
-							let sql="update galaxy set currPoints='"+researchLevel[i]+"' where galaxyId='"+(i+1)+"'"
-							console.log('Galaxy ',i+1,':',researchLevel[i])
-	
-							db.query(sql,(err,result)=>{
-								if(err) throw err
-								
-								if(researchLevel[i]>=10000){
-									let sql="update galaxy set isFound=1 where galaxyId='"+(i+1)+"'"
-									db.query(sql,(err,result)=>{
-										if(err) throw err
-										
-										clearInterval(researchFunc[i])
-									})
-								}
-							})
-	
-						},1000*timeScale)
-						researchingG++
-					}
-				}
-				console.log('\n\n___')
-				console.log(researchingG)
-		},500)
 	})
 }
+
+
+function startResearchTimer(){
+	setTimeout(function(){
+
+		console.log('Galaxy Count:',galaxyCount)
+		for(let i=0; i<galaxyCount; i++){
+			if(found[i]==0 && researching[i]>0 && researchLevel[i]<10000 && isResearching[i]==false){
+					isResearching[i]=true
+					// researchFunc[i].clearInterval()
+					researchFunc[i]=setInterval(function(){
+						researchLevel[i]+=(100*researching[i])
+						let sql="update galaxy set currPoints='"+researchLevel[i]+"' where galaxyId='"+(i+1)+"'"
+						console.log(researchLevel[i])
+
+						db.query(sql,(err,result)=>{
+							if(err) throw err
+							
+							if(researchLevel[i]>=10000){
+								let sql="update galaxy set isFound=1 where galaxyId='"+(i+1)+"'"
+								db.query(sql,(err,result)=>{
+									if(err) throw err
+									
+									found[i]=1
+									console.log('Research complete for Galaxy',i+1)
+									clearInterval(researchFunc[i])
+								})
+							}
+						})
+
+					},1000*timeScale)
+				}
+			}
+		},500)
+}
+
+function getResearch(){
+	let sql= "select * from galaxy"
+
+	db.query(sql,(err,result)=>{
+		if(err) throw err
+
+		for(let i=0; i<result.length; i++){
+			if(result[i].isFound==1)
+			found[i]=1
+		}
+	})
+}
+
+
+app.get('/printFound/:gId',(req,res)=>{
+	let gId=req.params.gId
+	console.log(found[gId-1])
+	let dataToSend={
+		'found':found[gId-1]
+	}
+	res.send(dataToSend)
+})

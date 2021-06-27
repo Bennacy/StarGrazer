@@ -101,7 +101,7 @@ class Resources{
         "inUse":this.inUse
       }
       httpPost('/updateInUse', 'json', dataToSend, (dataReceived)=>{
-        drawR()
+        
       })
 
   }else if(op==-1){
@@ -488,7 +488,7 @@ class Button{
 
 class Module {
 
-  constructor(i, j, x, y, side, moduleType, del) {
+  constructor(i, j, x, y, side, moduleType, del, gLevel){
     //indexes of 2Darray
     this.i=i;
     this.j=j;
@@ -499,8 +499,10 @@ class Module {
     this.r
     this.g
     this.b
+    this.alpha
     this.moduleType=moduleType;
     this.deleted = del;
+    this.gLevel=gLevel
   }
 
   draw_Module() {
@@ -510,81 +512,102 @@ class Module {
         this.r=219
         this.g=219
         this.b=219
+        this.alpha=100
         break
       
       case 1: // Money Production
         this.r=255
         this.g=228
         this.b=41
+        this.alpha=255
         break
       
       case 2: // Crew Capacity
         this.r=197
         this.g=97
         this.b=0
+        this.alpha=255
         break
       
       case 3: // Material Capacity
         this.r=61
         this.g=60
         this.b=214
+        this.alpha=255
         break
       
       case 4: // Ship Capacity
         this.r=26
         this.g=87
         this.b=7
+        this.alpha=255
         break
       
       case 5: // Ship Construction
         this.r=179
         this.g=156
         this.b=0
+        this.alpha=255
         break
       
       case 6: // Communications Relay
         this.r=0
         this.g=255
         this.b=110
+        this.alpha=255
         break
       
       case 7: // Research Station
         this.r=158
         this.g=56
         this.b=255
+        this.alpha=255
         break
       
       case 8: // Mission Control
         this.r=71
         this.g=196
         this.b=255
+        this.alpha=255
         break
       
       case 9: // Probe Constructor
         this.r=73
         this.g=97
         this.b=72
+        this.alpha=255
         break
       
       case 10: // Connectors
         this.r=100
         this.g=100
         this.b=100
+        this.alpha=255
         break
       
       case 11: // Starter Module
         this.r=87
         this.g=9
         this.b=9
+        this.alpha=255
         break
     }
+    if(gameState==2)
+      stroke(255)
+    else
+      noStroke()
 
     if(this.deleted==0){
-      fill(this.r,this.g,this.b)
+      fill(this.r,this.g,this.b,this.alpha)
       square(this.posX, this.posY, this.sd);
     }else{
       fill(219,219,219)
       square(this.posX, this.posY, this.sd);
+    }
+    
+    if(typeof(moduleImg[this.moduleType])!= 'undefined'){
+      moduleImg[this.moduleType].resize(side-4,0)
+      image(moduleImg[this.moduleType], this.posX+2,this.posY+2)
     }
   } 
 
@@ -601,7 +624,7 @@ class Module {
 
 
 class PlayerCard{
-  constructor(x,y,pSize,pId){
+  constructor(x,y,pSize,pId,gLevel){
     this.x=x
     this.y=y
     this.w=200
@@ -609,6 +632,7 @@ class PlayerCard{
     this.pSize=pSize
     this.xSize=25
     this.pId=pId
+    this.gLevel=gLevel
     this.lineX1=this.x+this.pSize/2
     this.lineX2
     this.lineY1=this.y+this.pSize/2
@@ -700,10 +724,11 @@ class PlayerCard{
 
 
 class Player{
-  constructor(x,y,id,size,offsetX,offsetY){
+  constructor(x,y,id,active,size,offsetX,offsetY){
     this.i=x
     this.j=y
     this.id=id
+    this.active=active
     this.size=size
     this.x=this.i*size
     this.y=this.j*size
@@ -717,13 +742,23 @@ class Player{
   draw_player(){
     push()
       //
-      noStroke()
-      fill(210,0,0,50)
-      circle(this.x+this.size/2, this.y+this.size/2, this.size)
-      fill(210,0,0,100)
-      circle(this.x+this.size/2, this.y+this.size/2, this.size-5)
-      fill(210,0,0)
-      circle(this.x+this.size/2, this.y+this.size/2, this.size-10)
+      if(this.active==1){
+        noStroke()
+        fill(210,0,0,50)
+        circle(this.x+this.size/2, this.y+this.size/2, this.size)
+        fill(210,0,0,100)
+        circle(this.x+this.size/2, this.y+this.size/2, this.size-5)
+        fill(210,0,0)
+        circle(this.x+this.size/2, this.y+this.size/2, this.size-10)
+      }else{
+        noStroke()
+        fill(100,100,100,50)
+        circle(this.x+this.size/2, this.y+this.size/2, this.size)
+        fill(100,100,100,100)
+        circle(this.x+this.size/2, this.y+this.size/2, this.size-5)
+        fill(100,100,100)
+        circle(this.x+this.size/2, this.y+this.size/2, this.size-10)
+      }
     pop()
   }
 

@@ -44,6 +44,7 @@ let moduleBuildButton=[]
 let arrtiles = [];
 let playerMapArr=[];
 let drawnMission=[]
+let moduleImg=[]
 let buildProbeB;
 
 let playerId;
@@ -127,6 +128,11 @@ function preload(){
   testImg= loadImage('Assets/Images/galaxy1.jpg')
   starsImg=loadImage('Assets/Images/starsBG.jpg')
 
+  moduleImg[3]= loadImage('Assets/Images/Modules/matStorage.png')
+  moduleImg[4]= loadImage('Assets/Images/Modules/hangar.png')
+  moduleImg[6]= loadImage('Assets/Images/Modules/signal-tower.png')
+  moduleImg[7]= loadImage('Assets/Images/Modules/radar.png')
+  
   music = loadSound('Assets/Audio/bensound-slowmotion.mp3');
   clickSound = loadSound('Assets/Audio/multimedia_button_click.mp3')
 
@@ -160,8 +166,9 @@ function setup(){
   timer()
   testImg.resize(width,height)
   starsImg.resize(width,height)
-  music.setVolume(0.3);
-  music.play();
+
+  // music.setVolume(0.3);
+  // music.play();
 }
 
 
@@ -232,9 +239,10 @@ function main_Scene() {
     // clearScreen()
     // createCanvas(windowWidth, windowHeight);
     // background(220)
+    gameState=1
     moduleType=0
     gridEnable=false
-    side= 48
+    side= 64
     create_Grid(playerId)
     drawR()
 }
@@ -288,8 +296,7 @@ function keyPressed(){
 				break
       
       case 81: // q => Testing player galaxy level
-				// createCoords()
-				drawMap()
+				advanceGalaxy()
         break
     }
   }
@@ -305,7 +312,9 @@ function keyPressed(){
     case 1:
       switch(keyCode){
         case 82: // R -> Refresh screen
-          main_Scene()
+          loadJSON('/printFound/'+galaxyId,(dataReceived)=>{
+            print(dataReceived)
+          })
           break
       }
       break
@@ -803,11 +812,9 @@ function timer(){
           pop()
         }
 
-        if(gameState==2){
-          for(let i=0; i<moduleBuildButton.length; i++){
-            moduleBuildButton[i].mouse_over()
-            moduleBuildButton[i].draw_button()
-          }
+        for(let i=0; i<moduleBuildButton.length; i++){
+          moduleBuildButton[i].mouse_over()
+          moduleBuildButton[i].draw_button()
         }
 
         draw_Grid()
@@ -1218,7 +1225,7 @@ function clearScreen(){
     if(gameState!=2){ // If on the main screen or the missions screen
       changeScene()
       gameState=2
-      side=32
+      side= 48
 
       let buttonWidth=150
       let buttonHeight=55
@@ -1381,7 +1388,6 @@ function clearScreen(){
 
 
   function changeScene(){
-    // clearScreen()
     gridEnable=false
     errMsg.active=false
     erasing=false
@@ -1401,7 +1407,11 @@ function clearScreen(){
 
       for(let i = initX; squareCounter <= 4; i += length){ //boxes where the resources are displayed
         squareCounter++;
+        push()
+        strokeWeight(1)
+        stroke(0)
         rect(i, boxY, length, height/15);
+        pop()
       }
       
       textAlign(CENTER, CENTER)
@@ -1856,7 +1866,7 @@ function clearScreen(){
           y=y+side;
         }
 
-        arrtiles[i][j] = new Module(i,j,x,y, side, 0, 0);
+        arrtiles[i][j] = new Module(i,j,x,y, side, 0, 0, gLevel);
       }
     }
 
@@ -1868,6 +1878,11 @@ function clearScreen(){
         arrtiles[module[i].posX][module[i].posY].moduleType = module[i].moduleType;
 
         arrtiles[module[i].posX][module[i].posY].deleted = module[i].deleted;
+
+        if(module[i].gLevel!=gLevel && module[i].moduleType!=11)
+        arrtiles[module[i].posX][module[i].posY].moduleType = 0;
+
+
       }
       draw_Grid();
     })
@@ -1879,11 +1894,12 @@ function clearScreen(){
 
       for (let j = 0; j < arrtiles[i].length; j++) {
         if(gameState==2){
-          arrtiles[i][j].draw_Module()
+          if(arrtiles[i][j].gLevel==gLevel || arrtiles[i][j].moduleType==11)
+            arrtiles[i][j].draw_Module()
         }else{
           push()
             noStroke()
-            if(arrtiles[i][j].moduleType!=0 && arrtiles[i][j].deleted==0)
+            if((arrtiles[i][j].moduleType!=0 && arrtiles[i][j].deleted==0 && arrtiles[i][j].gLevel==gLevel) || arrtiles[i][j].moduleType==11)
               arrtiles[i][j].draw_Module()
           pop()
         }
@@ -2020,7 +2036,7 @@ function clearScreen(){
       main_scene_setup()
       mapBtn.func=map_scene
     }
-
+    side=64
     create_Grid(vId)
   }
 
@@ -2038,13 +2054,13 @@ function clearScreen(){
       gLevel=dataReceived.gLevel
       mapGridSize= Math.round(displayArea.height/mapSize)
 
-      loadJSON('/getCoords/'+gLevel,(dataReceived)=>{
+      loadJSON('/getCoords/'+galaxyId,(dataReceived)=>{
 
         displayArea.offsetX=width/2-(mapSize/2*mapGridSize)
         displayArea.offsetY=displayArea.topY
 
         for(let i=0; i<dataReceived.length; i++){
-          playerMapArr[i]= new Player(dataReceived[i].mapX, dataReceived[i].mapY, dataReceived[i].playerId, mapGridSize, displayArea.offsetX,displayArea.offsetY)
+          playerMapArr[i]= new Player(dataReceived[i].pX, dataReceived[i].pY, dataReceived[i].playerId, dataReceived[i].active, mapGridSize, displayArea.offsetX,displayArea.offsetY)
         }
       })
     })
@@ -2056,6 +2072,36 @@ function clearScreen(){
       playerMapArr[i].draw_player(displayArea)
     }
     drawR()
+  }
+
+
+  function advanceGalaxy(){
+    gLevel++
+
+    let dataToSend={
+      "gLevel":gLevel,
+      "playerId":playerId
+    }
+
+    httpPost('/advanceGalaxy','json',dataToSend,(dataReceived)=>{
+
+      loadJSON('/getPlaced/'+playerId,(dataReceived)=>{ // Get a list of how many modules of each type are built
+        placedModule=[]
+        playerMapArr=[]
+        for(let i=0; i<dataReceived.length; i++){
+          placedModule[i]=dataReceived[i].COUNT
+        }
+
+        changeScene()
+        getMission()
+        loadResource()
+        getPlayerMap()
+        getProbe()
+
+        main_Scene()
+      })
+
+    })
   }
 
   // let tempId=0
