@@ -7,8 +7,11 @@ let moneyToCollect
 let mapGridSize
 let mapSize
 let gLevel
+let savedGL
+let visitingFriend
 let totalPlayers
 let missionSelect=2
+let friendSelect=1
 
 
 let testImg
@@ -24,6 +27,11 @@ let starsImg
 
 let music
 let clickSound
+let musicVolume
+let soundVolume
+
+let soundBar
+let musicBar
 
 
 
@@ -42,20 +50,23 @@ let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: o
 let resource= [];
 let mission= [];
 let tempMission= [];
-let missionButton= [];
 let modules=[];
 let moduleCost=[]
 let crewCost=[]
 let moduleName=[]
 let placedModule=[]
 let maxPlace=[]
-let moduleBuildButton=[]
 let arrtiles = [];
 let playerMapArr=[];
 let moduleImg=[]
-let buildProbeB;
+
+let playersInGalaxy=[]
+let friends=[]
+let requests=[]
+
 
 let playerId;
+let playerName
 let galaxyId
 let playerCard=''
 let cv;
@@ -101,7 +112,17 @@ let profileButton
 let logoffButton
 let mapBtn
 let advanceBtn
-
+let buildProbeB;
+let selectFriend
+let selectRequest
+let acceptB=[]
+let rejectB=[]
+let visitFB=[]
+let missionButton= [];
+let moduleBuildButton=[]
+let friendNextBtn
+let friendBackBtn
+let friendPage
 
 // Input initialization
 let nameInput
@@ -115,6 +136,7 @@ let mainLoopTimer= 60
 let moneyTimer
 let loopCounter= 0
 let gameState=0
+
 
 
 
@@ -191,9 +213,8 @@ function setup(){
   timer()
   testImg.resize(width,height)
   starsImg.resize(width,height)
+  visitingFriend=false
 
-  // music.setVolume(0.3);
-  // music.play();
 }
 
 
@@ -213,7 +234,28 @@ function main_scene_setup(){
   loginBtn.remove();
   signupBtn.remove();
 	moneyTimer=0
+  friendPage=0
 	moneyToCollect=0
+  friends=[]
+  requests=[]
+  if(visitingFriend==true){
+    visitingFriend=false
+    gLevel=savedGL
+  }
+  
+  music.setVolume(musicVolume/100);
+  clickSound.setVolume(soundVolume/100);
+
+  musicBar=map(musicVolume, 0,100, (width/3)/10,  width/3, true)
+  soundBar=map(soundVolume, 0,100, (width/3)/10,  width/3, true)
+
+  music.loop();
+
+  loadJSON('/getPlayerTable/'+playerId,(dataReceived)=>{
+    playerName=dataReceived.playerName
+    playersInGalaxy=dataReceived.otherPlayers
+    getFriends()
+  })
 
 	researchTCycle=0
 	clearInterval(researchTCycleFunc)
@@ -236,8 +278,8 @@ function main_scene_setup(){
 		if(placedModule[0]>0)
 			moneyTimer++
 	},1000*timeScale)
-
-  logoffButton= new Button(width/2-width/20,height/2-height/20, width/10,height/10, 0,171,255, logOff, 'Log Off',15,1)
+  
+  logoffButton= new Button(displayArea.leftX+20, displayArea.bottomY-20, width/10,height/10, 0,171,255, logOff, 'Log Off',15,1)
 	collectMB= new Button(width/2-75,displayArea.topY, 150,50, 250,208,44, collectMoney, 'Collect Money',13,3)
   
   missionScreenB= new Button(width-215, height-90, 200, 75, 0,171,255, mission_Scene, "Missions",25,2)
@@ -252,7 +294,13 @@ function main_scene_setup(){
   
   selectCrew= new Button(50,displayArea.topY, 200,displayArea.height/2, 0,125,150, selectMission, 'Crew\nMissions',25, 4,1)
   selectMat= new Button(50,displayArea.topY+displayArea.height/2, 200,displayArea.height/2, 0,150,175, selectMission, 'Material\nMissions',25, 4,3)
+  
+  selectFriend= new Button(displayArea.rightX - displayArea.width/2.5,   displayArea.topY,   displayArea.width/5,   height/10,  27, 73, 121, friendSelection, 'Friends', 25,4,1)
+  selectRequest= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   displayArea.topY,   displayArea.width/5,   height/10,  23, 62, 102, friendSelection, 'Requests', 25,4,2)
+  let friendDisplayH=-((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10))
 
+  friendNextBtn= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   selectFriend.h+selectFriend.y + 5*friendDisplayH/6,   displayArea.width/5,   friendDisplayH/6,  23, 62, 102, movePage, 'Next\nPage', 25,1)
+  friendBackBtn= new Button(displayArea.rightX - displayArea.width/2.5,  selectFriend.h+selectFriend.y + 5*friendDisplayH/6,   displayArea.width/5,   friendDisplayH/6,  23, 62, 102, movePage, 'Previous\nPage', 25,1)
 	setTimeout(function(){
 		if(placedModule[6]>0){
 			researching=true
@@ -281,6 +329,7 @@ function main_scene_setup(){
 
 		create_Grid(playerId)
 	},500)
+  friendSelection(1)
 
 
   visiting=false
@@ -430,6 +479,35 @@ function mouseReleased(){
   if(gameState==4){
     if(logoffButton.pressed)
       logoffButton.mouse_released()
+
+    if(selectRequest.pressed)
+      selectRequest.mouse_released(2)
+    if(selectFriend.pressed)
+      selectFriend.mouse_released(1)
+      
+    if(friendSelect==1){
+      if(friends.length>5){
+        if(friendNextBtn.pressed){
+          friendNextBtn.mouse_released(1)
+        }
+        if(friendBackBtn.pressed){
+          friendBackBtn.mouse_released(-1)
+        }
+      }
+      for(let i=0; i<friends.length; i++){
+        if(visitFB[i].pressed)
+          visitFB[i].mouse_released(i)
+      }
+    }else{
+      for(let i=0; i<requests.length; i++){
+        if(acceptB[i].pressed){
+          acceptB[i].mouse_released(1,i)
+        }
+        if(rejectB[i].pressed){
+          rejectB[i].mouse_released(2,i)
+        }
+      }
+    }
   }
 
   if(gameState==2){
@@ -449,6 +527,9 @@ function mouseReleased(){
         if(playerCard.visitBtn){
           if(playerCard.visitBtn.pressed){
             playerCard.visitBtn.mouse_released(playerCard.pId) //visit player with that id
+				  }
+          if(playerCard.friendBtn.pressed){
+            playerCard.friendBtn.mouse_released(playerCard.pId) //send friend request
 				  }
 				}
 
@@ -524,6 +605,37 @@ function mousePressed(){
   if(gameState==4){
     if(logoffButton.mouse_over())
       logoffButton.mouse_pressed()
+
+    
+    if(selectRequest.mouse_over())
+      selectRequest.mouse_pressed()
+    if(selectFriend.mouse_over())
+      selectFriend.mouse_pressed()
+
+    if(friendSelect==1){
+      if(friends.length>5){
+        if(friendNextBtn.mouse_over()){
+          friendNextBtn.mouse_pressed()
+        }
+        if(friendBackBtn.mouse_over()){
+          friendBackBtn.mouse_pressed()
+        }
+      }
+
+      for(let i=0; i<friends.length; i++){
+        if(visitFB[i].mouse_over())
+          visitFB[i].mouse_pressed()
+      }
+    }else{
+      for(let i=0; i<requests.length; i++){
+        if(acceptB[i].mouse_over()){
+          acceptB[i].mouse_pressed()
+        }
+        if(rejectB[i].mouse_over()){
+          rejectB[i].mouse_pressed()
+        }
+      }
+    }
   }
 
   if(gameState==2){
@@ -540,9 +652,12 @@ function mousePressed(){
 				playerMapArr[i].mouse_pressed()
 			}
 			if(playerCard!=''){
-        if(playerCard.visitBtn){
+        if(typeof(playerCard.visitBtn)!='undefined'){
           if(playerCard.visitBtn.mouse_over()){
-            playerCard.visitBtn.mouse_pressed(playerCard.pId) //visit player with that id
+            playerCard.visitBtn.mouse_pressed()
+				  }
+          if(playerCard.friendBtn.mouse_over()){
+            playerCard.friendBtn.mouse_pressed()
 				  }
 				}
 
@@ -591,8 +706,6 @@ function mousePressed(){
 
 						if(arrtiles[i][j].is_over(mouseX,mouseY) && (arrtiles[i][j].moduleType==0 || arrtiles[i][j].deleted==1)){ // Test if mouse is over grid
 							
-							// console.log('id: ',moduleType,'\nplaced: ',placedModule[moduleType-1],'\nmax: ',maxPlace[moduleType])
-
 							if(placedModule[moduleType-1]<maxPlace[moduleType]){ // Check if not at limit of placed modules
 							
 								if(currMCost<=resource[2].currAmount && currCCost<=resource[1].currAmount-resource[1].inUse){ // If has enough materials and available crew
@@ -657,23 +770,17 @@ function mousePressed(){
                           })
                         }
 											});
-											draw_Grid()
 											
 										}else{
-											push()
-												fill("crimson")
-												textSize(30)
-												textAlign(CENTER, TOP)
-												text("Modules must be connected",width/2,height/2-5.5*side)
-												setTimeout(function(){
-													if(gameState==2){
-														clearScreen()
-														background(220)
-														drawR()
-														draw_Grid();
-													}
-												},2000)
-											pop()
+                      errMsg.text='modules must be connected'
+                      errMsg.active=true
+                      errMsg.x=width/2-width/3
+                      errMsg.y=height/2-5.5*side
+                      errMsg.w=width/1.5
+                      errMsg.h=50
+                      setTimeout(function(){
+                        errMsg.active=false
+                      },2000)
 											break
 										}
 									}else{ // Modules from the edges or the screen, still bad fix, not testing if connected
@@ -732,80 +839,56 @@ function mousePressed(){
 												})
 											}
 										});
-										draw_Grid()
-										console.log(arrtiles[i][j])
 									}
 								}else
 								if(currMCost>resource[2].currAmount){
-									push()
-										fill("crimson")
-										textSize(30)
-										textAlign(CENTER, TOP)
-										text("Not enough materials!",width/2,height/2-5.5*side)
-										setTimeout(function(){
-											if(gameState==2){
-												clearScreen()
-												background(220)
-												drawR()
-												draw_Grid();
-											}
-										},2000)
-									pop()
+                  errMsg.text='not enough materials'
+                  errMsg.active=true
+                  errMsg.x=width/2-width/3
+                  errMsg.y=height/2-5.5*side
+                  errMsg.w=width/1.5
+                  errMsg.h=50
+                  setTimeout(function(){
+                    errMsg.active=false
+                  },2000)
 									break
 								}else
 								if(currCCost>resource[1].currAmount-resource[1].inUse){
-									push()
-										fill("crimson")
-										textSize(30)
-										textAlign(CENTER, TOP)
-										text("Not enough available crew!",width/2,height/2-5.5*side)
-										setTimeout(function(){
-											if(gameState==2){
-												clearScreen()
-												background(220)
-												drawR()
-												draw_Grid();
-											}
-										},2000)
-									pop()
+                  errMsg.text='Not enough available crew'
+                  errMsg.active=true
+                  errMsg.x=width/2-width/3
+                  errMsg.y=height/2-5.5*side
+                  errMsg.w=width/1.5
+                  errMsg.h=50
+                  setTimeout(function(){
+                    errMsg.active=false
+                  },2000)
 									break
 								}
-
-								draw_Grid();
 								break;
 
 							}else{
-								push()
-								fill("crimson")
-								textSize(30)
-								textAlign(CENTER, TOP)
-								text("Max module limit reached",width/2,height/2-5.5*side)
-								setTimeout(function(){
-									if(gameState==2){
-										clearScreen()
-										background(220)
-										drawR()
-										draw_Grid();
-									}
-								},2000)
-							pop()
+                errMsg.text='Max module limit Reached'
+                errMsg.active=true
+                errMsg.x=width/2-width/3
+                errMsg.y=height/2-5.5*side
+                errMsg.w=width/1.5
+                errMsg.h=50
+                setTimeout(function(){
+                  errMsg.active=false
+                },2000)
 							break;
 							}
 						}else if(arrtiles[i][j].is_over(mouseX,mouseY)==true && arrtiles[i][j].deleted==0){
-							push()
-								fill("crimson")
-								textSize(30)
-								textAlign(CENTER, TOP)
-								text("There is already a building in that spot",width/2,height/2-5.5*side)
-								setTimeout(function(){
-									if(gameState==2){
-										clearScreen()
-										background(220)
-										drawR()
-										draw_Grid();
-									}
-								},2000)
-							pop()
+              errMsg.text='There is already a building in that spot'
+              errMsg.active=true
+              errMsg.x=width/2-width/3
+              errMsg.y=height/2-5.5*side
+              errMsg.w=width/1.5
+              errMsg.h=50
+              setTimeout(function(){
+                errMsg.active=false
+              },2000)
 							break;
 						}
 						}
@@ -819,20 +902,15 @@ function mousePressed(){
 						if(arrtiles[i][j].is_over(mouseX,mouseY) && arrtiles[i][j].moduleType> 0 && arrtiles[i][j].deleted == 0){
 
 							if(arrtiles[i][j].moduleType== 11){ // Trying to delete the middle module
-								push()
-									fill("crimson")
-									textSize(30)
-									textAlign(CENTER, TOP)
-									text("The starting module cannot be destroyed",width/2,height/2-5.5*side)
-									setTimeout(function(){
-										if(gameState==2){
-												clearScreen()
-												background(220)
-												drawR()
-												draw_Grid();
-											}
-									},2000)
-								pop()
+                errMsg.text='The starter module cannot be destroyed'
+                errMsg.active=true
+                errMsg.x=width/2-width/3
+                errMsg.y=height/2-5.5*side
+                errMsg.w=width/1.5
+                errMsg.h=50
+                setTimeout(function(){
+                  errMsg.active=false
+                },2000)
 							}else{
 								arrtiles[i][j].deleted=1
 								resource[1].change_inUse(-1,crewCost[arrtiles[i][j].moduleType]) // Set the crewmembers used by module back to available
@@ -864,7 +942,6 @@ function mousePressed(){
 											loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
 
 												resource[(arrtiles[i][j].moduleType)-1].maxAmount-=dataReceived[0].effect
-												drawR()
 											})
 										})
 									}else if (arrtiles[i][j].moduleType == 7){ // on placing a research station
@@ -891,25 +968,7 @@ function mousePressed(){
 
 										})
 									}
-									// else if(arrtiles[i][j].moduleType==1){
-										
-									//   loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
-									//     let dataToSend={
-									//       "playerId":playerId,
-									//       "effect":dataReceived[0].effect,
-									//       "first":firstMoneyProd,
-									//       "op":-1
-									//     }
-											
-									//     httpPost('/updateMProd','JSON',dataToSend,(dataReceived)=>{
-												
-									//     })
-									//   })
-									// }
 								})
-
-								loop()
-								draw_Grid()
 								break
 							}
 						}
@@ -1074,6 +1133,13 @@ function timer(){
           moduleBuildButton[i].mouse_over()
           moduleBuildButton[i].draw_button()
         }
+        push()
+        fill(100,170,235)
+        textFont(font)
+        textSize(40)
+        textAlign(CENTER,TOP)
+        text('Available crew:'+(resource[1].currAmount - resource[1].inUse), width/2,collectMB.h+collectMB.y+5)
+        pop()
 
         draw_Grid()
         break
@@ -1171,9 +1237,9 @@ function timer(){
           textFont(font)
           fill(100,170,235)
           if(resource[3].currAmount-resource[3].inUse==1){
-            text('There is '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ship', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
+            text('You have '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ship', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
           }else{
-            text('There are '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ships', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
+            text('You have '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ships', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
           }
         pop()
 
@@ -1238,6 +1304,203 @@ function timer(){
         mapBtn.text='Map'
         buildScreenB.text='Modules'
         missionScreenB.text='Missions'
+
+        let friendDisplay={
+          'x':selectFriend.x,
+          'y':selectFriend.h+selectFriend.y,
+          'w':2*selectFriend.w,
+          'h':-((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10))
+        }
+
+        push()
+        textFont(font)
+        fill(25,25,112) //main background
+        rect(displayArea.leftX,  displayArea.topY,  displayArea.width,  displayArea.height+height/10, 25,50,25,25)
+
+        fill(23, 23, 102)
+        rect(displayArea.rightX-displayArea.width/2.5,  displayArea.topY,  displayArea.width/2.5,  displayArea.height+height/10, 25,50,25,25)
+        // rect(displayArea.rightX-displayArea.width/2.5,  selectFriend.y+selectFriend.h,  displayArea.width/2.5,  -((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10)))
+
+        fill(55, 56, 163) //thin bar at the top with player name
+        rect(displayArea.leftX,  displayArea.topY,  displayArea.width,  height/10, 25,50,25,0)
+
+        fill(255)
+        textSize(50)
+        textFont(font)
+        textAlign(CENTER,CENTER)
+        text(playerName,  displayArea.leftX,  displayArea.topY,  displayArea.width/1.5,  height/10)
+        pop()
+
+        selectFriend.mouse_over()
+        selectFriend.draw_button()
+        selectRequest.mouse_over()
+        selectRequest.draw_button()
+
+        if(friendSelect==1){
+          if(friends.length>0){ // if there are friends to display
+            for(let i=0+friendPage*5; i<5+friendPage*5; i++){
+              if(typeof(friends[i])!='undefined'){
+                visitFB[i].x=friendDisplay.x + 2*friendDisplay.w/3
+                visitFB[i].y=friendDisplay.y + ((i%5)*friendDisplay.h/6)
+                visitFB[i].w=friendDisplay.w/3
+                visitFB[i].h=friendDisplay.h/6
+
+                switch(friends[i].state){
+                  case 0:
+                    visitFB[i].text='Request\nPending'
+                    break
+
+                  case 1:
+                    visitFB[i].text='Visit'
+                    break
+                }
+
+                push() //rectangles with friend names
+                textFont(font)
+                stroke(0)
+                fill(170)
+                rect(friendDisplay.x, friendDisplay.y + ((i%5)*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6, 25,10,10,25)
+
+                noStroke()
+                fill(255)
+                textSize(20)
+                textAlign(LEFT,CENTER)
+                text('\t\t'+friends[i].name,  friendDisplay.x, friendDisplay.y + ((i%5)*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6)
+                pop()
+
+                visitFB[i].mouse_over()
+                visitFB[i].draw_button()
+              }
+            }
+            if(friends.length>5){
+              friendNextBtn.mouse_over()
+              friendNextBtn.draw_button()
+              friendBackBtn.mouse_over()
+              friendBackBtn.draw_button()
+            }
+          }else{ // If there are no friends to display
+            push()
+            textFont(font)
+            textAlign(CENTER, CENTER)
+            textSize(40)
+            fill(255)
+            text('Friend list is empty.\nFind some friends\nthrough the map!',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
+            pop()
+          }
+        }else{
+          if(requests.length>0){ // There are friend requests to display
+            for(let i=0; i<requests.length; i++){
+
+              acceptB[i].x=friendDisplay.x + 2*friendDisplay.w/3
+              acceptB[i].y=friendDisplay.y + (i*friendDisplay.h/6)
+              acceptB[i].w=friendDisplay.w/3
+              acceptB[i].h=friendDisplay.h/12
+
+              rejectB[i].x=friendDisplay.x + 2*friendDisplay.w/3
+              rejectB[i].y=friendDisplay.y + (i*friendDisplay.h/6) + (friendDisplay.h/12)
+              rejectB[i].w=friendDisplay.w/3
+              rejectB[i].h=friendDisplay.h/12
+
+
+              push()//rectangles with requests
+              textFont(font)
+              stroke(0)
+              fill(170)
+              rect(friendDisplay.x, friendDisplay.y + (i*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6, 25,10,10,25)
+
+              noStroke()
+              fill(255)
+              textSize(20)
+              textAlign(LEFT,CENTER)
+              text('\t\t'+requests[i].name,  friendDisplay.x, friendDisplay.y + (i*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6)
+              pop()
+
+              if(requests.length>5){
+                friendNextBtn.mouse_over()
+                friendNextBtn.draw_button()
+                friendBackBtn.mouse_over()
+                friendBackBtn.draw_button()
+              }
+              
+              acceptB[i].mouse_over()
+              acceptB[i].draw_button()
+              rejectB[i].mouse_over()
+              rejectB[i].draw_button()
+            }
+          }else{ // If there are no pending requests
+            push()
+            textFont(font)
+            textAlign(CENTER, CENTER)
+            textSize(40)
+            fill(255)
+            text('You currently have\nno pending\nfriend requests',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
+            pop()
+          }
+        }
+
+        push()//display galaxy level
+        textSize(50)
+        textFont(font)
+        textAlign(LEFT, TOP)
+        text('\n\tGalaxy level '+savedGL,displayArea.leftX,   displayArea.topY + height/12)
+        pop()
+
+
+        push()
+        textFont(font)
+        textSize(25)
+        textAlign(RIGHT,TOP)
+        text('Music: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2)
+        text('General Audio: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2 + displayArea.height/6)
+
+        let slider={
+          'x':displayArea.leftX + displayArea.width/5.4,
+          'w':width/3,
+          'h':displayArea.height/10
+        }
+
+        if(mouseIsPressed){
+          if(mouseY>displayArea.topY + displayArea.height/2 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 - displayArea.height/20+slider.h){
+            musicBar=map(mouseX, slider.x + slider.w/10,  slider.x + slider.w, slider.w/10,slider.w, true)
+            musicVolume=map(musicBar,  slider.w/10,slider.w,  0,100,  true)
+            music.setVolume(musicVolume/100)
+          }
+          if(mouseY>displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20+slider.h){
+            soundBar=map(mouseX, slider.x+slider.w/10,slider.x+slider.w, slider.w/10,slider.w, true)
+            soundVolume=map(soundBar,  slider.w/10,slider.w,  0,100,  true)
+            clickSound.setVolume(soundVolume/100)
+          }
+        }
+
+        strokeWeight(7)
+        stroke(25,25,112)
+        fill(255)
+        rect(slider.x, displayArea.topY + displayArea.height/2 - displayArea.height/20, musicBar, slider.h, 25)
+        rect(slider.x, displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20, soundBar, slider.h, 25)
+        
+        stroke(255)
+        strokeWeight(3)
+        noFill()
+        rect(slider.x,  displayArea.topY + displayArea.height/2 - displayArea.height/20,  slider.w,  slider.h, 25)
+        rect(slider.x,  displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20,  slider.w,  slider.h, 25)
+        pop()
+
+
+
+        // if(mouseIsPressed && mouseY>150 && mouseY<200){
+        //   soundBar=map(mouseX,200,450,0,240, true)
+        //   music.setVolume(musicVolume)
+        // }
+        // push()
+        // noFill()
+        // stroke(255)
+        // strokeWeight(2)
+        // rect(200,150,250,50,10)
+        // noStroke()
+        // fill(255)
+        // rect(205,155,soundBar,40,5)
+        // pop()
+
         
         logoffButton.mouse_over()
         logoffButton.draw_button()
@@ -1255,6 +1518,8 @@ function timer(){
           if(playerCard.visitBtn){
             playerCard.visitBtn.mouse_over()
             playerCard.visitBtn.draw_button()
+            playerCard.friendBtn.mouse_over()
+            playerCard.friendBtn.draw_button()
           }
         }
         break
@@ -1267,8 +1532,10 @@ function timer(){
         mapBtn.draw_button()
       }
 
-      profileButton.mouse_over()
-      profileButton.draw_button()
+      if(visiting==false){
+        profileButton.mouse_over()
+        profileButton.draw_button()
+      }
 
       if(gameState<4 && visiting==false){
         if(gameState<3 && placedModule[0]>0){
@@ -1309,6 +1576,17 @@ function timer(){
     }
 
   },15)
+
+  setInterval(function(){
+    let dataToSend={
+      'playerId':playerId,
+      'music':musicVolume,
+      'sound':soundVolume
+    }
+    httpPost('/updateVolume','json',dataToSend,(dataReceived)=>{
+
+    })
+  },60000)
 }
 
 function startMission(){
@@ -1345,15 +1623,6 @@ function clearScreen(){
       }
 
       create_Grid(playerId)
-
-      setTimeout(function(){
-        push()
-          fill("red")
-          textSize(15)
-          textAlign(CENTER, TOP)
-          text("Press 'delete' to toggle erasing mode",width/2,height/2-5.5*side)
-        pop()
-      },75)
 
 
     }else if(gameState==2){ // Return to main screen
@@ -1421,52 +1690,18 @@ function clearScreen(){
 			setTimeout(function(){
 				buildingProbe=false
 				probeBuilt=1
+        updateProbe()
 			}, 5000)
-    //   let bar=0
-    //   let drawBar=setInterval(function(){
-    //     bar+=buildProbeB.w/((1000*5*timeScale)/100)
-    //     rect(buildProbeB.x, buildProbeB.y+buildProbeB.h, bar, 10)
-    //   },100)
-    
-
-    //   setTimeout(function(){
-    //     buildingProbe=false
-    //     probeBuilt=true
-    //     updateProbe()
-    //     clearInterval(drawBar)
-    //     refreshM()
-    //   },(1000*5*timeScale)) 
-
-    // }else if(buildingProbe== true){
-    //   push()
-    //     fill("red")
-    //     textSize(15)
-    //     textAlign(CENTER, TOP)
-    //     text("The probe is already under construction",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-    //   pop()
-    //   setTimeout(function(){
-    //     refreshM()
-    //   },1500)
-    // }else if(resource[0].currAmount<5000){
-    //   push()
-    //     fill("red")
-    //     textSize(15)
-    //     textAlign(CENTER, TOP)
-    //     text("Not enough money to buy a probe",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-    //   pop()
-    //   setTimeout(function(){
-    //     refreshM()
-    //   },1500)
-    // }else if (probeBuilt==true){
-    //   push()
-    //     fill("red")
-    //     textSize(15)
-    //     textAlign(CENTER, TOP)
-    //     text("There is no place to go",buildProbeB.x+buildProbeB.w/2,buildProbeB.y+buildProbeB.h+5)
-    //   pop()
-    //   setTimeout(function(){
-    //   refreshM()
-    //   },1500)
+    }else if(probeBuilt==1){
+      errMsg.text='Probe already built'
+      errMsg.active=true
+      errMsg.x=buildProbeB.x-5
+      errMsg.y=buildProbeB.y+buildProbeB.h+5
+      errMsg.w=buildProbeB.w+10
+      errMsg.h=buildProbeB.h
+      setTimeout(function(){
+        errMsg.active=false
+      },2000)
     }
   }
 
@@ -1606,6 +1841,8 @@ function clearScreen(){
             pop()
           }else{ // Successful register
             playerId = dataReceived[0].playerId;
+            musicVolume= dataReceived[0].music
+            soundVolume= dataReceived[0].sound
             suNameInput.remove();
             suPassInput.remove();
             registerBtn.remove();
@@ -1675,6 +1912,8 @@ function clearScreen(){
       }
       else{
         playerId = dataReceived[0].playerId;
+        musicVolume= dataReceived[0].music
+        soundVolume= dataReceived[0].sound
         getMission()
         loadResource()
         getPlayerMap()
@@ -1873,7 +2112,7 @@ function clearScreen(){
   function sortMission(){
 		let i
 		let j
-		
+		print('12th try')
 		for (j = 0; j < 2; j++){
 			if (tempMission[j].missionType > tempMission[j+1].missionType){
 				swap(tempMission,j,j+1);
@@ -1942,13 +2181,6 @@ function clearScreen(){
     httpPost('/updateProbe','json',dataToSend,(dataReceived)=>{
     })
   }
-
-
-  // function getResearch(){
-  //   loadJSON('/getResearch',(dataReceived)=>{
-    
-  //   });
-  // }
 
 
 }
@@ -2169,6 +2401,7 @@ function clearScreen(){
       totalPlayers=dataReceived.totalPlayers
       mapSize=dataReceived.mapSize
       gLevel=dataReceived.gLevel
+      savedGL=gLevel
       mapGridSize= Math.round(displayArea.height/mapSize)
 
       loadJSON('/getCoords/'+galaxyId,(dataReceived)=>{
@@ -2218,6 +2451,119 @@ function clearScreen(){
 
         main_Scene()
       })
+
+    })
+  }
+
+
+  function friendSelection(select){
+    if(friendSelect!=select)
+      getFriends()
+    
+    friendSelect=select
+
+    if(select==1){
+      selectFriend.origR=23
+      selectFriend.origG=62
+      selectFriend.origB=102
+      
+      selectRequest.origR=27
+      selectRequest.origG=73
+      selectRequest.origB=121
+    }else{
+      selectRequest.origR=23
+      selectRequest.origG=62
+      selectRequest.origB=102
+      
+      selectFriend.origR=27
+      selectFriend.origG=73
+      selectFriend.origB=121
+
+    }
+  }
+
+
+  function visitFriend(index){
+    if(friends[index].state==1){
+      let name=friends[index].name
+      loadJSON('/getFriendGalaxy/'+name,(dataReceived)=>{
+        gLevel=dataReceived[0].gLevel
+        visitingFriend=true
+        let visitId=dataReceived[0].playerId
+        print(dataReceived)
+
+        visitPlayer(visitId)
+      })
+    }
+  }
+
+  function acceptFriend(action, index){
+    let dataToSend={
+      'playerId':playerId,
+      'friendName':requests[index].name,
+      'action':action
+    }
+    httpPost('/acceptFriend','json',dataToSend,(dataReceived)=>{
+      
+    })
+    getFriends()
+  }
+
+  function getFriends(){
+    loadJSON('/getFriendList/'+playerId,(dataReceived)=>{
+      friends=[]
+      requests=[]
+
+      visitFB=[]
+      acceptB=[]
+      rejectB=[]
+      
+      for(let i=0; i<dataReceived.friends.length; i++){
+        friends[i]={
+          'name':dataReceived.friends[i],
+          'state':dataReceived.friendState[i]
+        }
+      }
+      for(let i=0; i<dataReceived.requests.length; i++){
+        requests[i]={
+          'name':dataReceived.requests[i],
+          'state':dataReceived.requestState[i]
+        }
+      }
+
+
+      for(let i=0; i<friends.length; i++){
+        visitFB[i]= new Button(0,0,0,0,  27, 73, 121, visitFriend, 'Request\nPending', 25,1)
+      }
+      for(let i=0; i<requests.length; i++){
+        acceptB[i]= new Button(0,0,0,0,  27, 73, 121, acceptFriend, 'Accept', 25,1)
+        rejectB[i]= new Button(0,0,0,0,  27, 73, 121, acceptFriend, 'Reject', 25,1)
+      }
+    })
+  }
+
+
+  function movePage(action){
+    if(friendPage>0 && action==-1)
+      friendPage--
+    if(friendSelect==1){
+      if(Math.floor(friends.length/5)>friendPage && action==1)
+        friendPage++
+    }else{
+      if(Math.floor(requests.length/5)>friendPage && action==1)
+        friendPage++
+    }
+  }
+
+
+  function sendRequest(friendId){
+    playerCard.friendBtn.y=playerCard.frdCard.y // Dont know why i had to do this, for some reason the card buttons kept going down if i clicked them, but all the others worked fine
+
+    let dataToSend={
+      'friendId':friendId,
+      'playerId':playerId
+    }
+    httpPost('/sendRequest',dataToSend,(dataReceived)=>{
 
     })
   }

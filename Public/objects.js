@@ -218,13 +218,10 @@ class Mission{
 
       textSize(20)
       textAlign(CENTER,BOTTOM)
-      text(this.missionResource+'\nReward: '+this.reward+'\tDuration: '+this.duration+' minutes\nChance of success: '+this.successChance+'%', this.x, this.y-this.h/20, this.w, this.h)
+      text('Reward: '+this.reward+'\tDuration: '+this.duration+' minutes\nChance of success: '+this.successChance+'%', this.x, this.y-this.h/20, this.w, this.h)
     pop()
   }
 }
-
-
-
 
 
 
@@ -395,10 +392,10 @@ class Button{
     this.strkWeight=this.clickStroke
   }
   
-  mouse_released(index){
+  mouse_released(param1,param2){
     
-    // clickSound.play()
-    this.func(index)
+    clickSound.play()
+    this.func(param1,param2)
     this.pressed=false
     this.strkWeight=this.strkSave
     this.y-=this.clickDepth
@@ -435,7 +432,7 @@ class Module {
         this.r=219
         this.g=219
         this.b=219
-        this.alpha=100
+        this.alpha=125
         break
       
       case 1: // Money Production
@@ -502,9 +499,9 @@ class Module {
         break
       
       case 10: // Connectors
-        this.r=100
-        this.g=100
-        this.b=100
+        this.r=85
+        this.g=85
+        this.b=85
         this.alpha=255
         break
       
@@ -517,15 +514,15 @@ class Module {
     }
 		push()
     if(gameState==2)
-      stroke(255)
+      stroke(200)
     else
       noStroke()
 
-    if(this.deleted==0){
+    if(this.deleted==0 && this.moduleType!=0){
       fill(this.r,this.g,this.b,this.alpha)
-      square(this.posX, this.posY, this.sd);
+      square(this.posX, this.posY, this.sd,5);
     }else{
-      fill(219,219,219)
+      fill(219,219,219,125)
       square(this.posX, this.posY, this.sd);
     }
     
@@ -598,8 +595,23 @@ class PlayerCard{
       this.lineY2= this.y+5
     }
 
-    if(playerId!=this.pId)
-      this.visitBtn= new Button(this.x+15,this.y+this.h-65, this.w-30,50, 130,130,130, visitPlayer, 'Visit',15,3)
+    this.vstCard={
+      'x':this.x+15,
+      'y':this.y+this.h-65,
+      'w':this.w-30,
+      'h':50
+    }
+    this.frdCard={
+      'x':this.x+15,
+      'y':this.y+this.h-130,
+      'w':this.w-30,
+      'h':50
+    }
+
+    if(playerId!=this.pId){
+      this.visitBtn= new Button(this.vstCard.x,this.vstCard.y, this.vstCard.w,this.vstCard.h, 130,130,130, visitPlayer, 'Visit',15,3)
+      this.friendBtn= new Button(this.frdCard.x,this.frdCard.y, this.frdCard.w,this.frdCard.h, 130,130,130, sendRequest, 'Add friend',10,3)
+    }
   }
 
   draw_card(){

@@ -128,7 +128,7 @@ app.post('/login',(req,res)=>{
 
 			// result == true
 			if(result){
-				let sql = "SELECT playerId FROM Player WHERE name='"+username+"'";
+				let sql = "SELECT playerId,music,sound FROM Player WHERE name='"+username+"'";
 
 				db.query(sql,(err,result)=>{
 					if(err) throw err;
@@ -140,6 +140,164 @@ app.post('/login',(req,res)=>{
 		});
 	})
 });
+
+
+app.get('/getPlayerTable/:playerId',(req,res)=>{
+	
+	let playerId = req.params.playerId;
+  let gLevel
+  let playerName
+  let otherPlayers=[]
+
+  let sql="Select gLevel from player where playerId='"+playerId+"'"
+  db.query(sql,(err,result)=>{
+		if(err) throw err;
+
+    gLevel=result[0].gLevel
+    let sql = "SELECT name FROM Player WHERE playerId='"+playerId+"'";
+	
+    db.query(sql,(err,result)=>{
+      if(err) throw err;
+  
+          playerName=result[0].name
+  
+          let sql = "SELECT name FROM Player WHERE playerId!='"+playerId+"' and gLevel='"+gLevel+"'"
+          db.query(sql,(err,result)=>{
+              if(err) throw err;
+              
+              for(let i=0; i<result.length; i++){
+                  otherPlayers[i]=result[i].name
+              }
+              
+              let dataToSend={
+                'playerName':playerName,
+                'otherPlayers':otherPlayers
+              }
+              res.send(dataToSend)
+          })
+    });
+  })
+});
+
+app.get('/getFriendList/:playerId',(req,res)=>{
+  let playerId=req.params.playerId
+  let friendList=[]
+  let friendRequest=[]
+  let friendState=[]
+  let requestState=[]
+
+	let sql = "SELECT * FROM player_friends where requestFrom='"+playerId+"' or (requestTo='"+playerId+"' and accepted=1)"
+	
+	db.query(sql,(err,result)=>{
+		if(err) throw err;
+
+    for(let i=0; i<result.length; i++){
+      if(result[i].requestFrom==playerId){
+        friendState[i]=result[i].accepted
+
+        let sql="select name from player where playerId='"+result[i].requestTo+"'"
+        
+        db.query(sql,(err,result)=>{
+          if(err) throw err;
+
+          friendList[i]=result[0].name
+        })
+      }else{
+        friendState[i]=result[i].accepted
+
+        let sql="select name from player where playerId='"+result[i].requestFrom+"'"
+        
+        db.query(sql,(err,result)=>{
+          if(err) throw err;
+
+          friendList[i]=result[0].name
+        })
+      }
+    }
+    let sql = "SELECT * FROM player_friends where requestTo='"+playerId+"' and accepted=0"
+
+    db.query(sql,(err,result)=>{
+      if(err) throw err;
+      for(let i=0; i<result.length; i++){
+        requestState[i]=result[i].accepted
+
+        let sql="select name from player where playerId='"+result[i].requestFrom+"'"
+        db.query(sql,(err,result)=>{
+          if(err) throw err;
+  
+          friendRequest[i]=result[0].name
+        })
+
+      }
+      setTimeout(function(){
+        let dataToSend={
+          'friends':friendList,
+          'friendState':friendState,
+          'requests':friendRequest,
+          'requestState':requestState
+        }
+        res.send(dataToSend)
+      },500)
+
+    })
+	});
+});
+
+
+app.post('/acceptFriend',(req,res)=>{
+  let playerId=req.body.playerId
+  let friendName=req.body.friendName
+  let action= req.body.action
+  let sql="select playerId from player where name='"+friendName+"'"
+
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+    let friendId=result[0].playerId
+
+    let sql="update player_friends set accepted='"+action+"' where requestTo='"+playerId+"' and requestFrom='"+friendId+"'"
+    db.query(sql,(err,result)=>{
+      if(err) throw err
+
+      res.send(result)
+    })
+  })
+})
+
+
+app.post('/sendRequest',(req,res)=>{
+  let friendId=req.body.friendId
+  let playerId=req.body.playerId
+
+  let sql="select * from player_friends where (requestFrom='"+playerId+"' and requestTo='"+friendId+"' and accepted!=2) or (requestFrom='"+friendId+"' and requestTo='"+playerId+"' and accepted!=2)"
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+
+    if(result.length==0){
+
+      let sql="insert into player_friends (requestFrom,requestTo) values ('"+playerId+"','"+friendId+"')"
+      db.query(sql,(err,result)=>{
+        if(err) throw err
+
+        console.log(result)
+        res.send(result)
+      })
+    }
+  })
+})
+
+
+app.get('/getFriendGalaxy/:name',(req,res)=>{
+  console.log('visitFTest')
+  let playerName=req.params.name
+
+  let sql="select gLevel, playerId from player where name='"+playerName+"'"
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+    console.log(result)
+    res.send(result)
+  })
+})
+
 
 
 app.get('/getResources/:playerId', (req, res) =>{
@@ -207,6 +365,20 @@ app.get('/getGalaxyMap/:playerId',(req,res)=>{
 })
 
 
+app.post('/updateVolume',(req,res)=>{
+  let playerId=req.body.playerId
+  let sound=req.body.sound
+  let music=req.body.music
+
+  let sql="update player set sound='"+sound+"', music='"+music+"' where playerId='"+playerId+"'"
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+
+    res.send(result)
+  })
+})
+
+
 app.post('/register',(req,res)=>{
 
 	let username = req.body.username;
@@ -222,12 +394,12 @@ app.post('/register',(req,res)=>{
 		
 		if(result.length<1){ //no player with that name
 			bcrypt.hash(password, saltRounds, function(err, hash) {
-				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,research,probe) VALUES ('"+username+"','"+hash+"',1,0,0)";
+				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,research,probe,music,sound) VALUES ('"+username+"','"+hash+"',1,0,0,30,30)";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;
 					
-					let sql = "SELECT playerId FROM Player WHERE name='"+username+"' AND pass='"+hash+"'";
+					let sql = "SELECT playerId,music,sound FROM Player WHERE name='"+username+"' AND pass='"+hash+"'";
 					db.query(sql,(err,result)=>{
 						if(err) throw err;
 
@@ -837,12 +1009,11 @@ app.get('/getProbe/:playerId',(req,res)=>{
 app.post('/updateProbe',(req,res)=>{
 
 	let playerId=req.body.playerId
-	let state=req.body.state
 
-	let sql="UPDATE player SET probe = '"+state+"' WHERE playerId='"+playerId+"'"
+	let sql="UPDATE player SET probe=1 WHERE playerId='"+playerId+"'"
 	db.query(sql,(err,result)=>{
 		if(err) throw err
-		res.send()
+		res.send(result)
 	})
 })
 
@@ -851,7 +1022,7 @@ app.post('/advanceGalaxy',(req,res)=>{
 	let pId=req.body.playerId
 	let gLevel=req.body.gLevel
 
-	let sql="update player set gLevel='"+gLevel+"' where playerId='"+pId+"'"
+	let sql="update player set gLevel='"+gLevel+"', research=0, probe=0 where playerId='"+pId+"'"
 
 	db.query(sql,(err,result)=>{
 		if(err) throw err
