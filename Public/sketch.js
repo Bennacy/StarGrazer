@@ -205,7 +205,7 @@ function main_scene_setup(){
 	moneyToCollect=0
 
   music.setVolume(0.3);
-  music.play();
+  music.loop();
 
   loadJSON('/getPlaced/'+playerId,(dataReceived)=>{ // Get a list of how many modules of each type are built
     for(let i=0; i<dataReceived.length; i++){
@@ -1435,7 +1435,15 @@ function clearScreen(){
 
   function loginScene() {
     registering= false
-    background(220);
+    image(testImg,0,0);
+    textFont(font);
+    push()
+    fill(255);
+    textSize(50)
+    text("Star Grazer", width/2 * 0.73, height/5);
+    textSize(20)
+    text("Login to your account or click on the sign up button to create one!", width/2 * 0.4, height/3.5);
+    pop()
     nameInput = createInput('');
     nameInput.position(windowWidth/2 - nameInput.size().width/2, windowHeight/2.5 - nameInput.size().height);
     passInput = createInput('');
@@ -1443,6 +1451,7 @@ function clearScreen(){
     loginBtn = createButton('Login');
     loginBtn.position(passInput.position().x, passInput.position().y+passInput.size().height*1.5);
     loginBtn.mousePressed(do_Login);
+    //signupBtn = new Button(passInput.position().x + passInput.position().y, passInput.position().y + passInput.position().y, 20, 10, 0,171,255, do_Register, "Sign Up",5, 1, 1);
     signupBtn = createButton('Sign up');
     signupBtn.position(passInput.position().x+passInput.size().width-signupBtn.size().width, passInput.position().y+passInput.size().height*1.5);
     signupBtn.mousePressed(do_Register);
@@ -1453,8 +1462,15 @@ function clearScreen(){
 
     if (registering==false){ // If moved from Log-in page to Register page
       registering= true
-      background(220)
-
+      image(testImg,0,0);
+      textFont(font);
+      push()
+      fill(255);
+      textSize(50)
+      text("Star Grazer", width/2 * 0.73, height/5);
+      textSize(20)
+      text("Login to your account or click on the sign up button to create one!", width/2 * 0.4, height/3.5);
+    pop()
       nameInput.remove();
       passInput.remove();
       loginBtn.remove();
