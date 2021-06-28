@@ -8,13 +8,12 @@ const app = express()
 const port = 3000
 
 let galaxyCount= 0
-let researchingG= 0
 let researching= []
 let researchLevel= []
 let found= []
 let isResearching= []
 let researchFunc= []
-let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
+let timeScale= 60 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
 
 
 app.use(express.static('public'));
@@ -278,7 +277,6 @@ app.post('/sendRequest',(req,res)=>{
       db.query(sql,(err,result)=>{
         if(err) throw err
 
-        console.log(result)
         res.send(result)
       })
     }
@@ -287,13 +285,11 @@ app.post('/sendRequest',(req,res)=>{
 
 
 app.get('/getFriendGalaxy/:name',(req,res)=>{
-  console.log('visitFTest')
   let playerName=req.params.name
 
   let sql="select gLevel, playerId from player where name='"+playerName+"'"
   db.query(sql,(err,result)=>{
     if(err) throw err
-    console.log(result)
     res.send(result)
   })
 })
@@ -394,7 +390,7 @@ app.post('/register',(req,res)=>{
 		
 		if(result.length<1){ //no player with that name
 			bcrypt.hash(password, saltRounds, function(err, hash) {
-				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,research,probe,music,sound) VALUES ('"+username+"','"+hash+"',1,0,0,30,30)";
+				let sql = "INSERT INTO Player (`name`,`pass`,`gLevel`,research,probe,music,sound) VALUES ('"+username+"','"+hash+"',1,0,0,20,20)";
 				db.query(sql,(err,result)=>{
 
 				if(err) throw err;
@@ -1020,7 +1016,7 @@ app.post('/updateProbe',(req,res)=>{
 
 app.post('/advanceGalaxy',(req,res)=>{
 	let pId=req.body.playerId
-	let gLevel=req.body.gLevel
+	let gLevel=(req.body.gLevel)+1
 
 	let sql="update player set gLevel='"+gLevel+"', research=0, probe=0 where playerId='"+pId+"'"
 
@@ -1213,13 +1209,12 @@ function getGalaxies(){
 function startResearchTimer(){
 	setTimeout(function(){
 
-		console.log('Galaxy Count:',galaxyCount)
 		for(let i=0; i<galaxyCount; i++){
 			if(found[i]==0 && researching[i]>0 && researchLevel[i]<100000 && isResearching[i]==false){
 					isResearching[i]=true
 					// researchFunc[i].clearInterval()
 					researchFunc[i]=setInterval(function(){
-						researchLevel[i]+=(100*researching[i])
+						researchLevel[i]+=(150*researching[i])
 						let sql="update galaxy set currPoints='"+researchLevel[i]+"' where galaxyId='"+(i+1)+"'"
 
 						db.query(sql,(err,result)=>{
@@ -1255,13 +1250,3 @@ function getResearch(){
 		}
 	})
 }
-
-
-app.get('/printFound/:gId',(req,res)=>{
-	let gId=req.params.gId
-	console.log(found[gId-1])
-	let dataToSend={
-		'found':found[gId-1]
-	}
-	res.send(dataToSend)
-})

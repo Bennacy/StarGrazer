@@ -29,6 +29,7 @@ let music
 let clickSound
 let musicVolume
 let soundVolume
+let slowRocket
 
 let soundBar
 let musicBar
@@ -44,7 +45,7 @@ let researchTCycleFunc=function(){}
 let researchPointsFunc=function(){}
 let galaxyResearchCount=[]
 
-let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
+let timeScale=60 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
 // Arrays initialization
 let resource= [];
@@ -57,9 +58,10 @@ let moduleName=[]
 let placedModule=[]
 let maxPlace=[]
 let arrtiles = [];
-let playerMapArr=[];
+
 let moduleImg=[]
 
+let playerMapArr=[];
 let playersInGalaxy=[]
 let friends=[]
 let requests=[]
@@ -96,8 +98,11 @@ let buildingProbe=false;
 let probeBuilt=false;
 let researching=false;
 let updateR=false
+let loading=false
 let isFound=false
+let drawAll=true
 let shipBar=0
+let loadingAlpha=0
 
 // Button initialization
 let loginBtn
@@ -174,14 +179,22 @@ function preload(){
   buildImg= loadImage('Assets/Images/build.png')
   testImg= loadImage('Assets/Images/galaxy1.jpg')
   starsImg=loadImage('Assets/Images/starsBG.jpg')
-
+  
+  moduleImg[1]= loadImage('Assets/Images/Modules/money production.png')
+  moduleImg[2]= loadImage('Assets/Images/Modules/crew capacity.png')
   moduleImg[3]= loadImage('Assets/Images/Modules/matStorage.png')
   moduleImg[4]= loadImage('Assets/Images/Modules/hangar.png')
+  moduleImg[5]= loadImage('Assets/Images/Modules/ship constructor.png')
   moduleImg[6]= loadImage('Assets/Images/Modules/signal-tower.png')
   moduleImg[7]= loadImage('Assets/Images/Modules/radar.png')
+  moduleImg[8]= loadImage('Assets/Images/Modules/mission control.png')
+  moduleImg[9]= loadImage('Assets/Images/Modules/probe constructor.png')
+  moduleImg[10]= loadImage('Assets/Images/Modules/connector.png')
+  moduleImg[11]= loadImage('Assets/Images/Modules/default module.png')
   
   music = loadSound('Assets/Audio/bensound-slowmotion.mp3');
   clickSound = loadSound('Assets/Audio/multimedia_button_click.mp3')
+  slowRocket = loadSound('Assets/Audio/slowRocket.mp3')
 
   font= loadFont('Assets/Fonts/AstroSpace-eZ2Bg.ttf')
 }
@@ -245,10 +258,12 @@ function main_scene_setup(){
   
   music.setVolume(musicVolume/100);
   clickSound.setVolume(soundVolume/100);
+  slowRocket.setVolume(soundVolume/100)
 
   musicBar=map(musicVolume, 0,100, (width/3)/10,  width/3, true)
   soundBar=map(soundVolume, 0,100, (width/3)/10,  width/3, true)
 
+  music.stop()
   music.loop();
 
   loadJSON('/getPlayerTable/'+playerId,(dataReceived)=>{
@@ -295,8 +310,8 @@ function main_scene_setup(){
   selectCrew= new Button(50,displayArea.topY, 200,displayArea.height/2, 0,125,150, selectMission, 'Crew\nMissions',25, 4,1)
   selectMat= new Button(50,displayArea.topY+displayArea.height/2, 200,displayArea.height/2, 0,150,175, selectMission, 'Material\nMissions',25, 4,3)
   
-  selectFriend= new Button(displayArea.rightX - displayArea.width/2.5,   displayArea.topY,   displayArea.width/5,   height/10,  27, 73, 121, friendSelection, 'Friends', 25,4,1)
-  selectRequest= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   displayArea.topY,   displayArea.width/5,   height/10,  23, 62, 102, friendSelection, 'Requests', 25,4,2)
+  selectFriend= new Button(displayArea.rightX - displayArea.width/2.5,   displayArea.topY,   displayArea.width/5,   height/10,  0,125,150, friendSelection, 'Friends', 25,4,1)
+  selectRequest= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   displayArea.topY,   displayArea.width/5,   height/10,  0,150,175, friendSelection, 'Requests', 25,4,2)
   let friendDisplayH=-((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10))
 
   friendNextBtn= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   selectFriend.h+selectFriend.y + 5*friendDisplayH/6,   displayArea.width/5,   friendDisplayH/6,  23, 62, 102, movePage, 'Next\nPage', 25,1)
@@ -353,6 +368,7 @@ function main_Scene() {
 function logOff(){
   clearScreen()
 	researching=false
+  music.stop()
   gameState=0
 }
 
@@ -982,596 +998,590 @@ function mousePressed(){
 function timer(){
   setInterval(function(){
     
-    switch(gameState){
-      
-      case 1:
-				let researchBar={
-					'rectX': width/2- width/10,
-					'rectY': displayArea.bottomY+20,
-					'rectW': width/2.5,
-					'rectH': height/15
-				}
-				if(updateR==true){
-					updateR=false
-					loadJSON('/getResearching',(dataReceived)=>{
-
-						for(let i=0; i<dataReceived.length; i++){
-							galaxyResearchCount[i]={
-								"researchingPlayers":dataReceived[i].researching,
-								"galaxyId":dataReceived[i].galaxyId,
-								"isFound":dataReceived[i].isFound,
-								"currPoints":dataReceived[i].currPoints
-							}
-						}
-						
-						for(let i=0; i<galaxyResearchCount.length; i++){
-							if(galaxyResearchCount[i].galaxyId==galaxyId){
-								researchPoints=galaxyResearchCount[i].currPoints
-								playersResearching=galaxyResearchCount[i].researchingPlayers
-								isFound=galaxyResearchCount[i].isFound
-								clearInterval(researchPointsFunc)
-				
-								if(playersResearching>0){
-									researchPointsFunc=setInterval(function(){
-										researchPoints+=(100*playersResearching)
-
-										if(researchPoints>=100000){
-											print('done')
-											isFound=1
-											clearInterval(researchPointsFunc)
-										}
-									},1000*timeScale)
-								}
-							}
-						}
-					})
-				}
-
-        image(starsImg,0,0)
-
-        if(visiting==true){
-          mapBtn.textS=20
-          mapBtn.text='Back to Base'
-        }
-        else{
-          mapBtn.textS=25
-          mapBtn.text='Map'
+    if(drawAll==true){
+      switch(gameState){
         
-					profileButton.text='Profile'
-					buildScreenB.text='Modules'
-					missionScreenB.text='Missions'
-
-					if(isFound==0){
-						switch(researchTCycle){
-							case 0:
-								researchText='Researching'
-								break
-							case 1:
-								researchText='Researching.'
-								break
-							case 2:
-								researchText='Researching..'
-								break
-							case 3:
-								researchText='Researching...'
-								break
-							case 4:
-								researchText='Researching'
-								break
-						}
-					}else{
-						researchText='Destination Found!'
-					}
-
-					if(researching==true){
-						push()
-
-						fill(255)
-							stroke(0)
-							strokeWeight(10)
-							if(isFound==0){
-								if(researchPoints>500){
-									let resBar=map(researchPoints, 0,100000, 0,researchBar.rectW)
-									rect(researchBar.rectX,	researchBar.rectY,	resBar,	researchBar.rectH,	20)
-								}
-
-								noFill()
-								stroke(255)
-								strokeWeight(5)
-								rect(researchBar.rectX,researchBar.rectY,researchBar.rectW,researchBar.rectH,20)
-							}else{
-								if(isFound==1 && probeBuilt==1){
-									advanceBtn.mouse_over()
-									advanceBtn.draw_button()
-								}
-							}
-
-							textAlign(RIGHT,CENTER)
-							noStroke()
-							fill(255)
-							textSize(30)
-							text(researchText,	researchBar.rectX - width/5- 15,	researchBar.rectY,	width/5,	researchBar.rectH)
-						pop()
-					}
-
-					if(placedModule[8]>0){
-						buildProbeB.mouse_over()
-						buildProbeB.draw_button()
-					}
-
-					if(buildingProbe==true){
-						push()
-						fill(buildProbeB.origR-40, buildProbeB.origG-40, buildProbeB.origB-40)
-						probeBuildBar++
-						let w=map(probeBuildBar, 0,5000/15, 0,buildProbeB.w,true)
-						rect(buildProbeB.x,	buildProbeB.y + buildProbeB.h + 5,	w,	buildProbeB.h/3,25)
-						pop()
-					}
-				}
-				
-        draw_Grid()
-        break
-
-      case 2:
-        image(starsImg,0,0)
-        
-        profileButton.text='Profile'
-        mapBtn.text='Map'
-        buildScreenB.text='Back'
-        missionScreenB.text='Missions'
-
-        if(erasing==true){
-          push()
-            fill("red")
-            textSize(30)
-            textAlign(CENTER, TOP)
-            text("Erasing",width/2,height/2+6.5*side)
-          pop()
-        }
-
-        for(let i=0; i<moduleBuildButton.length; i++){
-          moduleBuildButton[i].mouse_over()
-          moduleBuildButton[i].draw_button()
-        }
-        push()
-        fill(100,170,235)
-        textFont(font)
-        textSize(40)
-        textAlign(CENTER,TOP)
-        text('Available crew:'+(resource[1].currAmount - resource[1].inUse), width/2,collectMB.h+collectMB.y+5)
-        pop()
-
-        draw_Grid()
-        break
-
-      case 3:
-        image(starsImg,0,0)
-        
-        profileButton.text='Profile'
-        
-        mapBtn.text='Map'
-        buildScreenB.text='Modules'
-        missionScreenB.text='Back'
-
-        let missionBG={
-          'x':width/2-width/3,
-          'y':displayArea.topY,
-          'w':2*((width/2+width/3)-(width/2-width/3))/3,
-          'h':displayArea.height/3
-        }
-
-        selectCrew.x=missionBG.x-selectCrew.w
-        selectMat.x=missionBG.x-selectMat.w
-
-        push()
-          for(let rY=0,i=0; rY<3; rY++,i++){
-            
-            fill(0,190,235,125)
-            rect(missionBG.x, missionBG.y +rY*missionBG.h, missionBG.w, missionBG.h,0,50,50,0)
+        case 1:
+          let researchBar={
+            'rectX': width/2- width/10,
+            'rectY': displayArea.bottomY+20,
+            'rectW': width/2.5,
+            'rectH': height/15
           }
-        pop()
+          if(updateR==true){
+            updateR=false
+            loadJSON('/getResearching',(dataReceived)=>{
 
-				if(refreshM==true){
-					for(let i=0;i<mission.length;i++){
-						if(i<3){
-							mission[i].x=missionBG.x
-							mission[i].y=missionBG.y+ i*(missionBG.h)
-							mission[i].w=missionBG.w
-							mission[i].h=missionBG.h
-						}else{
-							mission[i].x=missionBG.x
-							mission[i].y=missionBG.y+ (i-3)*(missionBG.h)
-							mission[i].w=missionBG.w
-							mission[i].h=missionBG.h
-						}
-						mission[i].button= new Button(mission[i].x + mission[i].w - mission[i].w/10, mission[i].y, mission[i].w/2.5, mission[i].h, 0,150,195, missionFunction, i, 35,1)
-						switch(mission[i].state){
-							case 1:
-								mission[i].button.text= 'Start\nMission'
-								break
-								
-							case 2:
-							case 6:
-								mission[i].button.text= 'Ongoing'
-								break
-	
-							case 4:
-								mission[i].button.text= 'Failed'
-								mission[i].button.origR=244
-								mission[i].button.origG=7
-								mission[i].button.origB=7
-								break
-	
-							case 5:
-								mission[i].button.text= 'Complete'
-								mission[i].button.origR=47
-								mission[i].button.origG=153
-								mission[i].button.origB=8
-								break
-						}
-					}
-					refreshM=false
-				}
+              for(let i=0; i<dataReceived.length; i++){
+                galaxyResearchCount[i]={
+                  "researchingPlayers":dataReceived[i].researching,
+                  "galaxyId":dataReceived[i].galaxyId,
+                  "isFound":dataReceived[i].isFound,
+                  "currPoints":dataReceived[i].currPoints
+                }
+              }
+              
+              for(let i=0; i<galaxyResearchCount.length; i++){
+                if(galaxyResearchCount[i].galaxyId==galaxyId){
+                  researchPoints=galaxyResearchCount[i].currPoints
+                  playersResearching=galaxyResearchCount[i].researchingPlayers
+                  isFound=galaxyResearchCount[i].isFound
+                  clearInterval(researchPointsFunc)
+          
+                  if(playersResearching>0){
+                    researchPointsFunc=setInterval(function(){
+                      researchPoints+=(100*playersResearching)
 
-				if(refreshM==false){
-					if(missionSelect==2){
-						for(let i=0; i<3; i++){
-							mission[i].draw_mission()
-							mission[i].button.mouse_over()
-							mission[i].button.draw_button()
-						}
-					}else{
-						for(let i=3; i<6; i++){
-							mission[i].draw_mission()
-							mission[i].button.mouse_over()
-							mission[i].button.draw_button()
-						}
-					}
-				}
-
-        let freeSpace= missionBG.x + missionBG.w + missionBG.h
-        
-        push()
-          textSize(30)
-          textAlign(CENTER,CENTER)
-          textFont(font)
-          fill(100,170,235)
-          if(resource[3].currAmount-resource[3].inUse==1){
-            text('You have '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ship', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
-          }else{
-            text('You have '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ships', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
+                      if(researchPoints>=100000){
+                        print('done')
+                        isFound=1
+                        clearInterval(researchPointsFunc)
+                      }
+                    },1000*timeScale)
+                  }
+                }
+              }
+            })
           }
-        pop()
 
+          image(starsImg,0,0)
 
-        buildShipB.w=(width-freeSpace)/2
-        buildShipB.h=buildShipB.w/2
+          if(visiting==true){
+            mapBtn.textS=20
+            mapBtn.text='Back to Base'
+          }
+          else{
+            mapBtn.textS=25
+            mapBtn.text='Map'
+          
+            profileButton.text='Profile'
+            buildScreenB.text='Modules'
+            missionScreenB.text='Missions'
 
-        buildShipB.y=displayArea.topY + displayArea.height/2
-        buildShipB.x=freeSpace + (width-freeSpace)/2 - buildShipB.w/2
-
-        if(placedModule[4]==0 || resource[3].currAmount==resource[3].maxAmount){ // If there are no ship constructors, or the ships array is full, darkens button
-          buildShipB.r=180
-          buildShipB.g=180
-          buildShipB.b=180
-          buildShipB.func= function(){
-            if(resource[3].currAmount>=resource[3].maxAmount){
-
-              errMsg.text='Hangar bay already full'
-                            
-            }else if(placedModule[4]==0){
-
-              errMsg.text='No ship\nconstructors placed'
-
+            if(isFound==0){
+              switch(researchTCycle){
+                case 0:
+                  researchText='Researching'
+                  break
+                case 1:
+                  researchText='Researching.'
+                  break
+                case 2:
+                  researchText='Researching..'
+                  break
+                case 3:
+                  researchText='Researching...'
+                  break
+                case 4:
+                  researchText='Researching'
+                  break
+              }
+            }else{
+              researchText='Destination Found!'
             }
-            errMsg.active=true
-            errMsg.x=freeSpace
-            errMsg.y=buildShipB.y+buildShipB.h
-            errMsg.w=width-freeSpace
-            errMsg.h=buildShipB.h
-            setTimeout(function(){errMsg.active=false},1500)
-          }
-        }else{
-          buildShipB.r=240
-          buildShipB.g=240
-          buildShipB.b=240
-          buildShipB.mouse_over()
-          buildShipB.func=buildShip
-        }
 
-        buildShipB.draw_button()
-        
+            if(researching==true){
+              push()
 
-        if(drawBar==true){
-      		let multiplier= placedModule[4]
-          shipBar+=buildShipB.w/((1000*5*timeScale/multiplier)/15)
-          rect(buildShipB.x, buildShipB.y+buildShipB.h+5, shipBar, 10,10)
-        }
+              fill(255)
+                stroke(0)
+                strokeWeight(10)
+                if(isFound==0){
+                  if(researchPoints>500){
+                    let resBar=map(researchPoints, 0,100000, 0,researchBar.rectW)
+                    rect(researchBar.rectX,	researchBar.rectY,	resBar,	researchBar.rectH,	20)
+                  }
 
-
-        selectCrew.mouse_over()
-        selectCrew.draw_button()
-
-        selectMat.mouse_over()
-        selectMat.draw_button()
-
-        break
-
-      case 4:
-        image(starsImg,0,0)
-        
-        profileButton.text='Back'
-        mapBtn.text='Map'
-        buildScreenB.text='Modules'
-        missionScreenB.text='Missions'
-
-        let friendDisplay={
-          'x':selectFriend.x,
-          'y':selectFriend.h+selectFriend.y,
-          'w':2*selectFriend.w,
-          'h':-((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10))
-        }
-
-        push()
-        textFont(font)
-        fill(25,25,112) //main background
-        rect(displayArea.leftX,  displayArea.topY,  displayArea.width,  displayArea.height+height/10, 25,50,25,25)
-
-        fill(23, 23, 102)
-        rect(displayArea.rightX-displayArea.width/2.5,  displayArea.topY,  displayArea.width/2.5,  displayArea.height+height/10, 25,50,25,25)
-        // rect(displayArea.rightX-displayArea.width/2.5,  selectFriend.y+selectFriend.h,  displayArea.width/2.5,  -((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10)))
-
-        fill(55, 56, 163) //thin bar at the top with player name
-        rect(displayArea.leftX,  displayArea.topY,  displayArea.width,  height/10, 25,50,25,0)
-
-        fill(255)
-        textSize(50)
-        textFont(font)
-        textAlign(CENTER,CENTER)
-        text(playerName,  displayArea.leftX,  displayArea.topY,  displayArea.width/1.5,  height/10)
-        pop()
-
-        selectFriend.mouse_over()
-        selectFriend.draw_button()
-        selectRequest.mouse_over()
-        selectRequest.draw_button()
-
-        if(friendSelect==1){
-          if(friends.length>0){ // if there are friends to display
-            for(let i=0+friendPage*5; i<5+friendPage*5; i++){
-              if(typeof(friends[i])!='undefined'){
-                visitFB[i].x=friendDisplay.x + 2*friendDisplay.w/3
-                visitFB[i].y=friendDisplay.y + ((i%5)*friendDisplay.h/6)
-                visitFB[i].w=friendDisplay.w/3
-                visitFB[i].h=friendDisplay.h/6
-
-                switch(friends[i].state){
-                  case 0:
-                    visitFB[i].text='Request\nPending'
-                    break
-
-                  case 1:
-                    visitFB[i].text='Visit'
-                    break
+                  noFill()
+                  stroke(255)
+                  strokeWeight(5)
+                  rect(researchBar.rectX,researchBar.rectY,researchBar.rectW,researchBar.rectH,20)
+                }else{
+                  if(isFound==1 && probeBuilt==1){
+                    advanceBtn.mouse_over()
+                    advanceBtn.draw_button()
+                  }
                 }
 
-                push() //rectangles with friend names
-                textFont(font)
-                stroke(0)
-                fill(170)
-                rect(friendDisplay.x, friendDisplay.y + ((i%5)*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6, 25,10,10,25)
-
+                textAlign(RIGHT,CENTER)
                 noStroke()
                 fill(255)
-                textSize(20)
-                textAlign(LEFT,CENTER)
-                text('\t\t'+friends[i].name,  friendDisplay.x, friendDisplay.y + ((i%5)*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6)
-                pop()
+                textSize(30)
+                text(researchText,	researchBar.rectX - width/5- 15,	researchBar.rectY,	width/5,	researchBar.rectH)
+              pop()
+            }
 
-                visitFB[i].mouse_over()
-                visitFB[i].draw_button()
-              }
+            if(placedModule[8]>0){
+              buildProbeB.mouse_over()
+              buildProbeB.draw_button()
             }
-            if(friends.length>5){
-              friendNextBtn.mouse_over()
-              friendNextBtn.draw_button()
-              friendBackBtn.mouse_over()
-              friendBackBtn.draw_button()
+
+            if(buildingProbe==true){
+              push()
+              fill(buildProbeB.origR-40, buildProbeB.origG-40, buildProbeB.origB-40)
+              probeBuildBar++
+              let w=map(probeBuildBar, 0,5000/15, 0,buildProbeB.w,true)
+              rect(buildProbeB.x,	buildProbeB.y + buildProbeB.h + 5,	w,	buildProbeB.h/3,25)
+              pop()
             }
-          }else{ // If there are no friends to display
+          }
+          
+          draw_Grid()
+          break
+
+        case 2:
+          image(starsImg,0,0)
+          
+          profileButton.text='Profile'
+          mapBtn.text='Map'
+          buildScreenB.text='Back'
+          missionScreenB.text='Missions'
+
+          if(erasing==true){
             push()
-            textFont(font)
-            textAlign(CENTER, CENTER)
-            textSize(40)
-            fill(255)
-            text('Friend list is empty.\nFind some friends\nthrough the map!',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
+              fill("red")
+              textSize(30)
+              textAlign(CENTER, TOP)
+              text("Erasing",width/2,height/2+6.5*side)
             pop()
           }
-        }else{
-          if(requests.length>0){ // There are friend requests to display
-            for(let i=0; i<requests.length; i++){
 
-              acceptB[i].x=friendDisplay.x + 2*friendDisplay.w/3
-              acceptB[i].y=friendDisplay.y + (i*friendDisplay.h/6)
-              acceptB[i].w=friendDisplay.w/3
-              acceptB[i].h=friendDisplay.h/12
+          for(let i=0; i<moduleBuildButton.length; i++){
+            moduleBuildButton[i].mouse_over()
+            moduleBuildButton[i].draw_button()
+          }
+          push()
+          fill(100,170,235)
+          textFont(font)
+          textSize(40)
+          textAlign(CENTER,TOP)
+          text('Available crew:'+(resource[1].currAmount - resource[1].inUse), width/2,collectMB.h+collectMB.y+5)
+          pop()
 
-              rejectB[i].x=friendDisplay.x + 2*friendDisplay.w/3
-              rejectB[i].y=friendDisplay.y + (i*friendDisplay.h/6) + (friendDisplay.h/12)
-              rejectB[i].w=friendDisplay.w/3
-              rejectB[i].h=friendDisplay.h/12
+          draw_Grid()
+          break
+
+        case 3:
+          image(starsImg,0,0)
+          
+          profileButton.text='Profile'
+          
+          mapBtn.text='Map'
+          buildScreenB.text='Modules'
+          missionScreenB.text='Back'
+
+          let missionBG={
+            'x':width/2-width/3,
+            'y':displayArea.topY,
+            'w':2*((width/2+width/3)-(width/2-width/3))/3,
+            'h':displayArea.height/3
+          }
+
+          selectCrew.x=missionBG.x-selectCrew.w
+          selectMat.x=missionBG.x-selectMat.w
+
+          push()
+            for(let rY=0,i=0; rY<3; rY++,i++){
+              
+              fill(0,190,235,125)
+              rect(missionBG.x, missionBG.y +rY*missionBG.h, missionBG.w, missionBG.h,0,50,50,0)
+            }
+          pop()
+
+          if(refreshM==true){
+            for(let i=0;i<mission.length;i++){
+              if(i<3){
+                mission[i].x=missionBG.x
+                mission[i].y=missionBG.y+ i*(missionBG.h)
+                mission[i].w=missionBG.w
+                mission[i].h=missionBG.h
+              }else{
+                mission[i].x=missionBG.x
+                mission[i].y=missionBG.y+ (i-3)*(missionBG.h)
+                mission[i].w=missionBG.w
+                mission[i].h=missionBG.h
+              }
+              mission[i].button= new Button(mission[i].x + mission[i].w - mission[i].w/10, mission[i].y, mission[i].w/2.5, mission[i].h, 0,150,195, missionFunction, i, 35,1)
+              switch(mission[i].state){
+                case 1:
+                  mission[i].button.text= 'Start\nMission'
+                  break
+                  
+                case 2:
+                case 6:
+                  mission[i].button.text= 'Ongoing'
+                  break
+    
+                case 4:
+                  mission[i].button.text= 'Failed'
+                  mission[i].button.origR=244
+                  mission[i].button.origG=7
+                  mission[i].button.origB=7
+                  break
+    
+                case 5:
+                  mission[i].button.text= 'Complete'
+                  mission[i].button.origR=47
+                  mission[i].button.origG=153
+                  mission[i].button.origB=8
+                  break
+              }
+            }
+            refreshM=false
+          }
+
+          if(refreshM==false){
+            if(missionSelect==2){
+              for(let i=0; i<3; i++){
+                mission[i].draw_mission()
+                mission[i].button.mouse_over()
+                mission[i].button.draw_button()
+              }
+            }else{
+              for(let i=3; i<6; i++){
+                mission[i].draw_mission()
+                mission[i].button.mouse_over()
+                mission[i].button.draw_button()
+              }
+            }
+          }
+
+          let freeSpace= missionBG.x + missionBG.w + missionBG.h
+          
+          push()
+            textSize(30)
+            textAlign(CENTER,CENTER)
+            textFont(font)
+            fill(100,170,235)
+            if(resource[3].currAmount-resource[3].inUse==1){
+              text('You have '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ship', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
+            }else{
+              text('You have '+(resource[3].currAmount-resource[3].inUse)+'\navailable Ships', freeSpace, displayArea.topY, width - freeSpace, displayArea.height/2)
+            }
+          pop()
 
 
-              push()//rectangles with requests
-              textFont(font)
-              stroke(0)
-              fill(170)
-              rect(friendDisplay.x, friendDisplay.y + (i*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6, 25,10,10,25)
+          buildShipB.w=(width-freeSpace)/2
+          buildShipB.h=buildShipB.w/2
 
-              noStroke()
-              fill(255)
-              textSize(20)
-              textAlign(LEFT,CENTER)
-              text('\t\t'+requests[i].name,  friendDisplay.x, friendDisplay.y + (i*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6)
-              pop()
+          buildShipB.y=displayArea.topY + displayArea.height/2
+          buildShipB.x=freeSpace + (width-freeSpace)/2 - buildShipB.w/2
 
-              if(requests.length>5){
+          if(placedModule[4]==0 || resource[3].currAmount==resource[3].maxAmount){ // If there are no ship constructors, or the ships array is full, darkens button
+            buildShipB.r=180
+            buildShipB.g=180
+            buildShipB.b=180
+            buildShipB.func= function(){
+              if(resource[3].currAmount>=resource[3].maxAmount){
+
+                errMsg.text='Hangar bay already full'
+                              
+              }else if(placedModule[4]==0){
+
+                errMsg.text='No ship\nconstructors placed'
+
+              }
+              errMsg.active=true
+              errMsg.x=freeSpace
+              errMsg.y=buildShipB.y+buildShipB.h
+              errMsg.w=width-freeSpace
+              errMsg.h=buildShipB.h
+              setTimeout(function(){errMsg.active=false},1500)
+            }
+          }else{
+            buildShipB.r=240
+            buildShipB.g=240
+            buildShipB.b=240
+            buildShipB.mouse_over()
+            buildShipB.func=buildShip
+          }
+
+          buildShipB.draw_button()
+          
+
+          if(drawBar==true){
+            let multiplier= placedModule[4]
+            shipBar+=buildShipB.w/((1000*5*timeScale/multiplier)/15)
+            rect(buildShipB.x, buildShipB.y+buildShipB.h+5, shipBar, 10,10)
+          }
+
+
+          selectCrew.mouse_over()
+          selectCrew.draw_button()
+
+          selectMat.mouse_over()
+          selectMat.draw_button()
+
+          break
+
+        case 4:
+          image(starsImg,0,0)
+          
+          profileButton.text='Back'
+          mapBtn.text='Map'
+          buildScreenB.text='Modules'
+          missionScreenB.text='Missions'
+
+          let friendDisplay={
+            'x':selectFriend.x,
+            'y':selectFriend.h+selectFriend.y,
+            'w':2*selectFriend.w,
+            'h':-((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10))
+          }
+
+          push()
+          textFont(font)
+          fill(25,25,112) //main background
+          rect(displayArea.leftX,  displayArea.topY,  displayArea.width,  displayArea.height+height/10, 25,50,25,25)
+
+          fill(23, 23, 102)
+          rect(displayArea.rightX-displayArea.width/2.5,  displayArea.topY,  displayArea.width/2.5,  displayArea.height+height/10, 25,50,25,25)
+          // rect(displayArea.rightX-displayArea.width/2.5,  selectFriend.y+selectFriend.h,  displayArea.width/2.5,  -((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10)))
+
+          fill(55, 56, 163) //thin bar at the top with player name
+          rect(displayArea.leftX,  displayArea.topY,  displayArea.width,  height/10, 25,50,25,0)
+
+          fill(255)
+          textSize(50)
+          textFont(font)
+          textAlign(CENTER,CENTER)
+          text(playerName,  displayArea.leftX,  displayArea.topY,  displayArea.width/1.5,  height/10)
+          pop()
+
+          selectFriend.mouse_over()
+          selectFriend.draw_button()
+          selectRequest.mouse_over()
+          selectRequest.draw_button()
+
+          if(friendSelect==1){
+            if(friends.length>0){ // if there are friends to display
+              for(let i=0+friendPage*5; i<5+friendPage*5; i++){
+                if(typeof(friends[i])!='undefined'){
+                  visitFB[i].x=friendDisplay.x + 2*friendDisplay.w/3
+                  visitFB[i].y=friendDisplay.y + ((i%5)*friendDisplay.h/6)
+                  visitFB[i].w=friendDisplay.w/3
+                  visitFB[i].h=friendDisplay.h/6
+
+                  switch(friends[i].state){
+                    case 0:
+                      visitFB[i].text='Request\nPending'
+                      break
+
+                    case 1:
+                      visitFB[i].text='Visit'
+                      break
+                  }
+
+                  push() //rectangles with friend names
+                  textFont(font)
+                  stroke(0)
+                  fill(230)
+                  rect(friendDisplay.x, friendDisplay.y + ((i%5)*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6, 25,10,10,25)
+
+                  noStroke()
+                  fill(25,25,112)
+                  textSize(20)
+                  textAlign(LEFT,CENTER)
+                  text('\t\t'+friends[i].name,  friendDisplay.x, friendDisplay.y + ((i%5)*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6)
+                  pop()
+
+                  visitFB[i].mouse_over()
+                  visitFB[i].draw_button()
+                }
+              }
+              if(friends.length>5){
                 friendNextBtn.mouse_over()
                 friendNextBtn.draw_button()
                 friendBackBtn.mouse_over()
                 friendBackBtn.draw_button()
               }
-              
-              acceptB[i].mouse_over()
-              acceptB[i].draw_button()
-              rejectB[i].mouse_over()
-              rejectB[i].draw_button()
+            }else{ // If there are no friends to display
+              push()
+              textFont(font)
+              textAlign(CENTER, CENTER)
+              textSize(40)
+              fill(255)
+              text('Friend list is empty.\nFind some friends\nthrough the map!',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
+              pop()
             }
-          }else{ // If there are no pending requests
-            push()
-            textFont(font)
-            textAlign(CENTER, CENTER)
-            textSize(40)
-            fill(255)
-            text('You currently have\nno pending\nfriend requests',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
-            pop()
+          }else{
+            if(requests.length>0){ // There are friend requests to display
+              for(let i=0; i<requests.length; i++){
+
+                acceptB[i].x=friendDisplay.x + 2*friendDisplay.w/3
+                acceptB[i].y=friendDisplay.y + (i*friendDisplay.h/6)
+                acceptB[i].w=friendDisplay.w/3
+                acceptB[i].h=friendDisplay.h/12
+
+                rejectB[i].x=friendDisplay.x + 2*friendDisplay.w/3
+                rejectB[i].y=friendDisplay.y + (i*friendDisplay.h/6) + (friendDisplay.h/12)
+                rejectB[i].w=friendDisplay.w/3
+                rejectB[i].h=friendDisplay.h/12
+
+
+                push()//rectangles with requests
+                textFont(font)
+                stroke(0)
+                fill(230)
+                rect(friendDisplay.x, friendDisplay.y + (i*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6, 25,10,10,25)
+
+                noStroke()
+                fill(25,25,112)
+                textSize(20)
+                textAlign(LEFT,CENTER)
+                text('\t\t'+requests[i].name,  friendDisplay.x, friendDisplay.y + (i*friendDisplay.h/6),  2*friendDisplay.w/3, friendDisplay.h/6)
+                pop()
+
+                if(requests.length>5){
+                  friendNextBtn.mouse_over()
+                  friendNextBtn.draw_button()
+                  friendBackBtn.mouse_over()
+                  friendBackBtn.draw_button()
+                }
+                
+                acceptB[i].mouse_over()
+                acceptB[i].draw_button()
+                rejectB[i].mouse_over()
+                rejectB[i].draw_button()
+              }
+            }else{ // If there are no pending requests
+              push()
+              textFont(font)
+              textAlign(CENTER, CENTER)
+              textSize(40)
+              fill(255)
+              text('You currently have\nno pending\nfriend requests',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
+              pop()
+            }
           }
+
+          push()//display galaxy level
+          textSize(50)
+          textFont(font)
+          textAlign(LEFT, TOP)
+          text('\n\tGalaxy level '+savedGL,displayArea.leftX,   displayArea.topY + height/12)
+          pop()
+
+
+          push()
+          textFont(font)
+          textSize(25)
+          textAlign(RIGHT,TOP)
+          text('Music: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2)
+          text('General Audio: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2 + displayArea.height/6)
+
+          let slider={
+            'x':displayArea.leftX + displayArea.width/5.4,
+            'w':width/3,
+            'h':displayArea.height/10
+          }
+
+          if(mouseIsPressed && mouseX<selectFriend.x){
+            if(mouseY>displayArea.topY + displayArea.height/2 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 - displayArea.height/20+slider.h){
+              musicBar=map(mouseX, slider.x + slider.w/10,  slider.x + slider.w, slider.w/10,slider.w, true)
+              musicVolume=map(musicBar,  slider.w/10,slider.w,  0,100,  true)
+              music.setVolume(musicVolume/100)
+            }
+            if(mouseY>displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20+slider.h){
+              soundBar=map(mouseX, slider.x+slider.w/10,slider.x+slider.w, slider.w/10,slider.w, true)
+              soundVolume=map(soundBar,  slider.w/10,slider.w,  0,100,  true)
+              clickSound.setVolume(soundVolume/100)
+              slowRocket.setVolume(soundVolume/100)
+            }
+          }
+
+          strokeWeight(7)
+          stroke(25,25,112)
+          fill(255)
+          rect(slider.x, displayArea.topY + displayArea.height/2 - displayArea.height/20, musicBar, slider.h, 25)
+          rect(slider.x, displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20, soundBar, slider.h, 25)
+          
+          stroke(255)
+          strokeWeight(3)
+          noFill()
+          rect(slider.x,  displayArea.topY + displayArea.height/2 - displayArea.height/20,  slider.w,  slider.h, 25)
+          rect(slider.x,  displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20,  slider.w,  slider.h, 25)
+          pop()
+
+          
+          logoffButton.mouse_over()
+          logoffButton.draw_button()
+          break
+
+        case 5:
+          profileButton.text='Profile'
+          mapBtn.text='Back'
+          buildScreenB.text='Modules'
+          missionScreenB.text='Missions'
+          
+          drawMap()
+          if(playerCard!=''){
+            playerCard.draw_card()
+            if(playerCard.visitBtn){
+              playerCard.visitBtn.mouse_over()
+              playerCard.visitBtn.draw_button()
+              playerCard.friendBtn.mouse_over()
+              playerCard.friendBtn.draw_button()
+            }
+          }
+          break
+      }
+      
+      if(gameState>0){
+        drawR()
+        if(placedModule[5]>0){
+          mapBtn.mouse_over()
+          mapBtn.draw_button()
         }
 
-        push()//display galaxy level
-        textSize(50)
-        textFont(font)
-        textAlign(LEFT, TOP)
-        text('\n\tGalaxy level '+savedGL,displayArea.leftX,   displayArea.topY + height/12)
-        pop()
+        if(visiting==false){
+          profileButton.mouse_over()
+          profileButton.draw_button()
+        }
+
+        if(gameState<4 && visiting==false){
+          if(gameState<3 && placedModule[0]>0){
+            if(moneyTimer>2){
+              collectMB.func=collectMoney
+              collectMB.mouse_over()
+              collectMB.draw_button()
+              canCollect=true
+            }else{ // Money not available to collect, darken button with no function
+              canCollect=false
+              collectMB.r=150
+              collectMB.g=150
+              collectMB.b=150
+              collectMB.func=function(){}
+              collectMB.draw_button()
+            }
+          }
+          if(placedModule[7]>0){
+            missionScreenB.mouse_over()
+            missionScreenB.draw_button()
+          }
+
+          buildScreenB.mouse_over()
+          buildScreenB.draw_button()
+
+        }
+      }
 
 
+      if(errMsg.active==true){
         push()
-        textFont(font)
-        textSize(25)
-        textAlign(RIGHT,TOP)
-        text('Music: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2)
-        text('General Audio: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2 + displayArea.height/6)
-
-        let slider={
-          'x':displayArea.leftX + displayArea.width/5.4,
-          'w':width/3,
-          'h':displayArea.height/10
-        }
-
-        if(mouseIsPressed){
-          if(mouseY>displayArea.topY + displayArea.height/2 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 - displayArea.height/20+slider.h){
-            musicBar=map(mouseX, slider.x + slider.w/10,  slider.x + slider.w, slider.w/10,slider.w, true)
-            musicVolume=map(musicBar,  slider.w/10,slider.w,  0,100,  true)
-            music.setVolume(musicVolume/100)
-          }
-          if(mouseY>displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20+slider.h){
-            soundBar=map(mouseX, slider.x+slider.w/10,slider.x+slider.w, slider.w/10,slider.w, true)
-            soundVolume=map(soundBar,  slider.w/10,slider.w,  0,100,  true)
-            clickSound.setVolume(soundVolume/100)
-          }
-        }
-
-        strokeWeight(7)
-        stroke(25,25,112)
-        fill(255)
-        rect(slider.x, displayArea.topY + displayArea.height/2 - displayArea.height/20, musicBar, slider.h, 25)
-        rect(slider.x, displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20, soundBar, slider.h, 25)
-        
-        stroke(255)
-        strokeWeight(3)
-        noFill()
-        rect(slider.x,  displayArea.topY + displayArea.height/2 - displayArea.height/20,  slider.w,  slider.h, 25)
-        rect(slider.x,  displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20,  slider.w,  slider.h, 25)
+          textFont(font)
+          textAlign(CENTER,CENTER)
+          fill("red")
+          textSize(20)
+          text(errMsg.text, errMsg.x,errMsg.y,errMsg.w,errMsg.h)
         pop()
-
-
-
-        // if(mouseIsPressed && mouseY>150 && mouseY<200){
-        //   soundBar=map(mouseX,200,450,0,240, true)
-        //   music.setVolume(musicVolume)
-        // }
-        // push()
-        // noFill()
-        // stroke(255)
-        // strokeWeight(2)
-        // rect(200,150,250,50,10)
-        // noStroke()
-        // fill(255)
-        // rect(205,155,soundBar,40,5)
-        // pop()
-
-        
-        logoffButton.mouse_over()
-        logoffButton.draw_button()
-        break
-
-      case 5:
-        profileButton.text='Profile'
-        mapBtn.text='Back'
-        buildScreenB.text='Modules'
-        missionScreenB.text='Missions'
-        
-        drawMap()
-        if(playerCard!=''){
-          playerCard.draw_card()
-          if(playerCard.visitBtn){
-            playerCard.visitBtn.mouse_over()
-            playerCard.visitBtn.draw_button()
-            playerCard.friendBtn.mouse_over()
-            playerCard.friendBtn.draw_button()
-          }
-        }
-        break
+      }
     }
     
-    if(gameState>0){
-      drawR()
-      if(placedModule[5]>0){
-        mapBtn.mouse_over()
-        mapBtn.draw_button()
-      }
-
-      if(visiting==false){
-        profileButton.mouse_over()
-        profileButton.draw_button()
-      }
-
-      if(gameState<4 && visiting==false){
-        if(gameState<3 && placedModule[0]>0){
-          if(moneyTimer>2){
-            collectMB.func=collectMoney
-            collectMB.mouse_over()
-            collectMB.draw_button()
-            canCollect=true
-          }else{ // Money not available to collect, darken button with no function
-            canCollect=false
-            collectMB.r=150
-            collectMB.g=150
-            collectMB.b=150
-            collectMB.func=function(){}
-            collectMB.draw_button()
-          }
-        }
-        if(placedModule[7]>0){
-          missionScreenB.mouse_over()
-          missionScreenB.draw_button()
-        }
-
-        buildScreenB.mouse_over()
-        buildScreenB.draw_button()
-
-      }
-    }
-
-
-    if(errMsg.active==true){
+    if(loading==true){ //Loading screem, to make the transition between galaxies "epic"
       push()
-        textFont(font)
-        textAlign(CENTER,CENTER)
-        fill("red")
-        textSize(20)
-        text(errMsg.text, errMsg.x,errMsg.y,errMsg.w,errMsg.h)
+      fill(0,0,0,loadingAlpha)
+      rect(0,0,width,height)
       pop()
     }
 
@@ -1772,7 +1782,16 @@ function clearScreen(){
 
   function loginScene() {
     registering= false
-    background(220);
+    textFont(font);
+    image(testImg,0,0);
+    push()
+    fill(255);
+    textAlign(CENTER,TOP)
+    textSize(50)
+    text("Star Grazer", width/2, height/5);
+    textSize(20)
+    text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
+    pop()
     nameInput = createInput('');
     nameInput.position(windowWidth/2 - nameInput.size().width/2, windowHeight/2.5 - nameInput.size().height);
     passInput = createInput('');
@@ -1790,7 +1809,17 @@ function clearScreen(){
 
     if (registering==false){ // If moved from Log-in page to Register page
       registering= true
-      background(220)
+
+      textFont(font);
+      image(testImg,0,0);
+      push()
+      fill(255);
+      textAlign(CENTER,TOP)
+      textSize(50)
+      text("Star Grazer", width/2, height/5);
+      textSize(20)
+      text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
+      pop()
 
       nameInput.remove();
       passInput.remove();
@@ -1831,7 +1860,6 @@ function clearScreen(){
         httpPost('/register', 'json', player, (dataReceived) => {
 
           if (dataReceived[0]== "Existing"){ // Trying to register with an existing username
-            clearScreen()
             push()
               fill("crimson")
               textAlign(CENTER, CENTER)
@@ -1865,9 +1893,6 @@ function clearScreen(){
         });
       }else{
         if(newUsername ==''){
-          clearScreen()
-          background(220)
-
           push()
             stroke("red")
             strokeWeight(3)
@@ -1875,9 +1900,6 @@ function clearScreen(){
             rect(suNameInput.position().x, suNameInput.position().y, suNameInput.size().width, suNameInput.size().height)
           pop()
         }else{
-          clearScreen()
-          background(220)
-
           push()
             stroke("red")
             strokeWeight(3)
@@ -1918,7 +1940,6 @@ function clearScreen(){
         loadResource()
         getPlayerMap()
         getProbe()
-        // getResearch()
 
         main_scene_setup()
       }
@@ -2426,7 +2447,6 @@ function clearScreen(){
 
 
   function advanceGalaxy(){
-    gLevel++
 
     let dataToSend={
       "gLevel":gLevel,
@@ -2436,20 +2456,34 @@ function clearScreen(){
     httpPost('/advanceGalaxy','json',dataToSend,(dataReceived)=>{
 
       loadJSON('/getPlaced/'+playerId,(dataReceived)=>{ // Get a list of how many modules of each type are built
-        placedModule=[]
-        playerMapArr=[]
-        for(let i=0; i<dataReceived.length; i++){
-          placedModule[i]=dataReceived[i].COUNT
-        }
+        fadeToBlack()
+        loading=true
+        loadingAlpha=0
+        slowRocket.play()
 
-				researching=false
-        changeScene()
-        getMission()
-        loadResource()
-        getPlayerMap()
-        getProbe()
-
-        main_Scene()
+        setTimeout(function(){
+          drawAll=false
+          gLevel++
+          placedModule=[]
+          playerMapArr=[]
+          for(let i=0; i<dataReceived.length; i++){
+            placedModule[i]=dataReceived[i].COUNT
+          }
+  
+          researching=false
+          changeScene()
+          getMission()
+          loadResource()
+          getPlayerMap()
+          getProbe()
+  
+          main_Scene()
+        },2000)
+        
+        setTimeout(function(){
+          loading=false
+          drawAll=true
+        },4000)
       })
 
     })
@@ -2463,21 +2497,21 @@ function clearScreen(){
     friendSelect=select
 
     if(select==1){
-      selectFriend.origR=23
-      selectFriend.origG=62
-      selectFriend.origB=102
+      selectFriend.origR=0
+      selectFriend.origG=125
+      selectFriend.origB=150
       
-      selectRequest.origR=27
-      selectRequest.origG=73
-      selectRequest.origB=121
+      selectRequest.origR=0
+      selectRequest.origG=150
+      selectRequest.origB=175
     }else{
-      selectRequest.origR=23
-      selectRequest.origG=62
-      selectRequest.origB=102
+      selectRequest.origR=0
+      selectRequest.origG=125
+      selectRequest.origB=150
       
-      selectFriend.origR=27
-      selectFriend.origG=73
-      selectFriend.origB=121
+      selectFriend.origR=0
+      selectFriend.origG=150
+      selectFriend.origB=175
 
     }
   }
@@ -2533,11 +2567,11 @@ function clearScreen(){
 
 
       for(let i=0; i<friends.length; i++){
-        visitFB[i]= new Button(0,0,0,0,  27, 73, 121, visitFriend, 'Request\nPending', 25,1)
+        visitFB[i]= new Button(0,0,0,0,  0,171,255, visitFriend, 'Request\nPending', 25,1)
       }
       for(let i=0; i<requests.length; i++){
-        acceptB[i]= new Button(0,0,0,0,  27, 73, 121, acceptFriend, 'Accept', 25,1)
-        rejectB[i]= new Button(0,0,0,0,  27, 73, 121, acceptFriend, 'Reject', 25,1)
+        acceptB[i]= new Button(0,0,0,0,  0,171,255, acceptFriend, 'Accept', 25,1)
+        rejectB[i]= new Button(0,0,0,0,  0,171,255, acceptFriend, 'Reject', 25,1)
       }
     })
   }
@@ -2564,7 +2598,32 @@ function clearScreen(){
       'playerId':playerId
     }
     httpPost('/sendRequest',dataToSend,(dataReceived)=>{
-
+      getFriends()
     })
   }
+}
+
+function fadeToBlack(){
+
+  let fadeOut= setInterval(function(){
+    if(loadingAlpha<255){
+      loadingAlpha+=2.5
+    }
+    print(loadingAlpha)
+  },15)
+
+  setTimeout(function(){
+    clearInterval(fadeOut)
+    print('=====',loadingAlpha,'======')
+    let fadeIn= setInterval(function(){
+      print(loadingAlpha)
+      if(loadingAlpha>0){
+        loadingAlpha-=5
+      }
+    },15)
+    
+    setTimeout(function(){
+      clearInterval(fadeIn)
+    },2000)
+  },2000)
 }
