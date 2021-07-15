@@ -3,8 +3,18 @@ const bodyParser = require('body-parser')
 const mysql = require('mysql');
 const app = express()
 const port = 3000
+<<<<<<< Updated upstream
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+=======
+
+let galaxyCount= 0
+let researching= []
+let researchLevel= []
+let found= []
+let isResearching= []
+let researchFunc= []
+>>>>>>> Stashed changes
 let timeScale= 1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute
 
 

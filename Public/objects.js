@@ -84,6 +84,7 @@ class Resources{
     }
   
   
+<<<<<<< Updated upstream
     draw_resource(x,y){
       push()
         fill(0);
@@ -126,6 +127,22 @@ class Mission{
       if(this.missionResource==3){
           this.reward= int(1.2*this.reward)
       }
+=======
+  draw_resource(x,y,w,h){
+    push()
+      textAlign(CENTER,CENTER)
+      textSize(15)
+      textFont(font)
+      fill("white")
+      if(this.resType==1){
+        text(this.currAmount, x, y, w, h)
+      }else{
+        text(this.currAmount+'/'+this.maxAmount, x, y, w, h)
+      }
+	 tint("black")
+      image(this.img,x+height/60,y+height/120)
+    pop()
+>>>>>>> Stashed changes
   }
 
   draw_mission(){

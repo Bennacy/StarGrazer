@@ -8,6 +8,50 @@ let clearedErase=false
 let buildingShip=false
 
 let moneyToCollect
+<<<<<<< Updated upstream
+=======
+let mapGridSize
+let mapSize
+let gLevel
+let savedGL
+let visitingFriend
+let totalPlayers
+let missionSelect=2
+let friendSelect=1
+
+
+let testImg
+let font
+let nullImg
+let crewImg
+let matImg
+let moneyImg
+let shipImg
+let mapImg
+let buildImg
+let starsImg
+
+let music
+let clickSound
+let musicVolume
+let soundVolume
+let slowRocket
+
+let soundBar
+let musicBar
+
+
+
+let displayArea={}
+let researchText=''
+let researchPoints
+let playersResearching
+let researchTCycle=0
+let researchTCycleFunc=function(){}
+let researchPointsFunc=function(){}
+let galaxyResearchCount=[]
+
+>>>>>>> Stashed changes
 let timeScale=1 //speed(in seconds) at which things occur=> 1: one second; 60: one minute   ->!If switched here should be switched on the server side to match!<-
 
 // Arrays initialization
@@ -77,6 +121,7 @@ let gameState=0
 
 
 
+<<<<<<< Updated upstream
 function preload()
 {	
 	imgProfileBackground = loadImage('profileBackground.jpg')
@@ -88,6 +133,16 @@ function preload()
 			moduleCost[i]=dataReceived[0].matCost
 			moduleName[i]=dataReceived[0].moduleName
 			maxPlace[i]=dataReceived[0].maxPlace
+=======
+
+function preload(){
+  for(let i=1; i<=9; i++){
+    let modType=i
+    loadJSON('/getMCost/'+modType,(dataReceived)=>{ // Old name, returns everything on the module table from the database
+      moduleCost[i]=dataReceived[0].matCost
+      moduleName[i]=dataReceived[0].moduleName
+      maxPlace[i]=dataReceived[0].maxPlace
+>>>>>>> Stashed changes
 			crewCost[i]=dataReceived[0].crewCost
     })
   }
@@ -155,6 +210,45 @@ function main_scene_setup(){
   
   collectMB= new Button(width/2-50,height/17+48, 100,35, 50,50,210, collectMoney, 'Collect Money')
   
+<<<<<<< Updated upstream
+=======
+  selectFriend= new Button(displayArea.rightX - displayArea.width/2.5,   displayArea.topY,   displayArea.width/5,   height/10,  0,125,150, friendSelection, 'Friends', 25,4,1)
+  selectRequest= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   displayArea.topY,   displayArea.width/5,   height/10,  0,150,175, friendSelection, 'Requests', 25,4,2)
+  let friendDisplayH=-((selectFriend.y+selectFriend.h) - (displayArea.bottomY+height/10))
+
+  friendNextBtn= new Button(displayArea.rightX - displayArea.width/2.5 + displayArea.width/5,   selectFriend.h+selectFriend.y + 5*friendDisplayH/6,   displayArea.width/5,   friendDisplayH/6,  23, 62, 102, movePage, 'Next\nPage', 25,1)
+  friendBackBtn= new Button(displayArea.rightX - displayArea.width/2.5,  selectFriend.h+selectFriend.y + 5*friendDisplayH/6,   displayArea.width/5,   friendDisplayH/6,  23, 62, 102, movePage, 'Previous\nPage', 25,1)
+	setTimeout(function(){
+		if(placedModule[6]>0){
+			researching=true
+		}
+
+		for(let i=0; i<galaxyResearchCount.length; i++){
+			if(galaxyResearchCount[i].galaxyId==galaxyId){
+				researchPoints=galaxyResearchCount[i].currPoints
+				playersResearching=galaxyResearchCount[i].researchingPlayers
+				isFound=galaxyResearchCount[i].isFound
+				clearInterval(researchPointsFunc)
+
+				if(playersResearching>0){
+					researchPointsFunc=setInterval(function(){
+						researchPoints+=(150*playersResearching)
+
+						if(researchPoints>=100000){
+							print('done')
+							isFound=1
+							clearInterval(researchPointsFunc)
+						}
+					},1000*timeScale)
+				}
+			}
+		}
+
+		create_Grid(playerId)
+	},500)
+  friendSelection(1)
+
+>>>>>>> Stashed changes
 
   mainLoop = true
   gameState = 1
@@ -262,10 +356,18 @@ function keyPressed(){
       case 52: // 4 => Sets Ships to max
         resource[3].change_value(1,int(resource[3].maxAmount))
         break
+<<<<<<< Updated upstream
 
 			case 53: // 5 => Sets Ships to 0 (testing build ship button)
 				resource[3].change_value(-1,3)
 				break
+=======
+      
+      case 81: // q => Testing player galaxy level
+				if(keyIsDown(32))
+					advanceGalaxy()
+        break
+>>>>>>> Stashed changes
     }
   }
   switch(gameState){
@@ -276,6 +378,7 @@ function keyPressed(){
       if(keyCode==RETURN && registering==true)  // Register inputs
         do_Register()
       break
+<<<<<<< Updated upstream
     
     case 1:
       switch(keyCode){
@@ -284,6 +387,8 @@ function keyPressed(){
           break
       }
       break
+=======
+>>>>>>> Stashed changes
 
     case 2:
       switch(keyCode){
@@ -296,9 +401,9 @@ function keyPressed(){
             clearedErase=false
           }
           break
-
       }
       break
+<<<<<<< Updated upstream
 
     case 3:
       switch(keyCode){
@@ -317,6 +422,8 @@ function keyPressed(){
         // main_Scene()
         // break
       }
+=======
+>>>>>>> Stashed changes
   }
 }
 
@@ -636,10 +743,132 @@ function mousePressed(){
                   httpPost('/updateMaxCap','JSON',dataToSend,(dataReceived)=>{
                     loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
 
+<<<<<<< Updated upstream
                       resource[(arrtiles[i][j].moduleType)-1].maxAmount-=dataReceived[0].effect
                       drawR()
                     })
                   })
+=======
+										})
+									}
+								})
+								break
+							}
+						}
+					}
+				}
+			}
+		}
+}
+
+
+function timer(){
+  setInterval(function(){
+    
+    if(drawAll==true){
+      switch(gameState){
+        
+        case 1:
+          let researchBar={
+            'rectX': width/2- width/10,
+            'rectY': displayArea.bottomY+20,
+            'rectW': width/2.5,
+            'rectH': height/15
+          }
+          if(updateR==true){
+            updateR=false
+            loadJSON('/getResearching',(dataReceived)=>{
+
+              for(let i=0; i<dataReceived.length; i++){
+                galaxyResearchCount[i]={
+                  "researchingPlayers":dataReceived[i].researching,
+                  "galaxyId":dataReceived[i].galaxyId,
+                  "isFound":dataReceived[i].isFound,
+                  "currPoints":dataReceived[i].currPoints
+                }
+              }
+              
+              for(let i=0; i<galaxyResearchCount.length; i++){
+                if(galaxyResearchCount[i].galaxyId==galaxyId){
+                  researchPoints=galaxyResearchCount[i].currPoints
+                  playersResearching=galaxyResearchCount[i].researchingPlayers
+                  isFound=galaxyResearchCount[i].isFound
+                  clearInterval(researchPointsFunc)
+          
+                  if(playersResearching>0){
+                    researchPointsFunc=setInterval(function(){
+                      researchPoints+=(150*playersResearching)
+
+                      if(researchPoints>=100000){
+                        print('done')
+                        isFound=1
+                        clearInterval(researchPointsFunc)
+                      }
+                    },1000*timeScale)
+                  }
+                }
+              }
+            })
+          }
+
+          image(starsImg,0,0)
+
+          if(visiting==true){
+            mapBtn.textS=20
+            mapBtn.text='Back to Base'
+          }
+          else{
+            mapBtn.textS=25
+            mapBtn.text='Map'
+          
+            profileButton.text='Profile'
+            buildScreenB.text='Modules'
+            missionScreenB.text='Missions'
+
+            if(isFound==0){
+              switch(researchTCycle){
+                case 0:
+                  researchText='Researching'
+                  break
+                case 1:
+                  researchText='Researching.'
+                  break
+                case 2:
+                  researchText='Researching..'
+                  break
+                case 3:
+                  researchText='Researching...'
+                  break
+                case 4:
+                  researchText='Researching'
+                  break
+              }
+            }else{
+              researchText='Destination Found!'
+            }
+
+            if(researching==true){
+              push()
+
+              fill(255)
+                stroke(0)
+                strokeWeight(10)
+                if(isFound==0){
+                  if(researchPoints>500){
+                    let resBar=map(researchPoints, 0,100000, 0,researchBar.rectW)
+                    rect(researchBar.rectX,	researchBar.rectY,	resBar,	researchBar.rectH,	20)
+                  }
+
+                  noFill()
+                  stroke(255)
+                  strokeWeight(5)
+                  rect(researchBar.rectX,researchBar.rectY,researchBar.rectW,researchBar.rectH,20)
+                }else{
+                  if(isFound==1 && probeBuilt==1){
+                    advanceBtn.mouse_over()
+                    advanceBtn.draw_button()
+                  }
+>>>>>>> Stashed changes
                 }
                 // else if(arrtiles[i][j].moduleType==1){
                   
@@ -703,11 +932,31 @@ function timer(){
       profileButton.mouse_over()
       profileButton.draw_button()
     }
+<<<<<<< Updated upstream
   },15)
+=======
+  }
+
+
+  function changeScene(){
+    gridEnable=false
+    errMsg.active=false
+    erasing=false
+    refreshM=true
+		updateR=true
+    playerCard=''
+  }
+
+
+  function drawR(){
+      let squareCounter= 1;
+	  //let squareColor = color(255,255,255)
+>>>>>>> Stashed changes
 
   setInterval(function(){
     if(gameState==2){
 
+<<<<<<< Updated upstream
       if(erasing==true){
 				clearedErase=false
         push()
@@ -725,6 +974,92 @@ function timer(){
       }
     }
   },15)
+=======
+      /* for(let i = initX; squareCounter <= 4; i += length){ //boxes where the resources are displayed
+        squareCounter++;
+        push()
+        strokeWeight(1)
+        stroke(0)
+		//squareColor.setAlpha(150)
+		//fill(squareColor)
+        rect(i, boxY, length, height/15);
+        pop()
+      } */
+      
+      textAlign(CENTER, CENTER)
+
+      for(let i = 0, x=initX; i< resource.length; i++){
+        resource[i].draw_resource(x, boxY, length, height/15);
+        x+=length
+      }
+  }
+
+
+  function loginScene() {
+    registering = false
+    textFont(font);
+    image(testImg,0,0);
+    push()
+    fill(255);
+    textAlign(CENTER,TOP)
+    textSize(50);
+    text("Star Grazer", width/2, height/5);
+    textSize(20);
+    text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
+    pop()
+    nameInput = createInput('Username');
+    nameInput.position(windowWidth/2 - nameInput.size().width/2, windowHeight/2.5 - nameInput.size().height);
+    passInput = createInput('Password');
+    passInput.position(windowWidth/2 - passInput.size().width/2, windowHeight/2.5 + passInput.size().height);
+    loginBtn = createButton('Login');
+    loginBtn.position(passInput.position().x, passInput.position().y+passInput.size().height*1.5);
+    loginBtn.mousePressed(do_Login);
+    signupBtn = createButton('Sign up');
+    signupBtn.position(passInput.position().x+passInput.size().width-signupBtn.size().width, passInput.position().y+passInput.size().height*1.5);
+    signupBtn.mousePressed(do_Register);
+  }
+
+
+  function do_Register(){
+
+    if (registering==false){ // If moved from Log-in page to Register page
+      registering= true
+
+      textFont(font);
+      image(testImg,0,0);
+      push()
+      fill(255);
+      textAlign(CENTER,TOP)
+      textSize(50)
+      text("Star Grazer", width/2, height/5);
+      textSize(20)
+      text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
+      pop()
+
+      nameInput.remove();
+      passInput.remove();
+      loginBtn.remove();
+      signupBtn.remove();
+    
+      suNameInput = createInput('');
+      suNameInput.position(windowWidth/2 - suNameInput.size().width/2, windowHeight/2.5 - suNameInput.size().height);
+      suPassInput = createInput('');
+      suPassInput.position(windowWidth/2 - suPassInput.size().width/2, windowHeight/2.5 + suPassInput.size().height);
+    
+      registerBtn = createButton('Register');
+      registerBtn.position(suPassInput.position().x+suPassInput.size().width-registerBtn.size().width, suPassInput.position().y+suPassInput.size().height*1.55);
+      registerBtn.mousePressed(do_Register);
+
+      registerBackBtn= createButton('Back')
+      registerBackBtn.position(suPassInput.position().x, suPassInput.position().y+suPassInput.size().height*1.5)
+      registerBackBtn.mousePressed(function(){
+        suNameInput.remove();
+        suPassInput.remove();
+        registerBtn.remove();
+        registerBackBtn.remove();
+        loginScene()
+      })
+>>>>>>> Stashed changes
 
 	setInterval(function(){
 		if(gameState>0 && gameState<4){
