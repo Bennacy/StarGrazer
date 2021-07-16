@@ -147,7 +147,7 @@ let gameState=0
 
 
 function preload(){
-  for(let i=1; i<=9; i++){
+  for(let i=1; i<=10; i++){
     let modType=i
     loadJSON('/getMCost/'+modType,(dataReceived)=>{ // Old name, returns everything on the module table from the database
       moduleCost[i]=dataReceived[0].matCost
@@ -366,7 +366,6 @@ function main_Scene() {
 
 
 function logOff(){
-  clearScreen()
 	researching=false
   music.stop()
   gameState=0
@@ -572,7 +571,6 @@ function mouseReleased(){
 
 
 function mousePressed(){
-
   if(gameState==3){
     for(let i=0; i<mission.length; i++){
 			if(missionSelect==2 && i<3){
@@ -975,7 +973,7 @@ function mousePressed(){
 
 
 function timer(){
-  setInterval(function(){
+	setInterval(function(){
     
     if(drawAll==true){
       switch(gameState){
@@ -1100,11 +1098,15 @@ function timer(){
               fill(buildProbeB.origR-40, buildProbeB.origG-40, buildProbeB.origB-40)
               probeBuildBar++
               let w=map(probeBuildBar, 0,5000/15, 0,buildProbeB.w,true)
-              rect(buildProbeB.x,	buildProbeB.y + buildProbeB.h + 5,	w,	buildProbeB.h/3,25)
+              rect(buildProbeB.x,buildProbeB.y + buildProbeB.h + 5,	w,	buildProbeB.h/3,25)
               pop()
             }
           }
-          
+		  textSize(20)
+		  fill("white")
+			  //push()
+			  text("Starbase",width/2,25)
+			 // pop()
           draw_Grid()
           break
 
@@ -1138,6 +1140,7 @@ function timer(){
           pop()
 
           draw_Grid()
+		  text("Modules",width/2,25)
           break
 
         case 3:
@@ -1290,7 +1293,7 @@ function timer(){
 
           selectMat.mouse_over()
           selectMat.draw_button()
-
+		  text("Missions",width/2,25)
           break
 
         case 4:
@@ -1485,6 +1488,7 @@ function timer(){
           
           logoffButton.mouse_over()
           logoffButton.draw_button()
+		  text("Profile",width/2,25)
           break
 
         case 5:
@@ -1503,6 +1507,7 @@ function timer(){
               playerCard.friendBtn.draw_button()
             }
           }
+		  text("Map",width/2,25)
           break
       }
       
@@ -1577,15 +1582,6 @@ function timer(){
     })
   },60000)
 }
-
-function startMission(){
-
-}
-
-function clearScreen(){
-  clear()
-}
-
 
 
 
@@ -1712,9 +1708,8 @@ function clearScreen(){
       changeScene()
       gameState = 5;
       drawMap()
-      
+
     } else if(gameState == 5){
-      clearScreen();
       gameState=1
       main_Scene()
     }
@@ -1732,8 +1727,8 @@ function clearScreen(){
 
 
   function drawR(){
-      let squareCounter= 1;
-	  //let squareColor = color(255,255,255)
+      /* let squareCounter= 1;
+	  let squareColor = color(255,255,255) */
 
       let initX= (width/2) - (width/3)
       let endX= (width/2) + width/3
@@ -1745,8 +1740,8 @@ function clearScreen(){
         push()
         strokeWeight(1)
         stroke(0)
-		//squareColor.setAlpha(150)
-		//fill(squareColor)
+		squareColor.setAlpha(150)
+		fill(squareColor)
         rect(i, boxY, length, height/15);
         pop()
       } */
@@ -1806,9 +1801,9 @@ function clearScreen(){
       loginBtn.remove();
       signupBtn.remove();
     
-      suNameInput = createInput('');
+      suNameInput = createInput('Insert your username');
       suNameInput.position(windowWidth/2 - suNameInput.size().width/2, windowHeight/2.5 - suNameInput.size().height);
-      suPassInput = createInput('');
+      suPassInput = createInput('Insert your password');
       suPassInput.position(windowWidth/2 - suPassInput.size().width/2, windowHeight/2.5 + suPassInput.size().height);
     
       registerBtn = createButton('Register');
@@ -2113,7 +2108,7 @@ function clearScreen(){
   function sortMission(){
 		let i
 		let j
-		print('12th try')
+		//print('fixx')
 		for (j = 0; j < 2; j++){
 			if (tempMission[j].missionType > tempMission[j+1].missionType){
 				swap(tempMission,j,j+1);
@@ -2146,7 +2141,6 @@ function clearScreen(){
 				mCounter++
 			}
 		}
-		print('---------\ni want to die\n---------')
 		refreshM=true
 	}
 
@@ -2422,7 +2416,6 @@ function clearScreen(){
     for(let i=0; i<playerMapArr.length; i++){
       playerMapArr[i].draw_player(displayArea)
     }
-    drawR()
   }
 
 
@@ -2607,3 +2600,6 @@ function fadeToBlack(){
     },2000)
   },2000)
 }
+/* if (gameState == 5)
+{
+	console.log( */

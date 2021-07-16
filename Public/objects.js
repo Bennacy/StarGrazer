@@ -37,17 +37,18 @@ class Resources{
   draw_resource(x,y,w,h){
     push()
       textAlign(CENTER,CENTER)
-      textSize(15)
+      textSize(17)
       textFont(font)
-      fill("white")
+      fill(255,255,255)
       if(this.resType==1){
         text(this.currAmount, x, y, w, h)
       }else{
         text(this.currAmount+'/'+this.maxAmount, x, y, w, h)
       }
-	  fill(255,255,255,100)
+	  fill(0, 100, 255,100)
 	  rect(x, y, w, h)
-	  rect(x+width/100,y+height/200, width/30,height/17.5)
+	  fill(0, 100, 200,200)
+	  rect(x+width/100,y+height/200, width/35,height/17.5)
       image(this.img,x+width/80,y+height/120)
     pop()
   }
@@ -612,8 +613,8 @@ class PlayerCard{
     }
 
     if(playerId!=this.pId){
-      this.visitBtn= new Button(this.vstCard.x,this.vstCard.y, this.vstCard.w,this.vstCard.h, 130,130,130, visitPlayer, 'Visit',15,3)
-      this.friendBtn= new Button(this.frdCard.x,this.frdCard.y, this.frdCard.w,this.frdCard.h, 130,130,130, sendRequest, 'Add friend',10,3)
+      this.visitBtn= new Button(this.vstCard.x,this.vstCard.y, this.vstCard.w,this.vstCard.h, 0,130,255, visitPlayer, 'Visit',15,3)
+      this.friendBtn= new Button(this.frdCard.x,this.frdCard.y, this.frdCard.w,this.frdCard.h, 0,130,255, sendRequest, 'Add friend',15,3)
     }
   }
 
@@ -628,13 +629,14 @@ class PlayerCard{
 
         stroke(0)
         strokeWeight(1)
-        fill('white')
+		//friend add background
+        fill(0, 100, 255,100)
         rect(this.x,this.y,this.w,this.h,25)
 
-        fill(230)
+        fill(0, 100, 255,150)
         rect(this.x,this.y, this.w-this.xSize, this.xSize,25,0,0,0)
 
-        fill(0)
+        fill(255, 255, 255)
         textAlign(CENTER,CENTER)
         textSize(20)
         text(this.playerInfo,this.x,this.y, this.w-this.xSize, this.xSize)
@@ -645,7 +647,7 @@ class PlayerCard{
         rect(this.x+(this.w-this.xSize),this.y, this.xSize,this.xSize,0,25,0,0)
         strokeWeight(3)
         stroke(170,0,0)
-        fill(170,0,0)
+        fill("red")
         textSize(20)
         textAlign(CENTER, CENTER)
         text('X',(this.x+(this.w-this.xSize))+this.xSize/2,this.y+28/2)
