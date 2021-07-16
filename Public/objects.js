@@ -230,7 +230,7 @@ class Mission{
 
 
 class Button{
-  constructor(x, y, w, h, r, g, b, func, text,textS, bType, cSide){
+  constructor(x, y, w, h, r, g, b, func, text,textS, bType, cSide,modType){
     this.x=x
     this.y=y
     this.w=w
@@ -246,11 +246,60 @@ class Button{
     this.b=this.origB
 
     this.pressed=false
-    this.img
+    this.mod = modType
+	this.img
     this.text=text
     this.textS=textS
     this.cSide=cSide
-
+	
+	if (gameState == 2)
+	{
+			switch(this.mod)
+			{
+				case 1:
+				this.img=shipImg
+				break
+				
+				case 2:
+				this.img=shipImg
+				break
+				
+				case 3:
+				this.img=matImg
+				break
+				
+				case 4:
+				this.img=crewImg
+				break
+				
+				case 5:
+				this.img=moneyImg
+				break
+				
+				case 6:
+				this.img=commRelay
+				break
+				
+				case 7:
+				this.img=techStation
+				break
+				
+				case 8:
+				this.img=missionCtrl
+				break
+				
+				case 9:
+				this.img=probeConst
+				break
+				
+				case 10:
+				this.img=baseConn
+				break
+			}
+		this.img.resize(0,height/15-height/60)
+		console.log(this.img)
+	}
+	
     switch(this.bType){
       case 1:
         this.clickDepth=2
@@ -303,6 +352,21 @@ class Button{
         this.strkWeight=5
         this.clickStroke=1
         this.stkDiff=20
+		
+	  case 5:
+        this.clickDepth=2
+        this.strkWeight=2
+        this.clickStroke=0
+        this.stkDiff=-255
+
+        this.upL=10
+        this.upR=10
+        this.dnL=10
+        this.dnR=10
+
+        this.highlight1=-10
+        this.highlight2=0
+		break;
 
         switch(this.cSide){ // Which side is slanted
           case 1: // top left
@@ -361,12 +425,27 @@ class Button{
       stroke(this.r+this.stkDiff, this.g+this.stkDiff, this.b+this.stkDiff)
       fill(this.r,this.g,this.b)
       rect(this.x,this.y,this.w,this.h, this.upL,this.upR,this.dnR,this.dnL)
-      
       noStroke()
       textFont(font)
-      fill("black")
       textSize(this.textS)
-      textAlign(CENTER, CENTER)
+	  fill("black")
+	  textAlign(CENTER, CENTER)
+	  if (gameState == 2 && this.bType == 1)
+	  {
+		textAlign(RIGHT,CENTER)
+		fill(0,150,250)
+		rect(this.x,this.y,width/35,height/17.5,15)
+		fill("white")
+		image(this.img,this.x,this.y)
+	  }
+	  if (gameState == 2 && this.bType == 5)
+	  {
+		textAlign(LEFT,CENTER)
+		fill(0,150,250)
+		rect(this.x + this.w - this.w/4.5,this.y,width/35,height/17.5,15)
+		fill("white")
+		image(this.img,this.x + this.w - this.w/5,this.y)
+	  }
       text(this.text, this.x, this.y, this.w, this.h)
     pop()
   }
@@ -516,7 +595,7 @@ class Module {
         this.alpha=255
         break
     }
-		push()
+	push()
     if(gameState==2)
       stroke(200)
     else
@@ -534,7 +613,7 @@ class Module {
       moduleImg[this.moduleType].resize(side-4,0)
       image(moduleImg[this.moduleType], this.posX+2,this.posY+2)
     }
-		pop()
+	pop()
   } 
 
   is_over(mousex,mousey){

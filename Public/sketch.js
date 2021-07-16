@@ -24,6 +24,13 @@ let shipImg
 let mapImg
 let buildImg
 let starsImg
+let logoDraw
+let shipConst  
+let commRelay 
+let techStation 
+let missionCtrl 
+let probeConst 
+let baseConn 
 
 let music
 let clickSound
@@ -171,6 +178,7 @@ function preload(){
 		print(galaxyResearchCount)
 	})
 
+  logoImg = loadImage('Assets/Images/GradientLogo/star_grazing.png')
   crewImg= loadImage('Assets/Images/crew.png')
   shipImg= loadImage('Assets/Images/ship.png')
   matImg= loadImage('Assets/Images/mats.png')
@@ -178,7 +186,7 @@ function preload(){
   mapImg= loadImage('Assets/Images/map.png')
   buildImg= loadImage('Assets/Images/build.png')
   testImg= loadImage('Assets/Images/galaxy1.jpg')
-  starsImg=loadImage('Assets/Images/starsBG.jpg')
+  starsImg= loadImage('Assets/Images/starsBG.jpg')
   
   moduleImg[1]= loadImage('Assets/Images/Modules/money production.png')
   moduleImg[2]= loadImage('Assets/Images/Modules/crew capacity.png')
@@ -191,6 +199,13 @@ function preload(){
   moduleImg[9]= loadImage('Assets/Images/Modules/probe constructor.png')
   moduleImg[10]= loadImage('Assets/Images/Modules/connector.png')
   moduleImg[11]= loadImage('Assets/Images/Modules/default module.png')
+  //aaaaaaaa
+  shipConst = loadImage('Assets/Images/Modules/ship constructor.png')
+  commRelay = loadImage('Assets/Images/Modules/signal-tower.png')
+  techStation = loadImage('Assets/Images/Modules/radar.png')
+  missionCtrl = loadImage('Assets/Images/Modules/mission control.png')
+  probeConst = loadImage('Assets/Images/Modules/probe constructor.png')
+  baseConn = loadImage('Assets/Images/Modules/connector.png')
   
   music = loadSound('Assets/Audio/bensound-slowmotion.mp3');
   clickSound = loadSound('Assets/Audio/multimedia_button_click.mp3')
@@ -1587,23 +1602,25 @@ function timer(){
 
 // v Scene transitions v // =================================================================================================================================================================================================================================
 {
-
   function building_Scene(){
     if(gameState!=2){ // If on the main screen or the missions screen
       changeScene()
       gameState=2
       side= 48
 
-      let buttonWidth=200
-      let buttonHeight=75
+      let buttonWidth=width/8
+      let buttonHeight=height/10
       
       for(let i=0; i<10; i++){
         let cArray=moduleColor(i+1)
 
-        if(i<5){
-          moduleBuildButton[i]= new Button (25, height/2-((buttonHeight+25)*(-i+2)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew requirement: '+crewCost[i+1]),12,1)
-        }else{
-          moduleBuildButton[i]= new Button (width-buttonWidth-25, height/2-((buttonHeight+25)*(-i+7)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew requirement: '+crewCost[i+1]),12,1)
+        if(i<5)
+		{
+          moduleBuildButton[i]= new Button (25, height/2-((buttonHeight+25)*(-i+2)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew required: '+crewCost[i+1]),12,1,0,(-i+5))
+        }else
+		{
+          moduleBuildButton[i]= new Button (width-buttonWidth-25, height/2-((buttonHeight+25)*(-i+7)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew required: '+crewCost[i+1]),12,5,0,i + 1)
+		  console.log(i)
         }
       }
 
@@ -1763,7 +1780,8 @@ function timer(){
     fill(255);
     textAlign(CENTER,TOP)
     textSize(50);
-    text("Star Grazer", width/2, height/5);
+	imageMode(CENTER)
+    image(logoImg, width/2, height/7.5);
     textSize(20);
     text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
     pop()
@@ -2293,73 +2311,74 @@ function timer(){
         r=219
         g=219
         b=219
+		image(moneyImg,25,height/2-((buttonHeight+25)*1))
         break
       
       case 1: // Money Production
-        r=255
-        g=228
-        b=41
+        r=0
+        g=100
+        b=225
         break
       
       case 2: // Crew Capacity
-        r=197
-        g=97
-        b=0
+        r=0
+        g=100
+        b=225
         break
       
       case 3: // Material Capacity
-        r=61
-        g=60
-        b=214
+        r=0
+        g=100
+        b=225
         break
       
       case 4: // Ship Capacity
-        r=26
-        g=87
-        b=7
+        r=0
+        g=100
+        b=225
         break
       
       case 5: // Ship Construction
-        r=179
-        g=156
-        b=0
+        r=0
+        g=100
+        b=225
         break
       
       case 6: // Communications Relay
         r=0
-        g=255
-        b=110
+        g=100
+        b=225
         break
       
       case 7: // Research Station
-        r=158
-        g=56
-        b=255
+        r=0
+        g=100
+        b=225
         break
       
       case 8: // Mission Control
-        r=71
-        g=196
-        b=255
+        r=0
+        g=100
+        b=225
         break
       
       case 9: // Probe Constructor
-        r=73
-        g=97
-        b=72
+        r=0
+        g=100
+        b=225
         break
       
       case 10: // Connectors
-        r=100
+        r=0
         g=100
-        b=100
+        b=225
         break
       
-      case 11: // Starter Module
-        r=87
-        g=9
-        b=9
-        break
+      /* case 11: // Starter Module
+        r=0
+        g=75
+        b=225
+        break */
     }
     colorArray[0]=r
     colorArray[1]=g
