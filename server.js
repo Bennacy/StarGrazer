@@ -101,11 +101,64 @@ app.post('/resolveFriendReq/',(req,res)=>{
 
 	let sql = "UPDATE player_friends SET accepted = '"+accepted+"' WHERE requestFrom = '"+requestFrom+"' ";
 
+<<<<<<< Updated upstream
 	db.query(sql,(err,result)=>{
 		if(err) throw err;
 		res.send(result)
 	});
 });
+=======
+app.post('/acceptFriend',(req,res)=>{
+  let playerId=req.body.playerId
+  let friendName=req.body.friendName
+  let action= req.body.action
+  let sql="select playerId from player where name='"+friendName+"'"
+
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+    let friendId=result[0].playerId
+
+    let sql="update player_friends set accepted='"+action+"' where requestTo='"+playerId+"' and requestFrom='"+friendId+"'"
+    db.query(sql,(err,result)=>{
+      if(err) throw err
+
+      res.send(result)
+    })
+  })
+})
+
+
+app.post('/sendRequest',(req,res)=>{
+  let friendId=req.body.friendId
+  let playerId=req.body.playerId
+
+  let sql="select * from player_friends where (requestFrom='"+playerId+"' and requestTo='"+friendId+"' and accepted!=2) or (requestFrom='"+friendId+"' and requestTo='"+playerId+"' and accepted!=2)"
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+
+    if(result.length==0){
+
+      let sql="insert into player_friends (requestFrom,requestTo) values ('"+playerId+"','"+friendId+"')"
+      db.query(sql,(err,result)=>{
+        if(err) throw err
+
+        res.send(result)
+      })
+    }
+  })
+})
+
+
+app.get('/getFriendGalaxy/:name',(req,res)=>{
+  let playerName=req.params.name
+
+  let sql="select gLevel, playerId from player where name='"+playerName+"'"
+  db.query(sql,(err,result)=>{
+    if(err) throw err
+    res.send(result)
+  })
+})
+>>>>>>> Stashed changes
 
 app.get('/getResources/:playerId', (req, res) =>{
 	let playerId = req.params.playerId;

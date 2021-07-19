@@ -286,21 +286,133 @@ class Button{
     this.g=this.origG
     this.b=this.origB
 
+<<<<<<< Updated upstream
     this.text=text
+=======
+    this.pressed=false
+    this.mod = modType
+	  this.img
+    this.text=text
+    this.textS=textS
+    this.cSide=cSide
+
+    //this.visitBtn = new Button(this.x,this.y-this.h/2, this.w*5,this.h*10, 0,130,255, remembering, 'Warp',15,3)
+  
+	if (gameState == 2)
+	{
+			switch(this.mod)
+			{
+				case 1:
+				this.img=shipImg
+				break
+				
+				case 2:
+				this.img=shipImg
+				break
+				
+				case 3:
+				this.img=matImg
+				break
+				
+				case 4:
+				this.img=crewImg
+				break
+				
+				case 5:
+				this.img=moneyImg
+				break
+				
+				case 6:
+				this.img=commRelay
+				break
+				
+				case 7:
+				this.img=techStation
+				break
+				
+				case 8:
+				this.img=missionCtrl
+				break
+				
+				case 9:
+				this.img=probeConst
+				break
+				
+				case 10:
+				this.img=baseConn
+				break
+			}
+		this.img.resize(0,height/15-height/60)
+		console.log(this.img)
+	}
+	
+    switch(this.bType){
+      case 1:
+        this.clickDepth=2
+        this.strkWeight=2
+        this.clickStroke=0
+        this.stkDiff=-255
+
+        this.upL=10
+        this.upR=10
+        this.dnL=10
+        this.dnR=10
+
+        this.highlight1=-10
+        this.highlight2=0
+>>>>>>> Stashed changes
 
   }
 
   draw_button(){
     push()
+<<<<<<< Updated upstream
       fill(this.r,this.g,this.b)
       strokeWeight(1.5)
       textAlign(CENTER, CENTER)
       rect(this.x,this.y,this.w,this.h)
       fill("black")
       text(this.text, this.x+this.w/2, this.y+this.h/2)
+=======
+    strokeWeight(this.strkWeight)
+    stroke(this.r+this.stkDiff, this.g+this.stkDiff, this.b+this.stkDiff)
+    fill(this.r,this.g,this.b)
+    rect(this.x,this.y,this.w,this.h, this.upL,this.upR,this.dnR,this.dnL)
+    noStroke()
+    textFont(font)
+    textSize(this.textS)
+	  fill("black")
+	  textAlign(CENTER, CENTER)
+	  if (gameState == 2 && this.bType == 1)
+	  {
+      textAlign(RIGHT,CENTER)
+      fill(0,150,250)
+      rect(this.x,this.y,width/35,height/17.5,15)
+      fill("white")
+      image(this.img,this.x,this.y)
+	  }
+	  if (gameState == 2 && this.bType == 5)
+	  {
+      textAlign(LEFT,CENTER)
+      fill(0,150,250)
+      rect(this.x + this.w - this.w/4.5,this.y,width/35,height/17.5,15)
+      fill("white")
+      image(this.img,this.x + this.w - this.w/5,this.y)
+	  }
+    text(this.text, this.x, this.y, this.w, this.h)
+>>>>>>> Stashed changes
     pop()
   }
-
+  /*draw_window()
+  {
+    push()
+    strokeWeight(2)
+    stroke(this.r,this.g+50,this.b)
+    fill(this.r,this.g,this.b-50)
+    rect(this.x-this.w,this.y + height/20,this.w * 3,this.h * 5)
+    pop()
+  }
+*/
   mouse_over(){
     if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){
       this.r=this.origR-20
@@ -320,10 +432,6 @@ class Button{
       this.func(index)
   }
 }
-
-
-
-
 
 class Module {
 
@@ -443,8 +551,14 @@ class PlayerCard{
   constructor(x,y,pId){
     this.x=x
     this.y=y
+<<<<<<< Updated upstream
     this.w=200
     this.h=300
+=======
+    this.w=50
+    this.h=200
+    this.pSize=pSize
+>>>>>>> Stashed changes
     this.xSize=25
     this.pId=pId
     

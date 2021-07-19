@@ -52,12 +52,30 @@ let buildShipB
 let collectMB
 let profileButton
 let logoffButton
+<<<<<<< Updated upstream
 let friendsButton
 let friendReqB
 let onB 
 let pendingB
 let addFriendB
 let addB
+=======
+let mapBtn
+let advanceBtn
+let buildProbeB;
+let selectFriend
+let selectRequest
+let acceptB=[]
+let rejectB=[]
+let visitFB=[]
+let missionButton= [];
+let moduleBuildButton=[]
+let friendNextBtn
+let friendBackBtn
+let friendPage
+let timelineAccess
+let playerTimeline = []
+>>>>>>> Stashed changes
 
 
 // Input initialization
@@ -95,6 +113,29 @@ function preload()
 function setup() {
   cv = createCanvas(windowWidth, windowHeight);
   cv.position((windowWidth * 0.5) - width / 2, (windowHeight * 0.5) - height / 2);
+<<<<<<< Updated upstream
+=======
+  displayArea={
+    'topY': height/15*2,
+    'bottomY': height-100,
+    'height':(height-100)-(height/15*2),
+
+    'leftX':width/100,
+    'rightX':99*width/100,
+    'width': 98*width/100,
+		'offsetX':'',
+		'offsetY':''
+  }
+
+  errMsg={
+    'active':false,
+    'text':'',
+    'x':'',
+    'y':'',
+    'w':'',
+    'h':''
+  }
+>>>>>>> Stashed changes
   timer()
 }
 
@@ -146,6 +187,7 @@ function main_scene_setup(){
   
   pendingB = new Button(width/1.5+width/20,height/10, width/20,height/15, 50,50,210, pendingFriend, 'Pending')
   
+<<<<<<< Updated upstream
   addFriendB = new Button(width/1.5+width/10,height/10, width/15,height/15, 50,50,210, addFriend, 'Add Friend')
   
   missionScreenB= new Button(width-200-15, height-90, 200, 75, 50,50,210, mission_Scene, "Missions")
@@ -153,6 +195,12 @@ function main_scene_setup(){
   buildScreenB= new Button(15, height-90, 200, 75, 50,50,210, building_Scene, "Modules")
   
   collectMB= new Button(width/2-50,height/17+48, 100,35, 50,50,210, collectMoney, 'Collect Money')
+=======
+  selectCrew= new Button(50,displayArea.topY, 200,displayArea.height/2, 0,125,150, selectMission, 'Crew\nMissions',25, 4,1)
+  selectMat= new Button(50,displayArea.topY+displayArea.height/2, 200,displayArea.height/2, 0,150,175, selectMission, 'Material\nMissions',25, 4,3)
+
+  timelineAccess = new Button(displayArea.leftX + width/2.25, displayArea.bottomY-20, width/10,height/10, 0,171,255, Timeline, 'Timeline',15,1)
+>>>>>>> Stashed changes
   
 
   mainLoop = true
@@ -209,6 +257,28 @@ function logOff(){
   gameState=0
 }
 
+function Timeline()
+{
+  if (gameState == 4 && gameState !=6 ) 
+  {
+    clear()
+    image(testImg,0,0)
+    console.log(savedGL)
+    for(let t=1; t<savedGL;t++)
+    {
+      playerTimeline[t] = new Button(width/10 * t - 12.5,height/2 - 12.5,25,25,0,0,200,baseVisit,"Warp",0,3)
+      //console.log(playerTimeline[1].draw_window())
+    }
+    gameState = 6
+  }
+}
+function baseVisit(t)
+{
+  console.log(savedGL)
+  console.log(t)
+  console.log(playerId)
+  visitStarbase(t)
+}
 
 function collectMoney(){
 	loadJSON('/getEffect/'+1,(dataReceived)=>{ // This money increases up to a maximum of 10 "minutes" after which it stays consistant, and can be collected at most every 3 "minutes"
@@ -292,6 +362,37 @@ function keyPressed(){
           }
           break
 
+<<<<<<< Updated upstream
+=======
+    if(selectMat.pressed)
+      selectMat.mouse_released(3)
+
+		if(buildShipB.pressed){
+			buildShipB.mouse_released()
+		}
+  }
+
+  if(gameState==4){
+    if(logoffButton.pressed)
+      logoffButton.mouse_released()
+      
+    if(timelineAccess.pressed)
+      timelineAccess.mouse_released()
+
+    if(selectRequest.pressed)
+      selectRequest.mouse_released(2)
+    if(selectFriend.pressed)
+      selectFriend.mouse_released(1)
+      
+    if(friendSelect==1){
+      if(friends.length>5){
+        if(friendNextBtn.pressed){
+          friendNextBtn.mouse_released(1)
+        }
+        if(friendBackBtn.pressed){
+          friendBackBtn.mouse_released(-1)
+        }
+>>>>>>> Stashed changes
       }
       break
 
@@ -312,12 +413,93 @@ function keyPressed(){
         // main_Scene()
         // break
       }
+<<<<<<< Updated upstream
+=======
+    }
+  }
+
+  if(gameState==5){
+		for(let i=0; i<playerMapArr.length; i++){
+			if(playerMapArr[i].pressed){
+				playerMapArr[i].mouse_released()
+			}
+			if(playerCard!=''){
+        if(playerCard.visitBtn){
+          if(playerCard.visitBtn.pressed){
+            playerCard.visitBtn.mouse_released(playerCard.pId) //visit player with that id
+				  }
+          if(playerCard.friendBtn.pressed){
+            playerCard.friendBtn.mouse_released(playerCard.pId) //send friend request
+				  }
+				}
+
+				playerCard.over_x()
+			}
+		}
+	}
+  if(gameState==6)
+  {
+    for(let t=1; t<savedGL;t++)
+    {
+      if(playerTimeline[t].pressed)
+        playerTimeline[t].mouse_released(t)
+        console.log(playerTimeline[t])
+    }
+  }
+
+	if(gameState==1){
+		if(placedModule[8]>0 && buildProbeB.pressed){
+			buildProbeB.mouse_released()
+		}
+		if(isFound==1 && probeBuilt==1 && advanceBtn.pressed){
+			advanceBtn.mouse_released()
+		}
+	}
+
+
+  if(gameState>0){  
+		
+		if(mapBtn.pressed){
+			mapBtn.mouse_released('')
+		}
+
+		if(profileButton.pressed){
+			profileButton.mouse_released()
+		}
+
+		if(gameState<4){
+
+			if(collectMB.pressed){
+				collectMB.mouse_released()
+			}
+
+			if(missionScreenB.pressed){
+				missionScreenB.mouse_released('')
+			}
+			
+			if(buildScreenB.pressed){
+				buildScreenB.mouse_released('')
+			}
+    }
+>>>>>>> Stashed changes
   }
 }
 
 
 function mousePressed(){
+<<<<<<< Updated upstream
 	console.log(mouseX,mouseY)
+=======
+  console.log(mouseX,mouseY)
+  if(gameState==6)
+  {
+    for(let t=1; t<savedGL;t++)
+    {
+      if(playerTimeline[t].mouse_over())
+        playerTimeline[t].mouse_pressed()
+    }
+  }
+>>>>>>> Stashed changes
   if(gameState==3){
     for(let i=0; i<missionButton.length; i++){
       if(missionButton[i].mouse_over()){
@@ -331,6 +513,7 @@ function mousePressed(){
   }
 
 
+<<<<<<< Updated upstream
 	if(gameState==4)
 	{
 		//json variables
@@ -433,6 +616,10 @@ function mousePressed(){
 			})
 		})
 	}
+=======
+    if(timelineAccess.mouse_over())
+      timelineAccess.mouse_pressed()
+>>>>>>> Stashed changes
     
 	
   if(gameState>0){
@@ -699,6 +886,7 @@ function mousePressed(){
                     })
                   })
                 }
+<<<<<<< Updated upstream
                 // else if(arrtiles[i][j].moduleType==1){
                   
                 //   loadJSON('/getEffect/'+arrtiles[i][j].moduleType,(dataReceived)=>{
@@ -719,6 +907,147 @@ function mousePressed(){
               loop()
               draw_Grid()
               break
+=======
+                
+                acceptB[i].mouse_over()
+                acceptB[i].draw_button()
+                rejectB[i].mouse_over()
+                rejectB[i].draw_button()
+              }
+            }else{ // If there are no pending requests
+              push()
+              textFont(font)
+              textAlign(CENTER, CENTER)
+              textSize(40)
+              fill(255)
+              text('You currently have\nno pending\nfriend requests',friendDisplay.x, friendDisplay.y,  friendDisplay.w, friendDisplay.h)
+              pop()
+            }
+          }
+
+          push()//display galaxy level
+          textSize(50)
+          textFont(font)
+          textAlign(LEFT, TOP)
+          text('\n\tGalaxy level '+savedGL,displayArea.leftX,   displayArea.topY + height/12)
+          pop()
+
+
+          push()
+          textFont(font)
+          textSize(25)
+          textAlign(RIGHT,TOP)
+          text('Music: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2)
+          text('General Audio: ',displayArea.leftX+displayArea.width/5.5,  displayArea.topY + displayArea.height/2 + displayArea.height/6)
+
+          let slider={
+            'x':displayArea.leftX + displayArea.width/5.4,
+            'w':width/3,
+            'h':displayArea.height/10
+          }
+
+          if(mouseIsPressed && mouseX<selectFriend.x){
+            if(mouseY>displayArea.topY + displayArea.height/2 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 - displayArea.height/20+slider.h){
+              musicBar=map(mouseX, slider.x + slider.w/10,  slider.x + slider.w, slider.w/10,slider.w, true)
+              musicVolume=map(musicBar,  slider.w/10,slider.w,  0,100,  true)
+              music.setVolume(musicVolume/100)
+            }
+            if(mouseY>displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20 && mouseY<displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20+slider.h){
+              soundBar=map(mouseX, slider.x+slider.w/10,slider.x+slider.w, slider.w/10,slider.w, true)
+              soundVolume=map(soundBar,  slider.w/10,slider.w,  0,100,  true)
+              clickSound.setVolume(soundVolume/100)
+              slowRocket.setVolume(soundVolume/100)
+            }
+          }
+
+          strokeWeight(7)
+          stroke(25,25,112)
+          fill(255)
+          rect(slider.x, displayArea.topY + displayArea.height/2 - displayArea.height/20, musicBar, slider.h, 25)
+          rect(slider.x, displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20, soundBar, slider.h, 25)
+          
+          stroke(255)
+          strokeWeight(3)
+          noFill()
+          rect(slider.x,  displayArea.topY + displayArea.height/2 - displayArea.height/20,  slider.w,  slider.h, 25)
+          rect(slider.x,  displayArea.topY + displayArea.height/2 + displayArea.height/6 - displayArea.height/20,  slider.w,  slider.h, 25)
+          pop()
+
+          timelineAccess.mouse_over()
+          timelineAccess.draw_button()
+          
+          logoffButton.mouse_over()
+          logoffButton.draw_button()
+		      text("Profile",width/2,25)
+          break
+
+        case 5:
+          profileButton.text='Profile'
+          mapBtn.text='Back'
+          buildScreenB.text='Modules'
+          missionScreenB.text='Missions'
+          
+          drawMap()
+          if(playerCard!=''){
+            playerCard.draw_card()  
+            if(playerCard.visitBtn){
+              playerCard.visitBtn.mouse_over()
+              playerCard.visitBtn.draw_button()
+              playerCard.friendBtn.mouse_over()
+              playerCard.friendBtn.draw_button()
+            }
+          }
+		      text("Map",width/2,25)
+          break
+        case 6:
+          push()
+          text("Timeline",width/2,25)
+          stroke(0,100,200,200)
+          strokeWeight(10)
+          line(width/20,height/2,width - width/20,height/2)
+          /*for (d = 1; d < 10; d++)
+          {
+            stroke("blue")
+            circle(width/10 * d,height/2,15)
+          }*/
+          pop()
+          for (let t=1; t<savedGL;t++)
+          {
+            playerTimeline[t].mouse_over()
+            playerTimeline[t].draw_button()
+          }
+          break;
+        }
+       
+
+      
+      if(gameState>0){
+        drawR()
+        if(placedModule[5]>0){
+          mapBtn.mouse_over()
+          mapBtn.draw_button()
+        }
+
+        if(visiting==false){
+          profileButton.mouse_over()
+          profileButton.draw_button()
+        }
+
+        if(gameState<4 && visiting==false){
+          if(gameState<3 && placedModule[0]>0){
+            if(moneyTimer>2){
+              collectMB.func=collectMoney
+              collectMB.mouse_over()
+              collectMB.draw_button()
+              canCollect=true
+            }else{ // Money not available to collect, darken button with no function
+              canCollect=false
+              collectMB.r=150
+              collectMB.g=150
+              collectMB.b=150
+              collectMB.func=function(){}
+              collectMB.draw_button()
+>>>>>>> Stashed changes
             }
           }
         }
@@ -738,6 +1067,7 @@ function timer(){
   },15)
 
   setInterval(function(){
+<<<<<<< Updated upstream
     if(gameState==4){
 		if (typeof addB !="undefined")
 		{
@@ -776,6 +1106,138 @@ function timer(){
 	  addFriendB.draw_button()
 	  addFriendB.mouse_over()
 	  playerName.playerDraw()
+=======
+    let dataToSend={
+      'playerId':playerId,
+      'music':musicVolume,
+      'sound':soundVolume
+    }
+    httpPost('/updateVolume','json',dataToSend,(dataReceived)=>{
+
+    })
+  },60000)
+}
+
+
+
+// v Scene transitions v // =================================================================================================================================================================================================================================
+{
+  function building_Scene(){
+    if(gameState!=2){ // If on the main screen or the missions screen
+      changeScene()
+      gameState=2
+      side= 48
+
+      let buttonWidth=width/8
+      let buttonHeight=height/10
+      
+      for(let i=0; i<10; i++)
+      {
+        let cArray=moduleColor(i+1)
+
+        if(i<5)
+		    {
+          moduleBuildButton[i]= new Button (25, height/2-((buttonHeight+25)*(-i+2)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew required: '+crewCost[i+1]),12,1,0,(-i+5))
+        }else
+	  	  {
+          moduleBuildButton[i]= new Button (width-buttonWidth-25, height/2-((buttonHeight+25)*(-i+7)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew required: '+crewCost[i+1]),12,5,0,i + 1)
+		      console.log(i)
+        }
+      }
+
+      create_Grid(playerId)
+
+
+    }else if(gameState==2){ // Return to main screen
+      changeScene()
+      gameState=1
+      main_Scene()
+    }
+  }
+
+
+  function buildShip(){
+
+    let missionBG={
+      'x':width/2-width/3,
+      'y':displayArea.topY,
+      'w':2*((width/2+width/3)-(width/2-width/3))/3,
+      'h':displayArea.height/3
+    }
+    if(buildingShip==false && resource[0].currAmount>=1000){
+      let multiplier= placedModule[4]
+      resource[0].change_value(-1,1000)
+      buildingShip=true
+      drawBar=true
+
+      setTimeout(function(){
+        resource[3].change_value(1,1)
+        buildingShip=false
+        drawBar=false
+        shipBar=0
+      },(1000*5*timeScale)/multiplier)
+
+
+    }else if(buildingShip== true){
+      errMsg.text="Another ship is already under construction"
+
+      errMsg.active=true
+      errMsg.x=missionBG.x + missionBG.w + missionBG.h
+      errMsg.y=buildShipB.y+buildShipB.h
+      errMsg.w=width-missionBG.x + missionBG.w + missionBG.h
+      errMsg.h=buildShipB.h
+      setTimeout(function(){errMsg.active=false},1500)
+
+    }else if(resource[0].currAmount<1000){
+      errMsg.text="Not enough money to buy a new ship"
+      
+      errMsg.active=true
+      errMsg.x=width/2-width/3 + 2*((width/2+width/3)-(width/2-width/3))/3 + displayArea.height/3
+      errMsg.y=buildShipB.y+buildShipB.h
+      errMsg.w=width-width/2-width/3 + 2*((width/2+width/3)-(width/2-width/3))/3 + displayArea.height/3
+      errMsg.h=buildShipB.h
+      setTimeout(function(){errMsg.active=false},1500)
+    }
+  }
+
+
+  
+  function buildProbe(){
+
+    if(resource[0].currAmount>=5000 && probeBuilt==0 && buildingProbe==false){
+
+      resource[0].change_value(-1,5000)
+			probeBuildBar=0
+			buildingProbe=true
+
+			setTimeout(function(){
+				buildingProbe=false
+				probeBuilt=1
+        updateProbe()
+			}, 5000)
+    }else if(probeBuilt==1){
+      errMsg.text='Probe already built'
+      errMsg.active=true
+      errMsg.x=buildProbeB.x-5
+      errMsg.y=buildProbeB.y+buildProbeB.h+5
+      errMsg.w=buildProbeB.w+10
+      errMsg.h=buildProbeB.h
+      setTimeout(function(){
+        errMsg.active=false
+      },2000)
+    }
+  }
+
+
+  function mission_Scene(){
+    if(gameState!=3){
+      changeScene()
+      gameState=3
+
+    }else if(gameState==3){
+      changeScene()
+      gameState=1
+>>>>>>> Stashed changes
     }
   })
 
@@ -1359,6 +1821,7 @@ function swap(arr, xp, yp)
 }
 
 
+<<<<<<< Updated upstream
 function sortMission(n){ // Pointless
   let i, j;
   for (i = 0; i < n-1; i++)
@@ -1386,6 +1849,31 @@ function sortMission(n){ // Pointless
   }
   main_Scene()
 }
+=======
+    visiting=true
+    gameState=1
+    mapBtn.func=function(){
+      main_scene_setup()
+      mapBtn.func=map_scene
+    }
+    side=48
+    console.log("visiting")
+    create_Grid(vId)
+  }
+
+  function visitStarbase(t){
+
+    visiting=true
+    gameState=1
+    mapBtn.func=function(){
+      main_scene_setup()
+      mapBtn.func=map_scene
+    }
+    side=48
+    console.log("visiting")
+    create_Grid(t)
+  }
+>>>>>>> Stashed changes
 
 
 function changeAvailableShips(op, value){
