@@ -312,6 +312,8 @@ function main_scene_setup(){
 	},1000*timeScale)
   
   logoffButton= new Button(displayArea.leftX+20, displayArea.bottomY-20, width/10,height/10, 0,171,255, logOff, 'Log Off',15,1)
+  timelineAccess= new Button(displayArea.leftX+width/2.5, displayArea.bottomY-20, width/10,height/10, 0,171,255, Timeline, 'Timeline',15,1)
+
 	collectMB= new Button(width/2-75,displayArea.topY, 150,50, 250,208,44, collectMoney, 'Collect Money',13,3)
   
   missionScreenB= new Button(width-215, height-90, 200, 75, 0,171,255, mission_Scene, "Missions",25,2)
@@ -397,7 +399,7 @@ function Timeline()
     console.log(savedGL)
     for(let t=1; t<savedGL;t++)
     {
-      playerTimeline[t] = new Button(width/10 * t - 12.5,height/2 - 12.5,25,25,0,0,200,baseVisit,"Warp",15,3)
+      playerTimeline[t] = new Button(width/10 * t - 12.5,height/2 - 12.5,25,25,0,0,200,baseVisit,"GO",10,3)
     }
     gameState = 6
   }
@@ -408,7 +410,7 @@ function baseVisit(t)
   console.log(savedGL)
   console.log(t)
   console.log(playerId)
-  visitStarbase(t)
+  visitPlayer(t)
 }
 
 function collectMoney(){
@@ -485,6 +487,17 @@ function keyPressed(){
 
 
 function mouseReleased(){
+
+  if(gameState==6)
+  {
+    for(let t=1; t<savedGL;t++)
+    {
+      if(playerTimeline[t].pressed)
+        playerTimeline[t].mouse_released(t)
+        //console.log(playerTimeline[t])
+    }
+  }
+
   if(gameState==3){
 		for(let i=0; i<mission.length; i++){
 			if(missionSelect==2 && i<3){
@@ -512,6 +525,9 @@ function mouseReleased(){
   if(gameState==4){
     if(logoffButton.pressed)
       logoffButton.mouse_released()
+
+      if(timelineAccess.pressed)
+      timelineAccess.mouse_released()
 
     if(selectRequest.pressed)
       selectRequest.mouse_released(2)
@@ -610,6 +626,16 @@ function mouseReleased(){
 
 
 function mousePressed(){
+
+  if(gameState==6){
+    for(let t=1;t<savedGL;t++)
+    {
+     if(playerTimeline[t].mouse_over())
+      playerTimeline[t].mouse_pressed()
+    }
+  }
+
+
   if(gameState==3){
     for(let i=0; i<mission.length; i++){
 			if(missionSelect==2 && i<3){
@@ -637,10 +663,13 @@ function mousePressed(){
   if(gameState==4){
     if(logoffButton.mouse_over())
       logoffButton.mouse_pressed()
+	  
+	  if(timelineAccess.mouse_over())
+      timelineAccess.mouse_pressed()
 
-    
     if(selectRequest.mouse_over())
       selectRequest.mouse_pressed()
+
     if(selectFriend.mouse_over())
       selectFriend.mouse_pressed()
 
@@ -1527,7 +1556,11 @@ function timer(){
           
           logoffButton.mouse_over()
           logoffButton.draw_button()
-		  text("Profile",width/2,25)
+
+          timelineAccess.mouse_over()
+          timelineAccess.draw_button()
+
+		      text("Profile",width/2,25)
           break
 
         case 5:
@@ -1546,9 +1579,28 @@ function timer(){
               playerCard.friendBtn.draw_button()
             }
           }
-		  text("Map",width/2,25)
+		      text("Map",width/2,25)
           break
+          case 6:
+            push()
+            text("Timeline",width/2,25)
+            stroke(0,100,200,200)
+            strokeWeight(10)
+            line(width/20,height/2,width - width/20,height/2)
+            /*for (d = 1; d < 10; d++)
+            {
+              stroke("blue")
+              circle(width/10 * d,height/2,15)
+            }*/
+            pop()
+            for (let t=1; t<savedGL;t++)
+            {
+              playerTimeline[t].mouse_over()
+              playerTimeline[t].draw_button()
+            }
+            break;
       }
+      
       
       if(gameState>0){
         drawR()
@@ -2415,7 +2467,7 @@ function timer(){
 // v Map/Visit start v // ==================================================================================================================================================================================================================================
 {
 
-  function visitPlayer(vId){
+  function visitPlayer(t){
 
     visiting=true
     gameState=1
@@ -2424,7 +2476,7 @@ function timer(){
       mapBtn.func=map_scene
     }
     side=48
-    create_Grid(vId)
+    create_Grid(t)
   }
 
 
@@ -2643,6 +2695,3 @@ function fadeToBlack(){
     },2000)
   },2000)
 }
-/* if (gameState == 5)
-{
-	console.log( */
