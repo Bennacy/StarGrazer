@@ -1780,7 +1780,7 @@ function timer(){
     fill(255);
     textAlign(CENTER,TOP)
     textSize(50);
-	imageMode(CENTER)
+	  imageMode(CENTER)
     image(logoImg, width/2, height/7.5);
     textSize(20);
     text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
@@ -1808,8 +1808,8 @@ function timer(){
       push()
       fill(255);
       textAlign(CENTER,TOP)
-      textSize(50)
-      text("Star Grazer", width/2, height/5);
+      imageMode(CENTER)
+      image(logoImg, width/2, height/7.5);
       textSize(20)
       text("Login to your account or click on the sign up button to create one!", width/2, height/3.5);
       pop()
