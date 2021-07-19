@@ -135,6 +135,8 @@ let moduleBuildButton=[]
 let friendNextBtn
 let friendBackBtn
 let friendPage
+let timelineAccess
+let playerTimeline = []
 
 // Input initialization
 let nameInput
@@ -386,6 +388,28 @@ function logOff(){
   gameState=0
 }
 
+function Timeline()
+{
+  if (gameState == 4 && gameState !=6 ) 
+  {
+    clear()
+    image(testImg,0,0)
+    console.log(savedGL)
+    for(let t=1; t<savedGL;t++)
+    {
+      playerTimeline[t] = new Button(width/10 * t - 12.5,height/2 - 12.5,25,25,0,0,200,baseVisit,"Warp",15,3)
+    }
+    gameState = 6
+  }
+}
+
+function baseVisit(t)
+{
+  console.log(savedGL)
+  console.log(t)
+  console.log(playerId)
+  visitStarbase(t)
+}
 
 function collectMoney(){
 	loadJSON('/getEffect/'+1,(dataReceived)=>{ // This money increases up to a maximum of 10 "minutes" after which it stays consistant, and can be collected at most every 3 "minutes"
