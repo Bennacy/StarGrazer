@@ -89,6 +89,8 @@ let currCCost
 let inUse;
 let errMsg;
 let registering
+//bool that runs only once to stop scaling
+let scale = true
 let firstLoad= true
 let mainLoop= true
 let visitedB=false
@@ -201,13 +203,13 @@ function preload(){
   moduleImg[9]= loadImage('Assets/Images/Modules/probe constructor.png')
   moduleImg[10]= loadImage('Assets/Images/Modules/connector.png')
   moduleImg[11]= loadImage('Assets/Images/Modules/default module.png')
-  //aaaaaaaa
-  shipConst = loadImage('Assets/Images/Modules/ship constructor.png')
+  //aaaaaaaa!!!
+  /*shipConst = loadImage('Assets/Images/Modules/ship constructor.png')
   commRelay = loadImage('Assets/Images/Modules/signal-tower.png')
   techStation = loadImage('Assets/Images/Modules/radar.png')
   missionCtrl = loadImage('Assets/Images/Modules/mission control.png')
   probeConst = loadImage('Assets/Images/Modules/probe constructor.png')
-  baseConn = loadImage('Assets/Images/Modules/connector.png')
+  baseConn = loadImage('Assets/Images/Modules/connector.png')*/
   
   music = loadSound('Assets/Audio/bensound-slowmotion.mp3');
   clickSound = loadSound('Assets/Audio/multimedia_button_click.mp3')
@@ -1691,12 +1693,13 @@ function timer(){
         let cArray=moduleColor(i+1)
 
         if(i<5)
-		{
+		    {
+          tint(0,100,225)
           moduleBuildButton[i]= new Button (25, height/2-((buttonHeight+25)*(-i+2)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew required: '+crewCost[i+1]),12,1,0,(-i+5))
         }else
-		{
+		    {   
           moduleBuildButton[i]= new Button (width-buttonWidth-25, height/2-((buttonHeight+25)*(-i+7)), buttonWidth, buttonHeight, cArray[0],cArray[1],cArray[2], place_module, (moduleName[i+1]+'\nMaterial cost: '+moduleCost[i+1]+'\nCrew required: '+crewCost[i+1]),12,5,0,i + 1)
-		  console.log(i)
+		      console.log(i)
         }
       }
 

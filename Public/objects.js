@@ -124,7 +124,6 @@ class Resources{
   }
 }
 
-
 class Mission{
   constructor(mI, id, missionResource, reward, duration, successChance, missionType, state, startD, startH, startM){
 		this.mI=mI
@@ -227,8 +226,6 @@ class Mission{
   }
 }
 
-
-
 class Button{
   constructor(x, y, w, h, r, g, b, func, text,textS, bType, cSide,modType){
     this.x=x
@@ -257,43 +254,43 @@ class Button{
 			switch(this.mod)
 			{
 				case 1:
-				this.img=shipImg
+				this.img=moduleImg[5]
 				break
 				
 				case 2:
-				this.img=shipImg
+				this.img=moduleImg[4]
 				break
 				
 				case 3:
-				this.img=matImg
+				this.img=moduleImg[3]
 				break
 				
 				case 4:
-				this.img=crewImg
+				this.img=moduleImg[2]
 				break
 				
 				case 5:
-				this.img=moneyImg
+				this.img=moduleImg[1]
 				break
 				
 				case 6:
-				this.img=commRelay
+				this.img=moduleImg[6]
 				break
 				
 				case 7:
-				this.img=techStation
+				this.img=moduleImg[7]
 				break
 				
 				case 8:
-				this.img=missionCtrl
+				this.img=moduleImg[8]
 				break
 				
 				case 9:
-				this.img=probeConst
+				this.img=moduleImg[9]
 				break
 				
 				case 10:
-				this.img=baseConn
+				this.img=moduleImg[10]
 				break
 			}
 		this.img.resize(0,height/15-height/60)
@@ -485,10 +482,6 @@ class Button{
   }
 }
 
-
-
-
-
 class Module {
 
   constructor(i, j, x, y, side, moduleType, del, gLevel){
@@ -627,7 +620,6 @@ class Module {
   
 }
 
-
 class PlayerCard{
   constructor(x,y,pSize,pId,gLevel){
     this.x=x
@@ -739,10 +731,6 @@ class PlayerCard{
     }
   }
 }
-
-
-
-
 
 class Player{
   constructor(x,y,id,active,size,offsetX,offsetY){

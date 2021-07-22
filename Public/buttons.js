@@ -1,195 +1,268 @@
 class Button{
-  constructor(x, y, w, h, r, g, b, func, text,round){
-    this.x=x
-    this.y=y
-	this.textX = x
-	this.textY = y
-    this.w=w
-    this.h=h
-	this.r=round
-    this.func=func
-    
-    this.origR=r
-    this.origG=g
-    this.origB=b
-    this.r=this.origR
-    this.g=this.origG
-    this.b=this.origB
-	
-    this.text=text
-    this.active
-  }
-  draw_button(){
-    push()
-      fill(this.r,this.g,this.b)
-      strokeWeight(1.5)
-      textAlign(CENTER, CENTER)
-      rect(this.x,this.y,this.w,this.h,15)
-      fill("white")
-      text(this.text, this.x+this.w/2, this.y+this.h/2)
-    pop()
-  }
-  onClickSearch()
-  {
-	let search
-	let allPlayers
-	
-	searchPlayer = createInput('enter a username')
-	
-	searchPlayer.position(this.x-width/10,this.y + height / 10)
-	searchPlayer.size(width/10,height/40)
-  }
-  addPlayer()
-	{
-		let friend
-		let pName
-		let friendRequest
-		let allPlayers
-		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
-		{
-			pName = nameReceived
-		
-			loadJSON('/getFriendList',(reqReceived)=>
+	constructor(x, y, w, h, r, g, b, func, text,textS, bType, cSide,modType){
+	  this.x=x
+	  this.y=y
+	  this.w=w
+	  this.h=h
+	  this.func=func
+	  this.bType=bType
+	  
+	  this.origR=r
+	  this.origG=g
+	  this.origB=b
+	  this.r=this.origR
+	  this.g=this.origG
+	  this.b=this.origB
+  
+	  this.pressed=false
+	  this.mod = modType
+	  this.img
+	  this.text=text	
+	  this.textS=textS
+	  this.cSide=cSide
+	  
+	  if (gameState == 2)
+	  {
+		console.log(scale)
+			switch(this.mod)
 			{
-				friendRequest = reqReceived
-			
-				loadJSON('/getPlayerList/'+playerId,(pNamesReceived)=>
-				{
-					allPlayers = pNamesReceived
-						
-					console.log(pName[0].name)
-					for (let p=0; p<allPlayers.length; p++)
-					{
-						if (searchPlayer.value() == allPlayers[p].name)
-						{
-							//0 is default, 1 is true, 2 is false
-							friend = {
-								"requestFrom": pName[0].name,
-								"requestTo": searchPlayer.value(),
-								"accepted": "0",
-							}
-							httpPost('/sendFriendReq/','json',friend,(dataReceived)=>
-							{
-							
-							}) 
-						} 
-					}		
-				})
-			})
-		})
+				case 1:
+				this.img=moduleImg[5]
+				break
+					
+				case 2:
+				this.img=moduleImg[4]
+				break
+					
+				case 3:
+				this.img=moduleImg[3]
+				break
+					
+				case 4:
+				this.img=moduleImg[2]
+				break
+					
+				case 5:
+				this.img=moduleImg[1]
+				break
+					
+				case 6:
+				this.img=moduleImg[6]
+				break
+					
+				case 7:
+				this.img=moduleImg[7]
+				break
+					
+				case 8:
+				this.img=moduleImg[8]
+				break
+					
+				case 9:
+				this.img=moduleImg[9]
+				break
+					
+				case 10:
+				this.img=moduleImg[10]
+				break
+			}
+			if (scale == true)
+			{
+		  		this.img.resize(64,64)
+		  		//this.img.tint("white")
+		  		console.log(this.img)
+				scale = false
+				console.log(scale)
+			}
+	  }
+	  
+	  switch(this.bType){
+		case 1:
+		  this.clickDepth=2
+		  this.strkWeight=2
+		  this.clickStroke=0
+		  this.stkDiff=-255
+  
+		  this.upL=10
+		  this.upR=10
+		  this.dnL=10
+		  this.dnR=10
+  
+		  this.highlight1=-10
+		  this.highlight2=0
+  
+		  break
+  
+		case 2:
+		  this.clickDepth=5
+		  this.strkWeight=3
+		  this.clickStroke=0
+		  this.stkDiff=30
+  
+		  this.upL=35
+		  this.upR=5
+		  this.dnL=5
+		  this.dnR=35
+  
+		  this.highlight1=10
+		  this.highlight2=30
+		  break
+  
+		case 3:
+		  this.clickDepth=2
+		  this.strkWeight=3
+		  this.clickStroke=1
+		  this.stkDiff=20
+  
+		  this.upL=10000
+		  this.upR=10000
+		  this.dnL=10000
+		  this.dnR=10000
+  
+		  this.highlight1=-15
+		  this.highlight2=10
+		  break
+  
+		case 4:
+		  this.clickDepth=3
+		  this.strkWeight=5
+		  this.clickStroke=1
+		  this.stkDiff=20
+		  
+		case 5:
+		  this.clickDepth=2
+		  this.strkWeight=2
+		  this.clickStroke=0
+		  this.stkDiff=-255
+  
+		  this.upL=10
+		  this.upR=10
+		  this.dnL=10
+		  this.dnR=10
+  
+		  this.highlight1=-10
+		  this.highlight2=0
+		  break;
+  
+		  switch(this.cSide){ // Which side is slanted
+			case 1: // top left
+			  this.upL=50
+			  this.upR=5
+			  this.dnL=5
+			  this.dnR=5
+			  break
+  
+			case 2: // top right
+			  this.upL=5
+			  this.upR=50
+			  this.dnL=5
+			  this.dnR=5
+			  break
+  
+			case 3: // bottom left
+			  this.upL=5
+			  this.upR=5
+			  this.dnL=50
+			  this.dnR=5
+			  break
+  
+			case 4: // bottom right
+			  this.upL=5
+			  this.upR=5
+			  this.dnL=5
+			  this.dnR=50
+			  break
+			  
+			case 5: // none
+			  this.upL=5
+			  this.upR=5
+			  this.dnL=5
+			  this.dnR=5
+			  break
+  
+			default:
+				this.upL=50
+				this.upR=5
+				this.dnL=5
+				this.dnR=5
+  
+		  }
+  
+		  this.highlight1=10
+		  this.highlight2=25
+		  break
+	  }
+	  this.strkSave=this.strkWeight
 	}
   
-	resolveRequest()
-	{
-		let pName
-		let friendRequest
-		let accept
-		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
-		{
-			pName = nameReceived
+	draw_button(){
+	  push()
+	  tint(this.r+200, this.g, this.b-100, 200)
+		strokeWeight(this.strkWeight)
+		stroke(this.r+this.stkDiff, this.g+this.stkDiff, this.b+this.stkDiff)
+		fill(this.r,this.g,this.b)
+		rect(this.x,this.y,this.w,this.h, this.upL,this.upR,this.dnR,this.dnL)
+		noStroke()
+		textFont(font)
+		textSize(this.textS)
+		fill("black")
+		textAlign(CENTER, CENTER)
 		
-			loadJSON('/getFriendList',(reqReceived)=>
-			{
-				friendRequest = reqReceived
-			
-				for (let p=0; p<friendRequest.length; p++)
-				{
-					if(friendRequest[p].requestTo == pName[0].name && friendRequest[p].accepted == 0)
-					{	
-						//Show my requests
-						fill("white")
-						text(friendRequest[p].requestFrom,this.x,this.y + (height/20 * p) + height/7)
-						//Reject
-						fill("red")
-						rect(this.x + width/9,this.y + (height/20 * p) + height/8,width/40,height/40)
-						//Accept
-						fill("green")
-						rect(this.x+width/12,this.y + (height/20 * p) + height/8,width/40,height/40)
-						//reset to default color
-						fill("white")
-						//console.math
-						console.log(this.y + (height/10 * p) + height/8 + height/40,this.y + (height/10 * p) + height/8)
-						
-						//0 is default, 1 is true, 2 is false
-					 	if (mouseX<this.x+width/12 + width/40 && mouseX>this.x+width/12 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
-						{
-							console.log("it is done")
-							accept = {
-								"accepted": "1",
-							}
-							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
-							{
+		if (gameState == 2 && this.bType == 1)
+		{
+		  textAlign(RIGHT,CENTER)
+		  fill(0,150,250)
+		  rect(this.x,this.y,width/35,height/17.5,15)
+		  fill("white")
+		  tint(0,100,225)
+		  image(this.img,this.x,this.y)
+		}
+		if (gameState == 2 && this.bType == 5)
+		{
+		  textAlign(LEFT,CENTER)
+		  fill(0,150,250)
+		  rect(this.x + this.w - this.w/4.5,this.y,width/35,height/17.5,15)
+		  fill("white")
+		  tint(0,100,225)
+		  image(this.img,this.x + this.w - this.w/5,this.y)
+		}
+		text(this.text, this.x, this.y, this.w, this.h)
+	  pop()
+	}
+  
+	mouse_over(){
+	  if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){
+		if(this.pressed==false){
+		  this.r=this.origR-this.highlight1
+		  this.g=this.origG-this.highlight1
+		  this.b=this.origB-this.highlight1
+		}
+		return true
+	  }else if(this.pressed==false){
+		this.r=this.origR
+		this.g=this.origG
+		this.b=this.origB
+		return false
+	  }
+	}
+  
+	mouse_pressed(){
+	  this.r=this.origR-this.highlight2
+	  this.g=this.origG-this.highlight2
+	  this.b=this.origB-this.highlight2
+	  this.y+=this.clickDepth
+	  this.pressed=true
+	  this.strkWeight=this.clickStroke
+	}
 	
-							})
-							break
-						}
-						
-						if (mouseX<this.x+width/9 + width/40 && mouseX>this.x+width/9 &&  mouseY<this.y + (height/10 * p) + height/8 + height/40 && mouseY>this.y + (height/10 * p) + height/8)
-						{	
-							console.log("is it done?")
-							accept = {
-								"accepted": "2",
-							}
-							httpPost('/resolvefriendReq/','json',accept,(dataReceived)=>
-							{
-							
-							})
-							break
-						} 
-					}
-				}
-			}) 
-		})
+	mouse_released(param1,param2){
+	  
+	  clickSound.play()
+	  this.func(param1,param2)
+	  this.pressed=false
+	  this.strkWeight=this.strkSave
+	  this.y-=this.clickDepth
 	}
-	allPlayers()
-	{
-		let pName
-		let friendRequest
-		loadJSON('/getPlayerName/'+playerId,(nameReceived)=>
-		{
-			pName = nameReceived
-		
-			loadJSON('/getFriendList',(reqReceived)=>
-			{
-				friendRequest = reqReceived
-			
-				for (let p=0; p<friendRequest.length;p++)
-				{
-					if (friendRequest[p].accepted == 1 && friendRequest[p].requestTo == pName[0].name)
-					{
-						text(friendRequest[p].requestFrom,this.x,this.y + (height/10 * p) + height/7)
-					}	
-				}
-			})
-		}) 
-	}
-			
-  mouseWheeling(event)
-	{
-	 /*  if(this.textY>this.y-height/6)
-	  {
-		console.log(event.delta)
-		this.textY += event.delta;
-	  } */
-	}
-  mouse_over(){
-    if(mouseX>this.x&&mouseX<this.x+this.w && mouseY>this.y&&mouseY<this.y+this.h){
-      this.r=this.origR+20
-      this.g=this.origG+20
-      this.b=this.origB+20
-      return true
-    }else{
-      this.r=this.origR
-      this.g=this.origG
-      this.b=this.origB
-      return false
-    }
   }
-
-  mouse_pressed(index){
-
-      this.func(index)
-  }
-}
 
 
